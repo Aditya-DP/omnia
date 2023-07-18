@@ -1,0 +1,11 @@
+[manager]
+manager.omnia.local
+
+[nfs]
+manager.omnia.local
+
+[login]
+login1.omnia.local
+
+[compute]
+compute[000:064]
