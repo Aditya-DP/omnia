@@ -3,6 +3,7 @@ Limitations
 
 -  Once ``provision.yml`` is used to configure devices, it is
    recommended to avoid rebooting the control plane.
+- Omnia provision tools only support /16 subnet masks for provisioning.
 -  Omnia supports adding only 1000 nodes when discovered via BMC.
 -  Removal of Slurm and Kubernetes component roles are not supported.
    However, the scheduler type can be customized by setting ``scheduler_type`` in ``input/omnia_config.yml`` prior to running ``omnia.yml``.
@@ -33,7 +34,6 @@ Limitations
    by Omnia.
 -  All iDRACs must have the same username and password.
 -  OpenSUSE Leap 15.3 is not supported on the Control Plane.
--  Slurm Telemetry is supported only on a single cluster.
 -  Omnia might contain some unused MACs since LOM switch have both iDRAC MACs as well as ethernet MACs, PXE NIC ranges should contain IPs that are double the iDRACs present.
 - FreeIPA authentication is not supported on the control plane.
 - The multiple OS feature is only available with Rocky 8.7 when xCAT 2.16.5 is in use. Currently, Omnia uses 2.16.4.
