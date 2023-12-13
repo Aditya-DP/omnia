@@ -14,6 +14,7 @@
 ---
 
 - name: Update IPMI table and create genesis image
+  when: discovery_mechanism | lower == discovery_method_bmc
   block:
     - name: Update IPMI table
       ansible.builtin.include_tasks: update_xcat_passwd_mtms.yml
@@ -25,6 +26,7 @@
       ansible.builtin.include_tasks: create_genesis_image.yml
 
     - name: Perform operations for static range
+      when: bmc_static_status
       block:
         - name: Perform BMC Discover on static range
           ansible.builtin.include_tasks: bmc_static_discovery.yml
@@ -42,11 +44,11 @@
           ansible.builtin.include_tasks: power_off_nodes.yml
           with_items: "{{ bmc_static_nodes }}"
           when: bmc_static_node_status
-      when: bmc_static_status
 
     - name: Perform operations for dynamic range
+      when: bmc_dynamic_status
       block:
-        - name: Wait for "{{ dhcp_timeout }}" before starting dynamic discovery
+        - name: Before starting dynamic discovery wait for "{{ dhcp_timeout }}"
           ansible.builtin.pause:
             seconds: "{{ dhcp_timeout }}"
             prompt: "{{ dhcp_timeout_msg }}"
@@ -73,5 +75,3 @@
           ansible.builtin.include_tasks: power_off_nodes.yml
           with_items: "{{ dynamic_nodes.stdout_lines }}"
           when: dynamic_final_status
-      when: bmc_dynamic_status
-  when: discovery_mechanism | lower == discovery_method_bmc

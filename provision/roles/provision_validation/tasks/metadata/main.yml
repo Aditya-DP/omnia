@@ -21,6 +21,7 @@
     mapping_bmc_state: false
 
 - name: Validate input parameters if metadata exits
+  when: metadata_status.stat.exists
   block:
     - name: Validate discovery_mechanism
       ansible.builtin.include_tasks: validate_discovery_mechanism.yml
@@ -28,4 +29,3 @@
     - name: Fetch params of snmp discovery_mechanism
       ansible.builtin.include_tasks: validate_discovery_mech_params.yml
       when: discovery_mech_state
-  when: metadata_status.stat.exists

@@ -25,4 +25,4 @@
   hosts: localhost
   connection: local
   roles:
-    - role: ../telemetry/roles/omnia_telemetry_cp
+    - role: ../telemetry/roles/omnia_telemetry_cp # noqa: role-name[path]

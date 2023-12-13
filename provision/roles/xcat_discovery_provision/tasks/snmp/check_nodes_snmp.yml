@@ -18,6 +18,7 @@
     snmp_node_status: false
 
 - name: Fetch nodes with group {{ snmp_node_group }}
+  when: discovery_mechanism | lower == discovery_method_snmp
   block:
     - name: Fetch nodes with group {{ snmp_node_group }}
       ansible.builtin.command: lsdef {{ snmp_node_group }}
@@ -37,4 +38,3 @@
         seconds: "{{ warning_wait_time }}"
         prompt: "{{ snmp_nodes_warning_msg }}"
       when: not snmp_node_status
-  when: discovery_mechanism | lower == discovery_method_snmp

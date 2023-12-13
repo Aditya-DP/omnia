@@ -18,6 +18,7 @@
     mapping_node_status: false
 
 - name: Fetch nodes with group {{ mapping_node_group }}
+  when: discovery_mechanism | lower == discovery_method_mapping
   block:
     - name: Fetch nodes with group {{ mapping_node_group }}
       ansible.builtin.command: lsdef {{ mapping_node_group }}
@@ -37,4 +38,3 @@
         seconds: "{{ warning_wait_time }}"
         prompt: "{{ mapping_nodes_warning_msg }}"
       when: not mapping_node_status
-  when: discovery_mechanism | lower == discovery_method_mapping

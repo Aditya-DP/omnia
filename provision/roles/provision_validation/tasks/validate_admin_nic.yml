@@ -29,11 +29,11 @@
     fail_msg: "{{ fail_admin_subnet_msg }}"
 
 - name: Fetch admin NIC when dedicated network
-  include_tasks: validate_dedicated_config.yml
+  ansible.builtin.include_tasks: validate_dedicated_config.yml
   when: network_interface_type == "dedicated"
 
 - name: Fetch admin NIC when lom network
-  include_tasks: validate_lom_config.yml
+  ansible.builtin.include_tasks: validate_lom_config.yml
   when: network_interface_type == "lom"
 
 - name: Assign values to pxe nic

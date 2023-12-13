@@ -14,6 +14,11 @@
 ---
 
 - name: Installation of xcat
+  environment:
+    XCATROOT: "{{ xcat_root_env }}"
+    PATH: "{{ ansible_env.PATH }}:{{ xcat_path_env }}"
+    MANPATH: "{{ xcat_manpath_env }}"
+    PERL_BADLANG: "{{ perl_badlang_env }}"
   block:
     - name: Check xcat installation pre-requisites
       ansible.builtin.include_tasks: pre_requisites.yml
@@ -35,8 +40,3 @@
 
     - name: Configuration of xcat
       ansible.builtin.include_tasks: configure_xcat.yml
-  environment:
-    XCATROOT: "{{ xcat_root_env }}"
-    PATH: "{{ ansible_env.PATH }}:{{ xcat_path_env }}"
-    MANPATH: "{{ xcat_manpath_env }}"
-    PERL_BADLANG: "{{ perl_badlang_env }}"

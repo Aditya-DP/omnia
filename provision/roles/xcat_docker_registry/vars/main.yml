@@ -16,7 +16,7 @@
 # Usage: create_docker_registry.yml
 docker_repo_url: https://download.docker.com/linux/centos/docker-ce.repo
 docker_repo_dest: /etc/yum.repos.d/docker-ce.repo
-file_permission: 0644
+file_permission: "0644"
 max_retries: 20
 max_delay: 20
 docker_packages:
@@ -27,7 +27,7 @@ containerd_rpm_dir: /opt/omnia/containerd
 containerd_rpm_dest: "{{ containerd_rpm_dir }}/containerd.io-1.6.20-3.1.el8.x86_64.rpm"
 docker_registry_certs_folder: /docker-registry/certs
 docker_certs_folder: "/etc/docker/certs.d/{{ cp_hostname }}:5001"
-directory_permissions: 0755
+directory_permissions: "0755"
 certs_path:
   - { src: /etc/xcat/cert/server-cert.pem, dest: "{{ docker_registry_certs_folder }}/domain.crt" }
   - { src: /etc/xcat/cert/server-key.pem, dest: "{{ docker_registry_certs_folder }}/domain.key" }

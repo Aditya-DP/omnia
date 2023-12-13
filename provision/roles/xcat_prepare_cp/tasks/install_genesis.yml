@@ -24,8 +24,6 @@
   changed_when: false
   failed_when: false
   register: genesis_version_check
-  args:
-    warn: false
 
 - name: Set genesis_image_creation status
   ansible.builtin.set_fact:
@@ -36,26 +34,24 @@
   when: genesis_image_creation
   block:
     - name: Untar genesis base package
-      ansible.builtin.command: tar -xvzf "{{ xcat_genesis_tar_file }}" -C "{{ role_path }}/files"
+      ansible.builtin.unarchive:
+        src: "{{ xcat_genesis_tar_file }}"
+        dest: "{{ role_path }}/files"
       changed_when: true
       register: untar_genesis_base
       until: untar_genesis_base is not failed
       retries: "{{ max_retries }}"
-      args:
-        warn: false
 
     - name: Remove existing genesis base rpm
-      ansible.builtin.command: rpm -e --nodeps {{ genesis_version_check.stdout }}
+      ansible.builtin.command: rpm -e --nodeps {{ genesis_version_check.stdout }} # noqa: command-instead-of-module
       changed_when: true
       when: genesis_version_check.stdout | length > 1
-      args:
-        warn: false
 
     - name: Install genesis base rpm file generated
-      ansible.builtin.command: rpm -ivh "{{ xcat_genesis_rpm_file }}"
-      changed_when: true
-      args:
-        warn: false
+      ansible.builtin.yum:
+        name: "{{ xcat_genesis_rpm_file }}"
+        state: present
+        disable_gpg_check: true
 
 - name: Check doxcat script applied
   ansible.builtin.shell: >
@@ -76,11 +72,10 @@
       with_items: "{{ doxcat_patch_path }}"
 
     - name: Patch doxcat file
-      ansible.builtin.shell: patch doxcat < doxcat.patch
+      ansible.builtin.shell: patch doxcat < doxcat.patch # noqa: command-instead-of-module
       changed_when: true
       args:
         chdir: "{{ xcat_bin_path }}"
-        warn: false
 
     - name: Delete doxcat script patch
       ansible.builtin.file:

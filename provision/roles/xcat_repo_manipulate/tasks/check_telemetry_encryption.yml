@@ -39,6 +39,7 @@
   ansible.builtin.include_vars: "{{ telemetry_config_filename }}"
 
 - name: Encrypt telemetry config file once validations are successful
+  when: telemetry_config_encrypted
   block:
     - name: Encrypt telemetry_config.yml
       ansible.builtin.command: >-
@@ -50,4 +51,3 @@
       ansible.builtin.file:
         path: "{{ telemetry_config_filename }}"
         mode: "{{ tele_conf_file_mode }}"
-  when: telemetry_config_encrypted

@@ -79,6 +79,7 @@
         msg: "{{ download_common_package_fail_msg }}"
 
 - name: Download crb and epel packages for rhel
+  when: control_plane_os_redhat in control_plane_os
   block:
     - name: Downloading crb repo packages
       block:
@@ -103,7 +104,6 @@
         - name: Failed - Downloading epel repo packages failed
           ansible.builtin.fail:
             msg: "{{ download_epel_package_fail_msg }}"
-  when: control_plane_os_redhat in control_plane_os
 
 - name: Install epel-release repo
   ansible.builtin.package:
@@ -162,6 +162,7 @@
   when: apptainer_support
 
 - name: Add the telemetry packages to OS image
+  when: omnia_telemetry_support
   block:
     - name: Read telemetry pckglist
       ansible.builtin.command: cat "{{ telemetry_pkg_list_src }}"
@@ -175,7 +176,6 @@
         state: present
         line: "{{ item }}"
       with_items: "{{ telemetry_post_pckg_op.stdout_lines }}"
-  when: omnia_telemetry_support
 
 - name: Configure omnia pkglist to osimage
   ansible.builtin.command: chdef -t osimage -o {{ provision_os_image }} otherpkglist={{ other_pkg_list_dest }}
