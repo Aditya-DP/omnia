@@ -106,7 +106,7 @@
     msg: "{{ provision_os_version_fail_msg }}"
   when: not supported_os_version_status
 
-- name: Warning - waiting for {{ warning_wait_time }} seconds
+- name: Warning - Please wait, This task will take few seconds
   ansible.builtin.pause:
     seconds: "{{ warning_wait_time }}"
     prompt: "{{ dns_empty_warning_msg }}"
@@ -122,6 +122,7 @@
     - secondary_dns | length >1
 
 - name: Validate dns inputs
+  when: primary_dns | length > 1
   block:
     - name: Assert primary_dns when not empty
       ansible.builtin.assert:
@@ -142,6 +143,7 @@
       when: ping_search_key in primary_dns_check.stdout
 
     - name: Validate secondary_dns inputs
+      when: secondary_dns | length > 1
       block:
         - name: Assert secondary_dns when not empty
           ansible.builtin.assert:
@@ -161,8 +163,6 @@
           ansible.builtin.debug:
             msg: "{{ secondary_dns_not_reachable_msg }}"
           when: ping_search_key in secondary_dns_check.stdout
-      when: secondary_dns | length > 1
-  when: primary_dns | length > 1
 
 - name: Assert provision credentials
   block:

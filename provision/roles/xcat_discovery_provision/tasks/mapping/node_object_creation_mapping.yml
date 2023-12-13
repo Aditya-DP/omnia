@@ -14,6 +14,7 @@
 ---
 
 - name: Create node object from mapping file provided by user
+  when: discovery_mechanism | lower == discovery_method_mapping
   block:
     - name: Fetch all node object list
       ansible.builtin.command: lsdef all -i mac
@@ -22,7 +23,7 @@
       register: node_mac_list
 
     - name: Read mapping file provided by user
-      ansible.builtin.read_csv:
+      community.general.read_csv:
         path: "{{ temp_mapping_file_path }}"
       register: mapping_file_output
 
@@ -36,4 +37,3 @@
       loop_control:
         index_var: idx1
       when: mapping_file_output.list[idx1].MAC | lower not in node_mac_list.stdout | lower
-  when: discovery_mechanism | lower == discovery_method_mapping

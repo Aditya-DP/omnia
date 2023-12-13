@@ -14,6 +14,7 @@
 ---
 
 - name: Task for set PXE to nodes for bmc
+  when: discovery_mechanism | lower == discovery_method_bmc
   block:
     - name: Set PXE to node object for bmc - {{ item }}
       ansible.builtin.command: rsetboot {{ item }} net
@@ -24,10 +25,10 @@
       ansible.builtin.debug:
         msg: "{{ mtms_set_pxe_warning_msg }} {{ set_pxe_bmc.stderr }}"
       when: set_pxe_bmc.stderr is defined
-  when: discovery_mechanism | lower == discovery_method_bmc
 
 
 - name: Task to power on the nodes for bmc
+  when: discovery_mechanism | lower == discovery_method_bmc
   block:
     - name: Power on the node - {{ item }}
       ansible.builtin.command: rpower {{ item }} on
@@ -42,4 +43,3 @@
       ansible.builtin.debug:
         msg: "{{ mtms_poweron_warning_msg }} {{ power_on_status.stderr }}"
       when: power_on_status.stderr is defined
-  when: discovery_mechanism | lower == discovery_method_bmc

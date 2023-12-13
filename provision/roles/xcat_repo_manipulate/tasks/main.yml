@@ -14,6 +14,11 @@
 ---
 
 - name: Create and update repositories
+  environment:
+    XCATROOT: "{{ xcat_root_env }}"
+    PATH: "{{ ansible_env.PATH }}:{{ xcat_path_env }}"
+    MANPATH: "{{ xcat_manpath_env }}"
+    PERL_BADLANG: "{{ perl_badlang_env }}"
   block:
     - name: Check encryption
       ansible.builtin.include_tasks: check_telemetry_encryption.yml
@@ -51,8 +56,3 @@
 
     - name: Create omnia-common repo
       ansible.builtin.include_tasks: postscripts/main.yml
-  environment:
-    XCATROOT: "{{ xcat_root_env }}"
-    PATH: "{{ ansible_env.PATH }}:{{ xcat_path_env }}"
-    MANPATH: "{{ xcat_manpath_env }}"
-    PERL_BADLANG: "{{ perl_badlang_env }}"

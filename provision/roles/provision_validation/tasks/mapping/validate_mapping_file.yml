@@ -120,9 +120,9 @@
 
 - name: Validate admin nic subnet present in IP
   ansible.builtin.assert:
-    that: admin_subnet_octect in "{{ item.split('.')[0] }}.{{ item.split('.')[1] }}"
+    that: admin_subnet_octect in item
     fail_msg: "{{ admin_subnet_missing_msg }}"
-  with_items: "{{ list_of_ips }}"
+  with_items: "{{ list_of_ips | map('regex_replace', '^(\\d+\\.\\d+).*$', '\\1') | list }}"
 
 - name: Validate capital case in hostname
   ansible.builtin.assert:

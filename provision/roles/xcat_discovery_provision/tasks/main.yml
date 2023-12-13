@@ -14,6 +14,11 @@
 ---
 
 - name: Discover and provision nodes
+  environment:
+    XCATROOT: "{{ xcat_root_env }}"
+    PATH: "{{ ansible_env.PATH }}:{{ xcat_path_env }}"
+    MANPATH: "{{ xcat_manpath_env }}"
+    PERL_BADLANG: "{{ perl_badlang_env }}"
   block:
     - name: Include xcat_discovery_provision role vars
       ansible.builtin.include_vars: "{{ item }}"
@@ -60,8 +65,3 @@
 
     - name: Initiate thread to monitor provisioning status
       ansible.builtin.include_tasks: initiate_monitor_status.yml
-  environment:
-    XCATROOT: "{{ xcat_root_env }}"
-    PATH: "{{ ansible_env.PATH }}:{{ xcat_path_env }}"
-    MANPATH: "{{ xcat_manpath_env }}"
-    PERL_BADLANG: "{{ perl_badlang_env }}"

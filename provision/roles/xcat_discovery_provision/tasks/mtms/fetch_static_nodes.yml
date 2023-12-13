@@ -33,6 +33,7 @@
 - name: Check bmc nodes status
   ansible.builtin.command: "{{ python_version }} {{ check_status_bmc_file }}"
   register: check_status
+  changed_when: false
   when: bmc_static_node_status
 
 - name: Set bmc_static_nodes

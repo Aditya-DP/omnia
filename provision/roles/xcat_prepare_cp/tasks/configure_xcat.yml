@@ -69,6 +69,7 @@
   changed_when: true
 
 - name: Configure DHCP routing settings
+  when: primary_dns | length > 1
   block:
     - name: Configure site table
       ansible.builtin.command: chdef -t site nameservers="{{ primary_dns }}"
@@ -79,7 +80,6 @@
       ansible.builtin.command: chdef -t site nameservers="{{ primary_dns }}, {{ secondary_dns }}"
       changed_when: true
       when: secondary_dns | length > 1
-  when: primary_dns | length > 1
 
 - name: Configure domain in site table
   ansible.builtin.command: chdef -t site domain="{{ domain_name }}"
@@ -123,7 +123,5 @@
     mode: preserve
 
 - name: Reload systemd
-  ansible.builtin.command: systemctl daemon-reload
-  changed_when: true
-  args:
-    warn: false
+  ansible.builtin.systemd:
+    daemon_reload: true

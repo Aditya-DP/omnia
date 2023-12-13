@@ -3,7 +3,7 @@
 [ -d /opt/omnia ] || mkdir /opt/omnia
 [ -d /var/log/omnia ] || mkdir /var/log/omnia
 
-default_py_version="3.8"
+default_py_version="3.9"
 validate_rocky_os="$(cat /etc/os-release | grep 'ID="rocky"' | wc -l)"
 
 sys_py_version="$(python3 --version)"
@@ -17,22 +17,38 @@ then
  dnf install epel-release -y
 fi
 
-if [[ $(echo $sys_py_version | grep "3.8" | wc -l) != "1" || $(echo $sys_py_version | grep "Python" | wc -l) != "1" ]];
+if [[ $(echo $sys_py_version | grep "3.9" | wc -l) != "1" || $(echo $sys_py_version | grep "Python" | wc -l) != "1" ]];
 then
  echo "----------------------"
- echo "INSTALLING PYTHON 3.8:"
+ echo "INSTALLING PYTHON 3.9:"
  echo "----------------------"
- dnf install python38 -y
+ dnf install python39 -y
 fi
 echo "--------------"
 echo "UPGRADING PIP:"
 echo "--------------"
-pip3.8 install --upgrade pip
+python3.9 -m pip install --upgrade pip
 echo "-------------------"
 echo "INSTALLING ANSIBLE:"
 echo "-------------------"
-python3.8 -m pip install ansible==5.10.0
-python3.8 -m pip install jinja2==3.1.2
+
+installed_ansible_version=$( ansible --version 2>/dev/null | grep -oP 'ansible \[core \K\d+\.\d+\.\d+' | sed 's/]//')
+target_ansible_version="2.14.12"
+
+if [[ ! -z "$installed_ansible_version" && "$(echo -e "$installed_ansible_version\n$target_ansible_version" | sort -V | tail -n1)" != "$target_ansible_version" ]];
+then
+    echo "Error: Higher version of Ansible ($installed_ansible_version) is already installed. Please uninstall the existing ansible and re-run the prereq.sh again to install $target_ansible_version"
+    exit 1
+fi
+
+if [[ ! -z "$installed_ansible_version" && "$(echo -e "$installed_ansible_version\n$target_ansible_version" | sort -V | head -n1)" != "$target_ansible_version" ]];
+then
+    echo "Warning: prereq.sh is uninstalling the existing Ansible ($installed_ansible_version) and installing the $target_ansible_version"
+fi
+
+python3.9 -m pip install ansible==7.7.0
+python3.9 -m pip install jinja2==3.1.2
+
 dnf install git-lfs -y
 git lfs pull
 
@@ -57,3 +73,4 @@ echo ""
 echo "Once IP and hostname is set, provide inputs in input/provision_config.yml and execute the playbook provision/provision.yml"
 echo ""
 echo "For more information: https://omnia-doc.readthedocs.io/en/latest/InstallationGuides/InstallingProvisionTool/index.html"
+

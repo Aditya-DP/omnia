@@ -60,6 +60,7 @@
     line: 'md_pxe_nic_ip: {{ admin_nic_ip }}'
 
 - name: Update metadata.yml file for bmc discovery_mechanism
+  when: discovery_mechanism == 'bmc'
   block:
     - name: Update md_bmc_static_start_range
       ansible.builtin.lineinfile:
@@ -76,7 +77,6 @@
         insertafter: "EOF"
         state: present
         line: 'md_bmc_static_end_range: {{ bmc_static_end_range }}'
-  when: discovery_mechanism == 'bmc'
 
 - name: Update md_bmc_nic_subnet
   ansible.builtin.lineinfile:

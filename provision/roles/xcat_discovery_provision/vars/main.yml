@@ -50,8 +50,8 @@ dns_config_warning_msg: "[WARNING] makedns -n command is not successful. Error:"
 psql_devel_packages:
   - postgresql-devel
   - python3-devel
-python_version: python3.8
+python_version: python3.9
 omnia_service_shell_file_path: /opt/omnia/omnia_service_script.sh
-omnia_service_shell_file_permissions: 0777
+omnia_service_shell_file_permissions: "0777"
 omnia_service_path: /etc/systemd/system/omnia.service
-omnia_service_file_permissions: 0644
+omnia_service_file_permissions: "0644"

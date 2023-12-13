@@ -17,7 +17,7 @@
 os_supported_rhel: "redhat"
 rhsm_release_file_path: "/opt/omnia/.data/rhsm_release"
 osimage_search_key: install-compute
-directory_permissions: 0755
+directory_permissions: "0755"
 
 # Usage: create_mount_overlay.yml
 base_dir: "/install/rhels{{ provision_os_version }}.0"

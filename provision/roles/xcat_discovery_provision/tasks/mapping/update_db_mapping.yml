@@ -14,6 +14,7 @@
 ---
 
 - name: DB updates for mapping
+  when: discovery_mechanism | lower == discovery_method_mapping
   block:
     - name: Integrate mapping file with DB
       ansible.builtin.command: |
@@ -31,4 +32,3 @@
         {{ python_version }} {{ mapping_ib_path }} {{ temp_mapping_file_path }} {{ ib_nic_subnet }} {{ roce_enabled }}
       changed_when: true
       when: ib_nic_subnet | length > 6
-  when: discovery_mechanism | lower == discovery_method_mapping

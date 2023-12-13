@@ -45,11 +45,9 @@
   delay: "{{ max_delay }}"
 
 - name: Install containerd
-  ansible.builtin.command: rpm --install --nodeps --replacefiles --excludepath=/usr/bin/runc {{ containerd_rpm_dest }}
+  ansible.builtin.command: rpm --install --nodeps --replacefiles --excludepath=/usr/bin/runc {{ containerd_rpm_dest }} # noqa: command-instead-of-module
   changed_when: true
   failed_when: false
-  args:
-    warn: false
 
 - name: Enable docker-ce-stable
   ansible.builtin.command: dnf config-manager --enable docker-ce-stable
@@ -103,10 +101,8 @@
   with_items: "{{ docker_registry_path }}"
 
 - name: Reload systemd
-  ansible.builtin.command: systemctl daemon-reload
-  changed_when: true
-  args:
-    warn: false
+  ansible.builtin.systemd:
+    daemon_reload: true
 
 - name: Enable docker-registry service
   block:

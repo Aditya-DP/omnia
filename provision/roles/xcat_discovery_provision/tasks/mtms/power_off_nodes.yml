@@ -14,6 +14,7 @@
 ---
 
 - name: Task to power off the nodes for BMC
+  when: discovery_mechanism | lower == discovery_method_bmc
   block:
     - name: Power off the node - {{ item }}
       ansible.builtin.command: rpower {{ item }} off
@@ -24,4 +25,3 @@
       ansible.builtin.debug:
         msg: "{{ mtms_poweroff_warning_msg }} {{ power_off_status.stderr }}"
       when: power_off_status.stderr is defined
-  when: discovery_mechanism | lower == discovery_method_bmc

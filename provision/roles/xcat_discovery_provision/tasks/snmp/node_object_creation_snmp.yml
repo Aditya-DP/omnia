@@ -19,6 +19,7 @@
   register: pxe_mapping_path_status
 
 - name: Create node object from mapping file created by snmp utility
+  when: discovery_mechanism | lower == discovery_method_snmp
   block:
     - name: Fetch all node object list
       ansible.builtin.command: lsdef all -i mac
@@ -27,7 +28,7 @@
       register: node_mac_list
 
     - name: Read mapping file created by snmp utility
-      ansible.builtin.read_csv:
+      community.general.read_csv:
         path: "{{ pxe_mapping_path }}"
       register: utility_mapping_file_output
 
@@ -41,4 +42,3 @@
       loop_control:
         index_var: idx2
       when: utility_mapping_file_output.list[idx2].MAC | lower not in node_mac_list.stdout | lower
-  when: discovery_mechanism | lower == discovery_method_snmp

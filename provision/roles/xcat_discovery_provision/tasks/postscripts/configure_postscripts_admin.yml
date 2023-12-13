@@ -32,11 +32,10 @@
       with_items: "{{ configeth_patch_path }}"
 
     - name: Patch configeth script file
-      ansible.builtin.shell: patch configeth < configeth.patch
+      ansible.builtin.shell: patch configeth < configeth.patch # noqa: command-instead-of-module
       changed_when: true
       args:
         chdir: "{{ postscripts_path }}"
-        warn: false
 
     - name: Delete configeth script patch
       ansible.builtin.file:

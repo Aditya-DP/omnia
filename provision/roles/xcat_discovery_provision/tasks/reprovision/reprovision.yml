@@ -26,4 +26,4 @@
 
 - name: Reprovision Report
   ansible.builtin.debug:
-    var=py_output.stdout_lines
+    msg: "{{ py_output.stdout_lines }}"

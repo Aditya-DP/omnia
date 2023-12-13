@@ -21,12 +21,14 @@
 
 - name: Unset subscription-manager release if not set initially
   ansible.builtin.command: subscription-manager release --unset
+  changed_when: true
   when:
     - "'Release' in rhsm_release_file_output.stdout"
     - "'not set' in rhsm_release_file_output.stdout"
 
 - name: Set subscription-manager release to old version
   ansible.builtin.command: subscription-manager release --set "{{ rhsm_release_file_output.stdout.split(' ')[-1] }}"
+  changed_when: true
   when:
     - "'Release' in rhsm_release_file_output.stdout"
     - "'not set' not in rhsm_release_file_output.stdout"

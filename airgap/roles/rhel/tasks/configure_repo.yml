@@ -14,6 +14,11 @@
 ---
 
 - name: Configure updates repo to osimage
+  environment:
+    XCATROOT: "{{ xcat_root_env }}"
+    PATH: "{{ ansible_env.PATH }}:{{ xcat_path_env }}"
+    MANPATH: "{{ xcat_manpath_env }}"
+    PERL_BADLANG: "{{ perl_badlang_env }}"
   block:
     - name: Fetch xcat osimage name for provision_os
       ansible.builtin.shell: >
@@ -44,8 +49,3 @@
     - name: Configure repos to osimage
       ansible.builtin.command: chdef -t osimage -o {{ provision_os_image }} -p pkgdir={{ updates_appstream_dir }},{{ updates_baseos_dir }}
       changed_when: true
-  environment:
-    XCATROOT: "{{ xcat_root_env }}"
-    PATH: "{{ ansible_env.PATH }}:{{ xcat_path_env }}"
-    MANPATH: "{{ xcat_manpath_env }}"
-    PERL_BADLANG: "{{ perl_badlang_env }}"

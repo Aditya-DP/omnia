@@ -36,6 +36,7 @@
     - not xcat_installation_status
 
 - name: Check if copycds has ran successfully
+  when: compute_os_rhel_status
   block:
     - name: Verify the repo folder path created by iso
       ansible.builtin.stat:
@@ -46,7 +47,6 @@
       ansible.builtin.fail:
         msg: "{{ rhel_repo_folder_path_missing_msg }}"
       when: not result_rhel_repo_folder_path.stat.exists
-  when: compute_os_rhel_status
 
 - name: Install required packages
   ansible.builtin.package:

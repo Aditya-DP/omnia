@@ -23,7 +23,7 @@
     ofed_config_status: true
   when: mlnx_ofed_path | default("", true) | length > 1
 
-- name: Warning - waiting for {{ warning_wait_time }} seconds
+- name: Warning - Please wait, This task will take few seconds
   ansible.builtin.pause:
     seconds: "{{ warning_wait_time }}"
     prompt: "{{ ofed_iso_empty_msg }}"
@@ -42,7 +42,7 @@
     - ofed_config_status
     - not verify_ofed_path.stat.exists
 
-- name: Warning - waiting for {{ warning_wait_time }} seconds
+- name: Warning - Please wait, This task will take few seconds
   ansible.builtin.pause:
     seconds: "{{ warning_wait_time }}"
     prompt: "{{ ofed_iso_warning_msg }}"
@@ -57,7 +57,7 @@
     cuda_config_status: true
   when: cuda_toolkit_path | default("", true) | length > 1
 
-- name: Warning - waiting for {{ warning_wait_time }} seconds
+- name: Warning - Please wait, This task will take few seconds
   ansible.builtin.pause:
     seconds: "{{ warning_wait_time }}"
     prompt: "{{ cuda_rpm_empty_msg }}"

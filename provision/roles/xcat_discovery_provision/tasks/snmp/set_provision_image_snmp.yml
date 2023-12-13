@@ -14,6 +14,9 @@
 ---
 
 - name: Task for set osimage to node object for snmp
+  when:
+    - discovery_mechanism | lower == discovery_method_snmp
+    - snmp_node_status
   block:
     - name: Set osimage to node object for snmp
       ansible.builtin.command: nodeset {{ snmp_node_group }} osimage={{ provision_os_image }}
@@ -28,6 +31,3 @@
       ansible.builtin.debug:
         msg: "{{ snmp_set_osimage_warning_msg }} {{ set_osimage_snmp.stderr }}"
       when: set_osimage_snmp.stderr is defined
-  when:
-    - discovery_mechanism | lower == discovery_method_snmp
-    - snmp_node_status
