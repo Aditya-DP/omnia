@@ -74,19 +74,19 @@
     - login_node
   tags: freeipa
 
-- name: Apply ldap server installation and config
-  hosts: manager
-  gather_facts: false
-  roles:
-    - ldap_server
-  tags: test
-
 - name: Validate ldap server inputs
   hosts: localhost
   any_errors_fatal: true
   gather_facts: false
   roles:
     - ldap_validation
+  tags: test
+
+- name: Apply ldap server installation and config
+  hosts: manager
+  gather_facts: false
+  roles:
+    - ldap_server
   tags: test
 
 - name: Apply ldap client installation and config
