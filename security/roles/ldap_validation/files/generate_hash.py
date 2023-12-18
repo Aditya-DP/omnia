@@ -11,10 +11,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
----
 
-- name: Validate LDAP inputs
-  ansible.builtin.include_tasks: validate_input.yml
+'''
+Module to generate password hashes for OpenLDAP.
+'''
 
-- name: Prepare OpenLDAP variables
-  ansible.builtin.include_tasks: ldap_prereq.yml
+from passlib.hash import ldap_sha1 as lsm
+import sys
+
+"""
+    Get the hash of a given password.
+
+    Parameters:
+        passwd (str): The password to be hashed.
+
+    Returns:
+        str: The hashed password.
+"""
+def get_hash(passwd):
+    hash = lsm.hash(passwd)
+    return hash
+if __name__ == "__main__":
+    print(get_hash(sys.argv[1]))
