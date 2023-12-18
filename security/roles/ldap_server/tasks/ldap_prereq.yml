@@ -35,9 +35,7 @@
       cmd: "openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj /C=/ST=/L=/O=/CN= -keyout {{ TLS_Cetificates_directory_path }}/ldapserver.key  -out {{ TLS_Cetificates_directory_path }}/ldapserver.crt"
 
 - name: Genarate password hash for OpenLDAP config
-  ansible.builtin.command:
-    cmd: "{{ python_version }} {{ hashing_python_file }}"
-    argv: "{{ hostvars['127.0.0.1']['openldap_config_root_password'] }}"
+  ansible.builtin.command: "{{ python_version }} {{ hashing_python_file }} {{ hostvars['127.0.0.1']['openldap_config_root_password'] }}"
   register: password_hash
 
 - name: Set variables for OpenLDAP config password
@@ -45,9 +43,7 @@
     ldaptoolbox_openldap_config_olcRootPW_hash: password_hash
 
 - name: Genarate password hashes for OpenLDAP database
-  ansible.builtin.command:
-    cmd: "{{ python_version }} {{ hashing_python_file }}"
-    argv: "{{ hostvars['127.0.0.1']['openldap_database_root_password'] }}"
+  ansible.builtin.command: "{{ python_version }} {{ hashing_python_file }} {{ hostvars['127.0.0.1']['openldap_database_root_password'] }}"
   register: password_hash
 
 - name: Set variables for OpenLDAP database password
