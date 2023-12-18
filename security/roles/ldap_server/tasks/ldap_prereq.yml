@@ -55,9 +55,7 @@
     ldaptoolbox_openldap_database_olcRootPW_hash: password_hash
 
 - name: Genarate password hashes for OpenLDAP monitor
-  ansible.builtin.command:
-    cmd: "{{ python_version }} {{ hashing_python_file }}"
-    argv: "{{ hostvars['127.0.0.1']['openldap_monitor_root_password'] }}"
+  ansible.builtin.command: "{{ python_version }} {{ hashing_python_file }} {{ hostvars['127.0.0.1']['openldap_monitor_root_password'] }}"
   register: password_hash
 
 - name: Set variables for OpenLDAP monitor password
