@@ -63,4 +63,4 @@
 
 - name: Print ansible_facts
   debug:
-    var: ansible_facts
+    var: hostvars
