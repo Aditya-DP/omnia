@@ -13,8 +13,8 @@
 # limitations under the License.
 ---
 
-- name: Include input parameter file
-  ansible.builtin.include_vars: "{{ role_path }}/"
+# - name: Include input parameter file
+#   ansible.builtin.include_vars: "{{ role_path }}/"
 
 - name: Prepare OpenLDAP variables
   ansible.builtin.include_tasks: ldap_prereq.yml
