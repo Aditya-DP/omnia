@@ -16,5 +16,5 @@
 - name: Validate LDAP inputs
   ansible.builtin.include_tasks: validate_input.yml
 
-- name: Prepare OpenLDAP variables
-  ansible.builtin.include_tasks: ldap_prereq.yml
+# - name: Prepare OpenLDAP variables
+#   ansible.builtin.include_tasks: ldap_prereq.yml
