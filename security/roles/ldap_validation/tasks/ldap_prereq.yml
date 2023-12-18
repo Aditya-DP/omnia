@@ -14,7 +14,6 @@
 ---
 
 - name: Genarate password hash for OpenLDAP config
-  delegate_to: localhost
   ansible.builtin.command: "{{ python_version }} {{ hashing_python_file }} {{ hostvars['127.0.0.1']['openldap_config_root_password'] }}"
   register: password_hash
 
@@ -23,7 +22,6 @@
     ldaptoolbox_openldap_config_olcRootPW_hash: password_hash
 
 - name: Genarate password hashes for OpenLDAP database
-  delegate_to: localhost
   ansible.builtin.command: "{{ python_version }} {{ hashing_python_file }} {{ hostvars['127.0.0.1']['openldap_database_root_password'] }}"
   register: password_hash
 
@@ -32,7 +30,6 @@
     ldaptoolbox_openldap_database_olcRootPW_hash: password_hash
 
 - name: Genarate password hashes for OpenLDAP monitor
-  delegate_to: localhost
   ansible.builtin.command: "{{ python_version }} {{ hashing_python_file }} {{ hostvars['127.0.0.1']['openldap_monitor_root_password'] }}"
   register: password_hash
 
