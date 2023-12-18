@@ -61,6 +61,3 @@
   ansible.builtin.set_fact:
     ldaptoolbox_openldap_monitor_olcRootPW_hash: "{{ password_hash.stdout }}"
 
-- name: Print ansible_facts
-  debug:
-    var: hostvars
