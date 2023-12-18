@@ -1,0 +1,14 @@
+# Custom ldif schema
+dn: dc=omnia,dc=test
+objectClass: top
+objectClass: dcObject
+objectclass: organization
+o: omnia
+
+dn: ou=People,dc=omnia,dc=test
+objectClass: organizationalUnit
+ou: People
+
+dn: ou=Group,dc=omnia,dc=test
+objectClass: organizationalUnit
+ou: Group

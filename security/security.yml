@@ -21,7 +21,7 @@
       ansible.builtin.include_role:
         name: security_validation
         tasks_from: validation_status_check.yml
-  tags: freeipa, ldap
+  tags: freeipa, ldap, test
 
 - name: Gather facts from all the nodes
   hosts: manager, compute, login
@@ -50,7 +50,7 @@
       ansible.builtin.include_role:
         name: hostname_validation
         tasks_from: validate_hostname.yml
-  tags: freeipa, ldap
+  tags: freeipa, ldap, test
 
 - name: Apply login common installation and config
   hosts: manager, login, compute
@@ -73,6 +73,21 @@
   roles:
     - login_node
   tags: freeipa
+
+- name: Apply ldap server installation and config
+  hosts: manager
+  gather_facts: false
+  roles:
+    - ldap_server
+  tags: test
+
+- name: Validate ldap server inputs
+  hosts: localhost
+  any_errors_fatal: true
+  gather_facts: false
+  roles:
+    - ldap_validation
+  tags: test
 
 - name: Apply ldap client installation and config
   hosts: manager, compute, login

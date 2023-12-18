@@ -1,0 +1,47 @@
+# Copyright 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+
+ltb_ansible_role_path: "/opt/omnia/ldap/ansible-role-ldaptoolbox-openldap"
+
+ldaptoolbox_openldap_config_olcRootDN: "cn={{ hostvars['127.0.0.1']['openldap_config_root_username'] }},{{ ldaptoolbox_openldap_suffix }}"
+ldaptoolbox_openldap_database_olcRootDN: "cn={{ hostvars['127.0.0.1']['openldap_database_root_username'] }},{{ ldaptoolbox_openldap_suffix }}"
+ldaptoolbox_openldap_monitor_olcRootDN: "cn=monitor"
+
+python_version: python3.8
+hashing_python_file: "{{ role_path }}/files/generate.hash.py"
+
+directory_perm: "0700"
+
+# OpenLDAP configuration
+################################################################################
+
+# # Custom schemas
+# ldaptoolbox_openldap_custom_schema_srcdir: "../files/custom.ldif"
+# ldaptoolbox_openldap_custom_schema_list: [custom.ldif]
+# ldaptoolbox_openldap_schema_dir: /usr/local/openldap/etc/openldap/schema
+
+# Certificates
+ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ '' if ansible_os_family == 'RedHat' else '/etc/ssl/certs/ca-certificates.crt' }}"
+ldaptoolbox_openldap_olcTLSCertificateFile: "{{ '' if ansible_os_family == 'RedHat' else '/etc/ssl/certs/ssl-cert-snakeoil.pem' }}"
+ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ '' if ansible_os_family == 'RedHat' else '/etc/ssl/private/ssl-cert-snakeoil.key' }}"
+
+
+##########################
+# General OpenLDAP options
+##########################
+
+ldaptoolbox_olcPasswordHash: "{SSHA}"
+
+

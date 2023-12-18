@@ -1,0 +1,65 @@
+# Copyright 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+
+- name: Set domain for OpenLDAP
+  ansible.builtin.set_fact:
+    ldaptoolbox_openldap_suffix: "{{ (hostvars['127.0.0.1']['domain_name'].split('.') | map('regex_replace', '^', 'dc=') | list) | join(',') }}"
+
+- name: Create default Certificates
+  when: hostvars['127.0.0.1']['TLS_Cetificates_directory_path'] is not defined or hostvars['127.0.0.1']['TLS_Cetificates_directory_path'] == ''
+  block:
+  - name: Set default tls certificate path when input not provided
+    ansible.builtin.set_fact:
+      TLS_Cetificates_directory_path: "/etc/ssl/certs"
+
+  - name: Create Certificate directory if not present
+    ansible.builtin.file:
+      path: "{{ TLS_Cetificates_directory_path }}"
+      state: directory
+      mode: "{{ directory_perm }}"
+
+  - name: Generate TLS certificates
+    ansible.builtin.command:
+      cmd: "openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj /C=/ST=/L=/O=/CN= -keyout {{ TLS_Cetificates_directory_path }}/ldapserver.key  -out {{ TLS_Cetificates_directory_path }}/ldapserver.crt"
+
+- name: Genarate password hash for OpenLDAP config
+  ansible.builtin.command:
+    cmd: "{{ python_version }} {{ hashing_python_file }}"
+    argv: "{{ hostvars['127.0.0.1']['openldap_config_root_password'] }}"
+  register: password_hash
+
+- name: Set variables for OpenLDAP config password
+  ansible.builtin.set_fact:
+    ldaptoolbox_openldap_config_olcRootPW_hash: password_hash
+
+- name: Genarate password hashes for OpenLDAP database
+  ansible.builtin.command:
+    cmd: "{{ python_version }} {{ hashing_python_file }}"
+    argv: "{{ hostvars['127.0.0.1']['openldap_database_root_password'] }}"
+  register: password_hash
+
+- name: Set variables for OpenLDAP database password
+  ansible.builtin.set_fact:
+    ldaptoolbox_openldap_database_olcRootPW_hash: password_hash
+
+- name: Genarate password hashes for OpenLDAP monitor
+  ansible.builtin.command:
+    cmd: "{{ python_version }} {{ hashing_python_file }}"
+    argv: "{{ hostvars['127.0.0.1']['openldap_monitor_root_password'] }}"
+  register: password_hash
+
+- name: Set variables for OpenLDAP monitor password
+  ansible.builtin.set_fact:
+    ldaptoolbox_openldap_monitor_olcRootPW_hash: password_hash
