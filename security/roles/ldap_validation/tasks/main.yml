@@ -13,5 +13,5 @@
 # limitations under the License.
 ---
 
-- name: Prepare OpenLDAP variables
-  ansible.builtin.include_tasks: ldap_prereq.yml
+- name: Validate LDAP inputs
+  ansible.builtin.include_tasks: validate_input.yml
