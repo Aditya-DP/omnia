@@ -35,7 +35,7 @@
       cmd: "openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj /C=/ST=/L=/O=/CN= -keyout {{ TLS_Cetificates_directory_path }}/ldapserver.key  -out {{ TLS_Cetificates_directory_path }}/ldapserver.crt"
 
 - name: Genarate password hash for OpenLDAP config
-  # delegate_to: localhost
+  delegate_to: localhost
   ansible.builtin.script: 
     cmd: "{{ python_version }} {{ hashing_python_file }} {{ hostvars['127.0.0.1']['openldap_config_root_password'] }}"
     executable: /usr/bin/python3.8
