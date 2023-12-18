@@ -57,7 +57,7 @@
     fail_msg: "{{ fail_msg_monitor_root_password }}"
 
 - name: Validate Certificate directory
-  when: TLS_Cetificates_directory_path is not defined or TLS_Cetificates_directory_path == ''
+  when: TLS_Cetificates_directory_path != ''
   block:
   - name: Check TLS certificate directory exists
     ansible.builtin.stat:

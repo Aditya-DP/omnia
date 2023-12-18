@@ -18,7 +18,7 @@
     ldaptoolbox_openldap_suffix: "{{ (hostvars['127.0.0.1']['domain_name'].split('.') | map('regex_replace', '^', 'dc=') | list) | join(',') }}"
 
 - name: Create default Certificates
-  when: hostvars['127.0.0.1']['TLS_Cetificates_directory_path'] is not defined or hostvars['127.0.0.1']['TLS_Cetificates_directory_path'] == ''
+  when: hostvars['127.0.0.1']['TLS_Cetificates_directory_path'] == ''
   block:
   - name: Set default tls certificate path when input not provided
     ansible.builtin.set_fact:
