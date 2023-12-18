@@ -23,6 +23,3 @@ ldap_cert_path_fail_msg: "LDAP cert path dont exist."
 
 min_length: 8
 max_length: 30
-
-python_version: python3.8
-hashing_python_file: "{{ role_path }}/files/generate.hash.py"

@@ -60,3 +60,7 @@
 - name: Set variables for OpenLDAP monitor password
   ansible.builtin.set_fact:
     ldaptoolbox_openldap_monitor_olcRootPW_hash: password_hash
+
+- name: Print ansible_facts
+  debug:
+    var: ansible_facts
