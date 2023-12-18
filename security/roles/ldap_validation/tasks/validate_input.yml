@@ -56,12 +56,15 @@
     success_msg: "{{ success_msg_monitor_root_password }}"
     fail_msg: "{{ fail_msg_monitor_root_password }}"
 
-- name: Check TLS certificate directory exists
-  ansible.builtin.stat:
-    path: "{{ TLS_Cetificates_directory_path }}"
-    register: tls_directory
+- name: Validate Certificate directory
+  when: TLS_Cetificates_directory_path is not defined or TLS_Cetificates_directory_path == ''
+  block:
+  - name: Check TLS certificate directory exists
+    ansible.builtin.stat:
+      path: "{{ TLS_Cetificates_directory_path }}"
+      register: tls_directory
 
-- name: Fail if TLS certificate directory not exists
-  ansible.builtin.fail:
-    msg: "{{ ldap_home_dir_fail_msg }}"
-  when: not tls_directory.stat.exists
+  - name: Fail if TLS certificate directory not exists
+    ansible.builtin.fail:
+      msg: "{{ ldap_home_dir_fail_msg }}"
+    when: not tls_directory.stat.exists
