@@ -108,7 +108,7 @@
 
 - name: Install libssl
   ansible.builtin.apt:
-    deb: "{{ libssl_package_url }}"
+    deb: "{{ libssl_package_dest }}"
 
 - name: Install xCAT and postgres packages
   ansible.builtin.package:
