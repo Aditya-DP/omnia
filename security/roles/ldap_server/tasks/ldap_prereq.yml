@@ -22,7 +22,7 @@
   block:
   - name: Set default tls certificate path when input not provided
     ansible.builtin.set_fact:
-      TLS_Cetificates_directory_path: "/etc/ssl/certs"
+      TLS_Cetificates_directory_path: "/etc/pki/tls/certs/"
 
   - name: Create Certificate directory if not present
     ansible.builtin.file:
