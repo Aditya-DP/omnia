@@ -40,7 +40,18 @@
 - name: Gathering service facts
   ansible.builtin.service_facts:
 
-- name: Set xcat_installation_status to true
+- name: Set xcat_installation_status to true for RHEL/Rocky
+  ansible.builtin.set_fact:
+    xcat_installation_status: true
+  when:
+    - "'xcatd.service' in ansible_facts.services"
+    - "'postgresql.service' in ansible_facts.services"
+    - "'running' in ansible_facts.services['xcatd.service'].state"
+    - "'running' in ansible_facts.services['postgresql.service'].state"
+    - control_plane_os in control_plane_os_redhat or
+      control_plane_os in control_plane_os_rocky
+
+- name: Set xcat_installation_status to true for ubuntu
   ansible.builtin.set_fact:
     xcat_installation_status: true
   when:
@@ -48,6 +59,7 @@
     - "'postgresql' in ansible_facts.services"
     - "'running' in ansible_facts.services['xcatd'].state"
     - "'running' in ansible_facts.services['postgresql'].state"
+    - control_plane_os in control_plane_os_ubuntu
 
 - name: Fail if xcat_installation_status is false
   ansible.builtin.fail:
