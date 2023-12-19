@@ -33,9 +33,9 @@ directory_perm: "0700"
 # ldaptoolbox_openldap_schema_dir: /usr/local/openldap/etc/openldap/schema
 
 # Certificates
-ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ '' if ansible_os_family == 'RedHat' else '/etc/ssl/certs/ca-certificates.crt' }}"
-ldaptoolbox_openldap_olcTLSCertificateFile: "{{ '' if ansible_os_family == 'RedHat' else '/etc/ssl/certs/ssl-cert-snakeoil.pem' }}"
-ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ '' if ansible_os_family == 'RedHat' else '/etc/ssl/private/ssl-cert-snakeoil.key' }}"
+# ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ '' if ansible_os_family == 'RedHat' else '/etc/ssl/certs/ca-certificates.crt' }}"
+# ldaptoolbox_openldap_olcTLSCertificateFile: "{{ '' if ansible_os_family == 'RedHat' else '/etc/ssl/certs/ssl-cert-snakeoil.pem' }}"
+# ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ '' if ansible_os_family == 'RedHat' else '/etc/ssl/private/ssl-cert-snakeoil.key' }}"
 
 
 ##########################
