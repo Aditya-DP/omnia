@@ -18,7 +18,7 @@ ltb_ansible_role_path: "/opt/omnia/ldap/ansible-role-ldaptoolbox-openldap"
 ldaptoolbox_openldap_config_olcRootDN: "cn={{ hostvars['127.0.0.1']['openldap_config_root_username'] }},{{ ldaptoolbox_openldap_suffix }}"
 ldaptoolbox_openldap_database_olcRootDN: "cn={{ hostvars['127.0.0.1']['openldap_database_root_username'] }},{{ ldaptoolbox_openldap_suffix }}"
 ldaptoolbox_openldap_monitor_olcRootDN: "cn=monitor"
-
+ldaptoolbox_openldap_syncrepl_password_vault: ""
 python_version: python3.8
 hashing_python_file: "{{ role_path }}/files/generate_hash.py"
 
