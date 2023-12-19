@@ -41,7 +41,7 @@
 - name: Gathering service facts
   ansible.builtin.service_facts:
 
-- name: Set xcat_installation_status to true
+- name: Set xcat_installation_status to true for RHEL/Rocky
   ansible.builtin.set_fact:
     xcat_installation_status: true
   when:
