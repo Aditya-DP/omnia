@@ -87,6 +87,7 @@
   gather_facts: false
   roles:
     - ldap_server
+    - /opt/omnia/ldap/ansible-role-ldaptoolbox-openldap
   tags: test
 
 - name: Apply ldap client installation and config
