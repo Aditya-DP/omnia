@@ -25,7 +25,7 @@
     psql_version: "{{ check_psql_version.stdout.split('.')[0] }}"
 
 - name: Update postgres version pgsqlsetup script in ubuntu
-  ansible.builtin.replace: 
+  ansible.builtin.replace:
     path: "{{ pgsqlsetup_path }}"
     regexp: "9.1"
     replace: "{{ psql_version }}"
@@ -57,7 +57,7 @@
     mode: preserve
 
 - name: Reload systemd
-  ansible.builtin.systemd: 
+  ansible.builtin.systemd:
     daemon-reload: true
 
 - name: Replace peer to trust in pg_hba.conf
@@ -74,7 +74,7 @@
   register: pg_hba_conf_update
 
 - name: Restart postgresql service
-  ansible.builtin.systemd: 
+  ansible.builtin.systemd:
     name: "postgresql@{{ psql_version }}-main.service"
     state: restarted
-  when: pg_hba_conf_update.changed == true
+  when: pg_hba_conf_update.changed # noqa: no-handler

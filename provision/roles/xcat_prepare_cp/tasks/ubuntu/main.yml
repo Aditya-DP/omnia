@@ -25,5 +25,8 @@
   ansible.builtin.include_tasks: install_xcat.yml
   when: not xcat_installation_status
 
+- name: Configure dhcp
+  ansible.builtin.include_tasks: configure_dhcp.yml
+
 - name: Configure postgres
   ansible.builtin.include_tasks: configure_postgres.yml

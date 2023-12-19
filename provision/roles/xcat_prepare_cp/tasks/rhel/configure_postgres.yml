@@ -26,7 +26,7 @@
     state: started
     enabled: true
   with_items: "{{ xcat_services }}"
-  
+
 - name: Create conf directory for postgresql in rhel/rocky
   ansible.builtin.file:
     path: "{{ postgresql_conf_dir }}"
@@ -40,5 +40,5 @@
     mode: preserve
 
 - name: Reload systemd
-  ansible.builtin.systemd: 
+  ansible.builtin.systemd:
     daemon-reload: true

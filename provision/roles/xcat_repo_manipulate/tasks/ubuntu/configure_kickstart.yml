@@ -21,7 +21,7 @@
   with_items: "{{ xcat_ubuntu_path }}"
 
 - name: Ubuntu 22.04 configuration
-  when: 
+  when:
     - provision_os | lower == os_supported_ubuntu
     - provision_os_version | string in ubuntu22_version
   block:

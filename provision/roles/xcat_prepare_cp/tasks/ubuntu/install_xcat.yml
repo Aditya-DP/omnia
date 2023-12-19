@@ -83,7 +83,7 @@
   retries: "{{ max_retries }}"
 
 - name: Add xcat key to system
-  ansible.builtin.command:  "apt-key add {{ xcat_key_dest_ubuntu }}"
+  ansible.builtin.command: "apt-key add {{ xcat_key_dest_ubuntu }}"
   changed_when: true
 
 - name: Update root package installation permission
@@ -94,11 +94,11 @@
 
 - name: Apt clean
   ansible.builtin.apt:
-    clean: yes
+    clean: true
 
 - name: Apt update
   ansible.builtin.apt:
-    update_cache: yes
+    update_cache: true
 
 - name: Download libssl package
   ansible.builtin.get_url:
@@ -119,16 +119,3 @@
 - name: Save xcat enviornment variables
   ansible.builtin.shell: source {{ xcat_env_path }} && echo "{{ xcat_env_msg }}"
   changed_when: true
-
-- name: Untar omshell package
-  ansible.builtin.command: tar xvzf "{{ omshell_tar_src }}" -C "{{ role_path }}/files"
-  changed_when: true
-  register: untar_omshell
-  until: untar_omshell is not failed
-  retries: "{{ max_retries }}"
-
-- name: Copy omshell script
-  ansible.builtin.copy:
-    src: "{{ omshell_script_src }}"
-    dest: "{{ omshell_script_dest }}"
-    mode: "{{ file_permission }}"

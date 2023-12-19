@@ -61,7 +61,7 @@
       when:
         - cuda_config_status
         - cuda_repo_stat.stat.exists
-  
+
 - name: Postscripts for ubuntu
   when:
     - control_plane_os in control_plane_os_ubuntu
@@ -73,7 +73,7 @@
         mode: "{{ item.mode }}"
       with_items: "{{ ubuntu_postscripts_path }}"
 
-    - name: Configure postscripts to configure ssh 
+    - name: Configure postscripts to configure ssh
       ansible.builtin.command: chdef all -p postscripts=omnia_ssh_config_ubuntu
       changed_when: true
 

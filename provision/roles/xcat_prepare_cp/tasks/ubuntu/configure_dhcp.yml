@@ -13,15 +13,16 @@
 # limitations under the License.
 ---
 
-- name: Copy rsyslog.conf
-  ansible.builtin.copy:
-    src: "{{ rsyslog_src }}"
-    dest: "{{ rsyslog_dest }}"
-    mode: "{{ apt_file_mode }}"
-  register: copy_rsyslog
+- name: Untar omshell package
+  ansible.builtin.unarchive:
+    src: "{{ omshell_tar_src }}"
+    dest: "{{ role_path }}/files"
+  register: untar_omshell
+  until: untar_omshell is not failed
+  retries: "{{ max_retries }}"
 
-- name: Restart rsyslog service
-  ansible.builtin.systemd:
-    name: rsyslog.service
-    state: restarted
-  when: copy_rsyslog.changed # noqa: no-handler
+- name: Copy omshell script
+  ansible.builtin.copy:
+    src: "{{ omshell_script_src }}"
+    dest: "{{ omshell_script_dest }}"
+    mode: "{{ file_permission }}"

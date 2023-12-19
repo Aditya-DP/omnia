@@ -65,7 +65,8 @@ python3.9 -m pip install jinja2==3.1.2
 
 if [[ "$validate_ubuntu_os" == "1" ]];
 then
-    apt install git -y
+    apt install git git-lfs -y
+    git lfs pull
 else
     dnf install git-lfs -y
     git lfs pull
