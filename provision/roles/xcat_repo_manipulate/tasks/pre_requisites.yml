@@ -1,4 +1,4 @@
-# Copyright 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
+# Copyright 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,10 +44,10 @@
   ansible.builtin.set_fact:
     xcat_installation_status: true
   when:
-    - "'xcatd.service' in ansible_facts.services"
-    - "'postgresql.service' in ansible_facts.services"
-    - "'running' in ansible_facts.services['xcatd.service'].state"
-    - "'running' in ansible_facts.services['postgresql.service'].state"
+    - "'xcatd' in ansible_facts.services"
+    - "'postgresql' in ansible_facts.services"
+    - "'running' in ansible_facts.services['xcatd'].state"
+    - "'running' in ansible_facts.services['postgresql'].state"
 
 - name: Fail if xcat_installation_status is false
   ansible.builtin.fail:

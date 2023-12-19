@@ -13,20 +13,20 @@
 # limitations under the License.
 ---
 
-- name: Cleanup provision setup
-  ansible.builtin.import_tasks: clean_provision_setup.yml
-  tags: provision
+- name: Create kickstart
+  ansible.builtin.include_tasks: configure_kickstart.yml
 
-- name: Cleanup docker-registry setup
-  ansible.builtin.import_tasks: clean_docker_registry.yml
-  tags: provision, docker-registry
-  when:
-    - control_plane_os in control_plane_os_redhat or
-      control_plane_os in control_plane_os_rocky
+- name: User defined disk partition configuration
+  ansible.builtin.include_tasks: disk_partition.yml
+  when: disk_partition_configuration
 
-- name: Cleanup telemetry setup
-  ansible.builtin.import_tasks: clean_telemetry_setup.yml
-  tags: telemetry
+- name: Manage subscription-manager
+  ansible.builtin.include_tasks: manage_subscription_manager.yml
   when:
-    - control_plane_os in control_plane_os_redhat or
-      control_plane_os in control_plane_os_rocky
+    - update_repos
+    - os_supported_rhel in control_plane_os
+    - provision_os | lower == provision_os_rhel
+    - not rhel_repo_path_status
+
+- name: Create omnia repo
+  ansible.builtin.include_tasks: omnia_repo_config.yml

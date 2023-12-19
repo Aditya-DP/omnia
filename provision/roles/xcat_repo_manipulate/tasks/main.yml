@@ -33,26 +33,22 @@
     - name: Create xcat osimage
       ansible.builtin.include_tasks: create_osimage.yml
 
-    - name: User defined disk partition configuration
-      ansible.builtin.include_tasks: disk_partition.yml
-      when: disk_partition_configuration
-
-    - name: Enable internet access
-      ansible.builtin.include_tasks: internet_access.yml
-
     - name: Fetch osimage name
       ansible.builtin.include_tasks: fetch_osimage.yml
 
-    - name: Manage subscription-manager
-      ansible.builtin.include_tasks: manage_subscription_manager.yml
+    - name: Configure xCAT on rhel based OS
+      ansible.builtin.include_tasks: rhel/main.yml
       when:
-        - update_repos
-        - os_supported_rhel in control_plane_os
-        - provision_os | lower == provision_os_rhel
-        - not rhel_repo_path_status
+        - control_plane_os in control_plane_os_redhat or
+          control_plane_os in control_plane_os_rocky
 
-    - name: Create omnia repo
-      ansible.builtin.include_tasks: omnia_repo_config.yml
+    - name: Configure xCAT on ubuntu OS
+      ansible.builtin.include_tasks: ubuntu/main.yml
+      when:
+        - control_plane_os in control_plane_os_ubuntu
 
-    - name: Create omnia-common repo
+    - name: Configure postscripts
       ansible.builtin.include_tasks: postscripts/main.yml
+      when:
+        - control_plane_os in control_plane_os_redhat or
+          control_plane_os in control_plane_os_rocky

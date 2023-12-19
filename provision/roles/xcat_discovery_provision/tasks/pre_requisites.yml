@@ -45,10 +45,10 @@
   ansible.builtin.set_fact:
     xcat_installation_status: true
   when:
-    - "'xcatd.service' in ansible_facts.services"
-    - "'postgresql.service' in ansible_facts.services"
-    - "'running' in ansible_facts.services['xcatd.service'].state"
-    - "'running' in ansible_facts.services['postgresql.service'].state"
+    - "'xcatd' in ansible_facts.services"
+    - "'postgresql' in ansible_facts.services"
+    - "'running' in ansible_facts.services['xcatd'].state"
+    - "'running' in ansible_facts.services['postgresql'].state"
 
 - name: Fail if xcat_installation_status is false
   ansible.builtin.fail:
@@ -85,8 +85,8 @@
   when:
     - groups['all'] is defined
     - (groups['all'] | length > 0)
-    - "'xcatd.service' in ansible_facts.services"
-    - "'running' in ansible_facts.services['xcatd.service'].state"
+    - "'xcatd' in ansible_facts.services"
+    - "'running' in ansible_facts.services['xcatd'].state"
 
 - name: Warning - reprovision will be ignored
   ansible.builtin.pause:

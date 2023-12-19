@@ -13,20 +13,15 @@
 # limitations under the License.
 ---
 
-- name: Cleanup provision setup
-  ansible.builtin.import_tasks: clean_provision_setup.yml
-  tags: provision
+- name: Copy RHEL8 kickstart files to xcat configuration path
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode }}"
+  with_items: "{{ xcat_rhel8_path }}"
 
-- name: Cleanup docker-registry setup
-  ansible.builtin.import_tasks: clean_docker_registry.yml
-  tags: provision, docker-registry
-  when:
-    - control_plane_os in control_plane_os_redhat or
-      control_plane_os in control_plane_os_rocky
-
-- name: Cleanup telemetry setup
-  ansible.builtin.import_tasks: clean_telemetry_setup.yml
-  tags: telemetry
-  when:
-    - control_plane_os in control_plane_os_redhat or
-      control_plane_os in control_plane_os_rocky
+- name: Configure kickstart file - language
+  ansible.builtin.replace:
+    path: "{{ xcat_rhel8_tmpl }}"
+    regexp: '^lang ks_language'
+    replace: 'lang {{ language }}'

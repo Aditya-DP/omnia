@@ -13,13 +13,12 @@
 # limitations under the License.
 ---
 
-- name: Set control_plane_os
-  ansible.builtin.set_fact:
-    control_plane_os: "{{ ansible_distribution | lower }}"
-
-- name: Install common packages for provision
+- name: Install common packages for provision - rhel/rocky
+  when:
+    - control_plane_os in control_plane_os_redhat or
+      control_plane_os in control_plane_os_rocky
   block:
-    - name: Install common packages for provision
+    - name: Install common packages for provision - rhel/rocky
       ansible.builtin.package:
         name: "{{ common_packages_provision }}"
         state: present
@@ -27,6 +26,15 @@
     - name: Failed to install common packages for provision
       ansible.builtin.fail:
         msg: "{{ provision_package_fail_msg }}"
+
+- name: Install common packages for provision - ubuntu
+  when:
+    - control_plane_os in control_plane_os_ubuntu
+  block:
+    - name: Install common packages for provision - ubuntu
+      ansible.builtin.package:
+        name: "{{ common_packages_provision_ubuntu }}"
+        state: present
 
 - name: Install netaddr and pexpect
   ansible.builtin.command: "{{ pip_version }} install {{ item }}"

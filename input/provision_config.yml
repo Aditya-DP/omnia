@@ -223,11 +223,6 @@ rhel_repo_local_path:
   - { repo: "AppStream", repo_url: "", repo_name: "" }
   - { repo: "BaseOS", repo_url: "", repo_name: "" }
 
-#### Optional, discovery_mechanism: mapping or switch_based or bmc or snmpwalk
-# The DNS servers IP addresses for internet access on compute nodes(through DHCP routing)
-# If empty, a separate public internet nic should be present in compute nodes for internet access.
-primary_dns: ""
-secondary_dns: ""
 
 #### Optional, discovery_mechanism: mapping or switch_based or bmc or snmpwalk
 # User defined disk partition applied to remote servers

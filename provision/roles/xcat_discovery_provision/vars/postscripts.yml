@@ -22,6 +22,9 @@ mlnx_ofed_repo: /install/ofed
 cuda_core_path: /install/cuda/x86_64/cuda-core
 hostname_postscripts_path:
   - { src: "{{ role_path }}/files/postscripts/omnia_hostname", dest: "/install/postscripts/omnia_hostname", mode: "755" }
+ubuntu_postscripts_path:
+  - { src: "{{ role_path }}/files/postscripts/omnia_hostname_ubuntu", dest: "/install/postscripts/omnia_hostname_ubuntu", mode: "755" }
+  - { src: "{{ role_path }}/files/postscripts/omnia_ssh_config_ubuntu", dest: "/install/postscripts/omnia_ssh_config_ubuntu", mode: "755" }
 
 # Usage: check_nodes_all.yml
 all_nodes_warning_msg: "[WARNING] Not found any nodes using the given discovery mechanism.

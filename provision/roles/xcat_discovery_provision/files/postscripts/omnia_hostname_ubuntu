@@ -1,0 +1,14 @@
+#!/bin/bash
+################################################################################################################
+#  omnia_hostname_ubuntu:
+#      Configure hostname in all the cluster nodes in the format nodename.domainname
+#      Hostname should be in this format nodename.domainname to install centralized authentication tools like ipa
+#
+#################################################################################################################
+echo "---------------------------" >> /var/log/xcat/xcat.log
+echo "Configuring hostname" >> /var/log/xcat/xcat.log
+SET_HOSTNAME=$NODE.$DOMAIN
+echo "Setting hostname to: $SET_HOSTNAME" >> /var/log/xcat/xcat.log
+sudo hostnamectl set-hostname $SET_HOSTNAME
+sudo echo $SET_HOSTNAME > /etc/hostname
+echo "Configured hostname" >> /var/log/xcat/xcat.log

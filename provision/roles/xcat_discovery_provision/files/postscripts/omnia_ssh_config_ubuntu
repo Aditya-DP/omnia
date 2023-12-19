@@ -1,0 +1,10 @@
+#!/bin/bash
+################################################################################################################
+#  omnia_ssh_config_ubuntu:
+#      Server should be able to SSH after provisioning
+#
+#################################################################################################################
+echo "---------------------------" >> /var/log/xcat/xcat.log
+echo "Configuring ssh config" >> /var/log/xcat/xcat.log
+sed -i '/MaxStartups/d' /etc/ssh/sshd_config
+echo "Configured ssh config" >> /var/log/xcat/xcat.log

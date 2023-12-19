@@ -34,11 +34,8 @@
   failed_when: false
 
 - name: Reload systemd
-  ansible.builtin.command: systemctl daemon-reload
-  changed_when: true
-  failed_when: false
-  args:
-    warn: false
+  ansible.builtin.systemd:
+    daemon_reload: true
 
 - name: Remove docker packages
   ansible.builtin.command: dnf remove {{ docker_packages }} -y

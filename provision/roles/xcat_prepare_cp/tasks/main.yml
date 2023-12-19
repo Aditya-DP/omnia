@@ -20,23 +20,23 @@
     MANPATH: "{{ xcat_manpath_env }}"
     PERL_BADLANG: "{{ perl_badlang_env }}"
   block:
+    - name: Include xcat_prepare_cp role vars
+      ansible.builtin.include_vars: "{{ item }}"
+      with_items: "{{ xcat_prepare_cp_vars }}"
+
     - name: Check xcat installation pre-requisites
       ansible.builtin.include_tasks: pre_requisites.yml
 
-    - name: Common packages installation for xcat
-      ansible.builtin.include_tasks: package_installation.yml
-      when: not xcat_installation_status
+    - name: Install xCAT on rhel based OS
+      ansible.builtin.include_tasks: rhel/main.yml
+      when:
+        - control_plane_os in control_plane_os_redhat or
+          control_plane_os in control_plane_os_rocky
 
-    - name: Configure firewall settings
-      ansible.builtin.include_tasks: firewall_settings.yml
-      when: not xcat_installation_status
-
-    - name: Install xcat
-      ansible.builtin.include_tasks: install_xcat.yml
-      when: not xcat_installation_status
-
-    - name: Install genesis
-      ansible.builtin.include_tasks: install_genesis.yml
+    - name: Install xCAT on ubuntu OS
+      ansible.builtin.include_tasks: ubuntu/main.yml
+      when:
+        - control_plane_os in control_plane_os_ubuntu
 
     - name: Configuration of xcat
       ansible.builtin.include_tasks: configure_xcat.yml

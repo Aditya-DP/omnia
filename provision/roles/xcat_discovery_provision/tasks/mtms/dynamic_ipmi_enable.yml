@@ -21,10 +21,23 @@
 - name: Call python utility to create the dynamic list of feasible IPs
   ansible.builtin.command: |
     {{ python_version }} {{ create_dynamic_ip_path }} {{ bmc_nic_subnet }} {{ bmc_nic_netmask }}
-    {{ bmc_username }} {{ bmc_password }}
+    {{ bmc_username }} {{ bmc_password }} {{ dhcp_path_rhel }}
   no_log: true
   failed_when: false
   changed_when: false
+  when:
+    - control_plane_os in control_plane_os_redhat or
+      control_plane_os in control_plane_os_rocky
+
+- name: Call python utility to create the dynamic list of feasible IPs
+  ansible.builtin.command: |
+    {{ python_version }} {{ create_dynamic_ip_path }} {{ bmc_nic_subnet }} {{ bmc_nic_netmask }}
+    {{ bmc_username }} {{ bmc_password }} {{ dhcp_path_ubuntu }}
+  no_log: true
+  failed_when: false
+  changed_when: false
+  when:
+    - control_plane_os in control_plane_os_ubuntu
 
 - name: Fetch record from dynamic IP file
   ansible.builtin.shell: >

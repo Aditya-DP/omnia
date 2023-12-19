@@ -13,20 +13,15 @@
 # limitations under the License.
 ---
 
-- name: Cleanup provision setup
-  ansible.builtin.import_tasks: clean_provision_setup.yml
-  tags: provision
+- name: Copy rsyslog.conf
+  ansible.builtin.copy:
+    src: "{{ rsyslog_src }}"
+    dest: "{{ rsyslog_dest }}"
+    mode: "{{ apt_file_mode }}"
+  register: copy_rsyslog
 
-- name: Cleanup docker-registry setup
-  ansible.builtin.import_tasks: clean_docker_registry.yml
-  tags: provision, docker-registry
-  when:
-    - control_plane_os in control_plane_os_redhat or
-      control_plane_os in control_plane_os_rocky
-
-- name: Cleanup telemetry setup
-  ansible.builtin.import_tasks: clean_telemetry_setup.yml
-  tags: telemetry
-  when:
-    - control_plane_os in control_plane_os_redhat or
-      control_plane_os in control_plane_os_rocky
+- name: Restart rsyslog service
+  ansible.builtin.systemd:
+    name: rsyslog.service
+    state: restarted
+  when: copy_rsyslog.changed == true

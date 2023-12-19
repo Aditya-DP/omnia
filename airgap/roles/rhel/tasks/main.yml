@@ -17,6 +17,7 @@
   when:
     - update_repos
     - compute_os_rhel_status
+    - control_plane_os in control_plane_os_redhat
   block:
     - name: Create mount overlay for ISO packages
       ansible.builtin.include_tasks: create_mount_overlay.yml

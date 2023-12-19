@@ -55,3 +55,6 @@ omnia_service_shell_file_path: /opt/omnia/omnia_service_script.sh
 omnia_service_shell_file_permissions: "0777"
 omnia_service_path: /etc/systemd/system/omnia.service
 omnia_service_file_permissions: "0644"
+control_plane_os_redhat: "redhat"
+control_plane_os_rocky: "rocky"
+control_plane_os_ubuntu: "ubuntu"

@@ -13,20 +13,17 @@
 # limitations under the License.
 ---
 
-- name: Cleanup provision setup
-  ansible.builtin.import_tasks: clean_provision_setup.yml
-  tags: provision
+- name: Common packages installation for xcat
+  ansible.builtin.include_tasks: package_installation.yml
+  when: not xcat_installation_status
 
-- name: Cleanup docker-registry setup
-  ansible.builtin.import_tasks: clean_docker_registry.yml
-  tags: provision, docker-registry
-  when:
-    - control_plane_os in control_plane_os_redhat or
-      control_plane_os in control_plane_os_rocky
+- name: Configure rsyslog
+  ansible.builtin.include_tasks: configure_rsyslog.yml
+  when: not xcat_installation_status
 
-- name: Cleanup telemetry setup
-  ansible.builtin.import_tasks: clean_telemetry_setup.yml
-  tags: telemetry
-  when:
-    - control_plane_os in control_plane_os_redhat or
-      control_plane_os in control_plane_os_rocky
+- name: Install xcat
+  ansible.builtin.include_tasks: install_xcat.yml
+  when: not xcat_installation_status
+
+- name: Configure postgres
+  ansible.builtin.include_tasks: configure_postgres.yml
