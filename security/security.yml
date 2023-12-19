@@ -83,6 +83,7 @@
   tags: test
 
 - name: Apply ldap server installation and config
+  remote_user: root
   hosts: manager
   gather_facts: false
   roles:
