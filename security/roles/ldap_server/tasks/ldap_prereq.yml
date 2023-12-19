@@ -36,9 +36,9 @@
   
   - name: Set default tls certificate path when input not provided
     ansible.builtin.set_fact:
-    - ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ TLS_Cetificates_directory_path }}/server.pem"
-    - ldaptoolbox_openldap_olcTLSCertificateFile: "{{ TLS_Cetificates_directory_path }}/server.pem"
-    - ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ TLS_Cetificates_directory_path }}/server.pem"
+      ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ TLS_Cetificates_directory_path }}/server.pem"
+      ldaptoolbox_openldap_olcTLSCertificateFile: "{{ TLS_Cetificates_directory_path }}/server.pem"
+      ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ TLS_Cetificates_directory_path }}/server.pem"
 
 - name: Genarate password hash for OpenLDAP config
   delegate_to: localhost
