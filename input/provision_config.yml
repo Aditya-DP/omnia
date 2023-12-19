@@ -41,7 +41,7 @@ discovery_mechanism: "mapping"
 
 #### Mandatory, discovery_mechanism: mapping or switch_based or bmc or snmpwalk
 # This is the operating system image that will be used for provisioning compute nodes in the cluster.
-# Accepted values: rocky, rhel
+# Accepted values: rocky, rhel, ubuntu
 # Note: When provision_os is rocky, Rocky Linux OS version on the cluster will be upgraded to the latest 8.x version available irrespective of provision_os_version provided
 # Default value: "rhel"
 provision_os: "rhel"
@@ -49,11 +49,12 @@ provision_os: "rhel"
 #### Mandatory, discovery_mechanism: mapping or switch_based or bmc or snmpwalk
 # OS version of provision_os to be installed
 # Supported values for rhel/rocky: 8.0, 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7, 8.8
+# Supported values for ubuntu: 20.04, 22.04
 provision_os_version: 8.6
 
 #### Mandatory, discovery_mechanism: mapping or switch_based or bmc or snmpwalk
 # Path where user has placed the iso image that needs to be provisioned on target nodes.
-# The iso file should be Rocky8-DVD or RHEL-8.x-DVD (full OS).
+# The iso file should be Rocky8-DVD or RHEL-8.x-DVD (full OS) or ubuntu-20.x-live-server.
 # iso_file_path should contain provision_os and provision_os_version values in filename
 iso_file_path: "/home/RHEL-8.6.0-20220420.3-x86_64-dvd1.iso"
 
@@ -222,7 +223,6 @@ rhel_repo_alphabetical_folders: false
 rhel_repo_local_path: 
   - { repo: "AppStream", repo_url: "", repo_name: "" }
   - { repo: "BaseOS", repo_url: "", repo_name: "" }
-
 
 #### Optional, discovery_mechanism: mapping or switch_based or bmc or snmpwalk
 # User defined disk partition applied to remote servers

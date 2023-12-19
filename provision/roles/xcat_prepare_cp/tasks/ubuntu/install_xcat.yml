@@ -100,15 +100,19 @@
   ansible.builtin.apt:
     update_cache: true
 
-- name: Download libssl package
-  ansible.builtin.get_url:
-    url: "{{ libssl_package_url }}"
-    dest: "{{ libssl_package_dest }}"
-    mode: "{{ apt_file_mode }}"
+- name: Install libssl in ubuntu 22.04
+  when:
+    - ansible_distribution_version == ubuntu22_version
+  block:
+    - name: Download libssl package
+      ansible.builtin.get_url:
+        url: "{{ libssl_package_url }}"
+        dest: "{{ libssl_package_dest }}"
+        mode: "{{ apt_file_mode }}"
 
-- name: Install libssl
-  ansible.builtin.apt:
-    deb: "{{ libssl_package_dest }}"
+    - name: Install libssl
+      ansible.builtin.apt:
+        deb: "{{ libssl_package_dest }}"
 
 - name: Install xCAT and postgres packages
   ansible.builtin.package:

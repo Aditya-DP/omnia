@@ -43,6 +43,7 @@ root_apt_permission_src: "{{ role_path }}/files/root_apt_permission"
 root_apt_permission_dest: "/etc/apt/apt.conf.d/10sandbox"
 libssl_package_url: http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4_amd64.deb
 libssl_package_dest: "{{ xcat_directory_ubuntu }}/libssl1.1_1.1.0g-2ubuntu4_amd64.deb"
+ubuntu22_version: "22.04"
 
 # Usage: configure_postgres.yml
 xcat_services_ubuntu:
