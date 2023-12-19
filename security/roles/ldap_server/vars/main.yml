@@ -45,6 +45,6 @@ ldaptoolbox_openldap_custom_schema_list: [custom.ldif]
 # General OpenLDAP options
 ##########################
 
-ldaptoolbox_olcPasswordHash: "{SSHA}"
+ldaptoolbox_olcPasswordHash: "{SHA}"
 
 
