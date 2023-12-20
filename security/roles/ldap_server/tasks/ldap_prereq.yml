@@ -17,22 +17,16 @@
   ansible.builtin.set_fact:
     ldaptoolbox_openldap_suffix: "{{ (hostvars['127.0.0.1']['domain_name'].split('.') | map('regex_replace', '^', 'dc=') | list) | join(',') }}"
 
-# - name: Create default Certificates
-#   when: hostvars['127.0.0.1']['TLS_Cetificates_directory_path'] == ''
-#   block:
-- name: Set default tls certificate path when input not provided
-  ansible.builtin.set_fact:
-    TLS_Cetificates_directory_path: "/etc/pki/tls/certs"
+- name: Create default Certificates
+  when: hostvars['127.0.0.1']['TLS_Cetificates_directory_path'] == ''
+  block:
+  - name: Set default tls certificate path when input not provided
+    ansible.builtin.set_fact:
+      TLS_Cetificates_directory_path: "/etc/pki/tls/certs"
 
-  # - name: Create Certificate directory if not present
-  #   ansible.builtin.file:
-  #     path: "{{ TLS_Cetificates_directory_path }}"
-  #     state: directory
-  #     mode: "{{ directory_perm }}"
-
-- name: Generate TLS certificates
-  ansible.builtin.command:
-    cmd: "openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj /C=/ST=/L=/O=/CN= -keyout {{ TLS_Cetificates_directory_path }}/ldapserver.key  -out {{ TLS_Cetificates_directory_path }}/ldapserver.crt"
+  - name: Generate TLS certificates
+    ansible.builtin.command:
+      cmd: "openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj /C=/ST=/L=/O=/CN= -keyout {{ TLS_Cetificates_directory_path }}/ldapserver.key  -out {{ TLS_Cetificates_directory_path }}/ldapserver.crt"
   
 - name: Set default tls certificate path when input not provided
   ansible.builtin.set_fact:

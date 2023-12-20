@@ -100,8 +100,7 @@
     - /opt/omnia/ldap/ansible-role-ldaptoolbox-openldap
   tags: test
 
-
-#- name: Apply ldap client installation and config
+# - name: Apply ldap client installation and config
 #  hosts: manager, compute, login
 #  gather_facts: false
 #  roles:

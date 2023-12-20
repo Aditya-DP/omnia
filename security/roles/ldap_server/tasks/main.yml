@@ -13,20 +13,7 @@
 # limitations under the License.
 ---
 
-# - name: Include input parameter file
-#   ansible.builtin.include_vars: "{{ role_path }}/"
-
 - name: Prepare OpenLDAP variables
   ansible.builtin.include_tasks: ldap_prereq.yml
-
-# - name: Call LTB ansible role
-#   ansible.builtin.include_vars:
-#     - ldaptoolbox_openldap_custom_schema_srcdir: "{{ role_path }}/files"
-#     - ldaptoolbox_openldap_custom_schema_list: [custom.ldif]
-#     # - ldaptoolbox_openldap_olcTLSCACertificateFile: ""
-#     # - ldaptoolbox_openldap_olcTLSCertificateFile: ""
-#     # - ldaptoolbox_openldap_olcTLSCertificateKeyFile: ""
-#   ansible.builtin.include_role:
-#     name: "{{ ltb_ansible_role_path }}"
 
     

@@ -13,26 +13,11 @@
 # limitations under the License.
 ---
 
-# ltb_ansible_role_path: "/opt/omnia/ldap/ansible-role-ldaptoolbox-openldap"
-
 ldaptoolbox_openldap_config_olcRootDN: "cn={{ hostvars['127.0.0.1']['openldap_config_root_username'] }},cn=config"
 ldaptoolbox_openldap_database_olcRootDN: "cn={{ hostvars['127.0.0.1']['openldap_database_root_username'] }},{{ ldaptoolbox_openldap_suffix }}"
 ldaptoolbox_openldap_monitor_olcRootDN: "cn=monitor"
-# ldaptoolbox_openldap_syncrepl_password_vault: ""
-# ldaptoolbox_openldap_database_olcLimits:
-#          - "dn.base=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth size=unlimited  time=unlimited"
-# ldaptoolbox_openldap_syncrepl: []
 python_version: python3.8
 hashing_python_file: "{{ role_path }}/files/generate_hash.py"
-
-# ldaptoolbox_openldap_custom_schema_srcdir: "{{ role_path }}/tests/files/ldaptoolbox.oldap/usr/local/openldap/etc/openldap/schema"
-# ldaptoolbox_openldap_custom_schema_list: [custom.ldif]
-
-
-##########################
-# General OpenLDAP options
-##########################
-
 ldaptoolbox_olcPasswordHash: "{SHA}"
 
 
