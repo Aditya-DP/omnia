@@ -1,4 +1,4 @@
-#  Copyright 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
+#  Copyright 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@
     dest: "{{ hosts_file_dest }}"
     line: "{{ inventory_hostname }} {{ machine_hostname.stdout }} {{ short_hostname.stdout }}"
     state: present
-    create: yes
+    create: true
     mode: "{{ hosts_file_mode }}"
 
 - name: Add compute and login node info in manager node hosts file
@@ -45,7 +45,7 @@
         dest: "{{ hosts_file_dest }}"
         line: "{{ hostvars[item].node_ip }} {{ hostvars[item].node_hostname }} {{ hostvars[item].node_name }}"
         state: present
-        create: yes
+        create: true
         mode: "{{ hosts_file_mode }}"
       with_items:
         - "{{ groups['compute'] }}"
@@ -55,7 +55,7 @@
         dest: "{{ hosts_file_dest }}"
         line: "{{ hostvars[item].node_ip }} {{ hostvars[item].node_hostname }} {{ hostvars[item].node_name }}"
         state: present
-        create: yes
+        create: true
         mode: "{{ hosts_file_mode }}"
       with_items:
         - "{{ groups['login'] }}"
@@ -73,7 +73,7 @@
         dest: "{{ hosts_file_dest }}"
         line: "{{ hostvars[item].node_ip }} {{ hostvars[item].node_hostname }} {{ hostvars[item].node_name }}"
         state: present
-        create: yes
+        create: true
         mode: "{{ hosts_file_mode }}"
       with_items:
         - "{{ groups['manager'] }}"
@@ -83,7 +83,7 @@
         dest: "{{ hosts_file_dest }}"
         line: "{{ hostvars[item.1].node_ip }} {{ hostvars[item.1].node_hostname }} {{ hostvars[item.1].node_name }}"
         state: present
-        create: yes
+        create: true
         mode: "{{ hosts_file_mode }}"
       with_nested:
         - "{{ groups['compute'] }}"
@@ -94,7 +94,7 @@
         dest: "{{ hosts_file_dest }}"
         line: "{{ hostvars[item].node_ip }} {{ hostvars[item].node_hostname }} {{ hostvars[item].node_name }}"
         state: present
-        create: yes
+        create: true
         mode: "{{ hosts_file_mode }}"
       with_items:
         - "{{ groups['login'] }}"
@@ -105,7 +105,7 @@
         msg: "{{ compute_hosts_update_fail_msg }}"
 
 - name: Add manager and compute nodes info in login node hosts file
-  when: 
+  when:
     - "'login' in group_names"
     - hostvars["127.0.0.1"]["login_node_required"]
   block:
@@ -114,7 +114,7 @@
         dest: "{{ hosts_file_dest }}"
         line: "{{ hostvars[item].node_ip }} {{ hostvars[item].node_hostname }} {{ hostvars[item].node_name }}"
         state: present
-        create: yes
+        create: true
         mode: "{{ hosts_file_mode }}"
       with_items:
         - "{{ groups['manager'] }}"
@@ -124,7 +124,7 @@
         dest: "{{ hosts_file_dest }}"
         line: "{{ hostvars[item].node_ip }} {{ hostvars[item].node_hostname }} {{ hostvars[item].node_name }}"
         state: present
-        create: yes
+        create: true
         mode: "{{ hosts_file_mode }}"
       with_items:
         - "{{ groups['compute'] }}"

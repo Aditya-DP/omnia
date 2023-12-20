@@ -70,6 +70,7 @@
       when: docker_login_output is failed
 
     - name: Initialize kubeadm (This process may take 5-10min)
+      when: "'master' not in k8s_nodes.stdout"
       block:
         - name: Initialize kubeadm (This process may take 5-10min)
           ansible.builtin.command: "kubeadm init --pod-network-cidr='{{ hostvars['127.0.0.1']['k8s_pod_network_cidr'] }}' \
@@ -88,7 +89,6 @@
           changed_when: true
           register: init_output
           tags: init
-      when: "'master' not in k8s_nodes.stdout"
 
     - name: Setup directory for Kubernetes environment for root
       ansible.builtin.file:
@@ -104,13 +104,11 @@
         owner: root
         group: root
         mode: "{{ k8s_config_file_mode }}"
-        remote_src: yes
+        remote_src: true
       tags: init
 
     - name: Update the kubernetes config file permissions
       ansible.builtin.shell: "chown $(id -u):$(id -g) '{{ k8s_config_dest }}'"
-      args:
-        warn: false
       changed_when: true
       tags: init
 
@@ -158,12 +156,12 @@
 
     - name: Add K8S Manager IP, Token, and Hash to dummy host
       ansible.builtin.add_host:
-        name:   "K8S_TOKEN_HOLDER"
-        token:  "{{ k8s_manager_token }}"
-        hash:   "{{ k8s_manager_ca_hash.stdout }}"
-        ip:     "{{ ansible_default_ipv4.address }}"
-        k8s_nodes:  "{{ k8s_nodes.stdout }}"
-        k8s_nodes_ready:  "{{ k8s_nodes_ready.stdout }}"
+        name: "K8S_TOKEN_HOLDER"
+        token: "{{ k8s_manager_token }}"
+        hash: "{{ k8s_manager_ca_hash.stdout }}"
+        ip: "{{ ansible_default_ipv4.address }}"
+        k8s_nodes: "{{ k8s_nodes.stdout }}"
+        k8s_nodes_ready: "{{ k8s_nodes_ready.stdout }}"
         k8s_nodes_not_ready: "{{ k8s_nodes_not_ready.stdout }}"
       tags: init
 
@@ -197,6 +195,7 @@
       when:
         - hostvars['127.0.0.1']['docker_username'] and hostvars['127.0.0.1']['docker_password']
         - "'dockerregcred' not in k8s_secret.stdout"
+      changed_when: true
 
     - name: Add docker secret to default service account
       ansible.builtin.shell: >
@@ -206,6 +205,7 @@
       until: patch_service_account is not failed
       retries: 10
       tags: install
+      changed_when: true
 
     - name: Create yaml repo for setup
       ansible.builtin.file:
@@ -235,6 +235,7 @@
       ansible.builtin.command: "kubectl apply -f '{{ calico_yml_file_path }}'"
       when: hostvars['127.0.0.1']['k8s_cni'] == "calico"
       tags: init
+      changed_when: true
 
     - name: Delete Flannel yaml file if exists
       ansible.builtin.file:
@@ -265,6 +266,7 @@
       ansible.builtin.command: "kubectl apply -f '{{ flannel_yml_file_path }}'"
       when: hostvars['127.0.0.1']['k8s_cni'] == "flannel"
       tags: init
+      changed_when: true
 
     - name: Create service account (K8s dashboard) files
       ansible.builtin.copy:
@@ -314,3 +316,4 @@
       when: groups['manager'][0] == groups['compute'][0] and groups['compute']|length == 1
       failed_when: false
       tags: init
+      changed_when: true

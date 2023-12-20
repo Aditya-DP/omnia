@@ -39,7 +39,7 @@
       ansible.builtin.pause:
         seconds: 10
         prompt: "{{ nginx_install_msg }}"
-      when: 
+      when:
         - not grafana_status or
           not grafana_cred_status or
           grafana_svc_ip == "" or

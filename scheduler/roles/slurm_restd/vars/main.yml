@@ -1,4 +1,4 @@
-#  Copyright 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
+#  Copyright 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ slurm_restd_packages_leap:
    - libopenssl-devel
 
 slurm_gcc_leap:
-  - devel_basis
+   - devel_basis
 
 fil_mode: "0755"
 jansson_download_dir: /var/lib/

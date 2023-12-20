@@ -30,30 +30,33 @@
       changed_when: true
       tags: install
 
-    - name: modeprobe ip_tables
+    - name: Modeprobe ip_tables
       ansible.builtin.command: /usr/sbin/modprobe ip_tables
       changed_when: true
       when: ansible_facts['os_family'] == "RedHat"
       tags: install
 
-    - block:
+    - name: Tasks for k8s and docker
+      when: os_supported_leap not in compute_os
+      block:
         - name: Add kubernetes repo
           ansible.builtin.yum_repository:
             name: kubernetes
             description: kubernetes
             baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
-            enabled: yes
-            gpgcheck: no
-            repo_gpgcheck: no
+            enabled: true
+            gpgcheck: false
+            repo_gpgcheck: false
             gpgkey:
               - https://packages.cloud.google.com/yum/doc/yum-key.gpg
               - https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
           tags: install
 
         - name: Add docker community edition repository
-          get_url:
+          ansible.builtin.get_url:
             url: "{{ docker_repo_url }}"
             dest: "{{ docker_repo_dest }}"
+            mode: "{{ docker_repo_file_mode }}"
           register: docker_repo
           until: docker_repo is not failed
           retries: "{{ max_retries }}"
@@ -73,21 +76,22 @@
           tags: install
 
         - name: Versionlock kubernetes and docker
-          ansible.builtin.command: "yum versionlock '{{ item }}'"
-          args:
-            warn: false
-          with_items:
-            - "{{ k8s_packages }}"
-            - "{{ docker_packages }}"
+          community.general.yum_versionlock:
+            state: present
+            name:
+              - "{{ k8s_packages }}"
+              - "{{ docker_packages }}"
           changed_when: true
           tags: install
-      when: os_supported_leap not in compute_os
 
-    - block:
+    - name: Tasks for k8s and docker
+      when: ( os_supported_leap in compute_os ) and ( ansible_distribution_version >= os_supported_leap_version )
+      block:
         - name: Add docker community edition repository
-          get_url:
+          ansible.builtin.get_url:
             url: "{{ docker_repo_url_leap }}"
             dest: "{{ docker_repo_dest_leap }}"
+            mode: "{{ docker_repo_file_mode }}"
           register: docker_repo
           until: docker_repo is not failed
           retries: "{{ max_retries }}"
@@ -95,7 +99,7 @@
           tags: install
 
         - name: Install docker-compose for leap nodes
-          package:
+          ansible.builtin.package:
             name: docker-compose
             state: present
           tags: install
@@ -105,8 +109,8 @@
             name: google-k8s
             repo: "{{ k8s_repo_leap }}"
             state: present
-            autorefresh: yes
-            disable_gpg_check: yes
+            autorefresh: true
+            disable_gpg_check: true
           tags: install
 
         - name: Import rpm-package key for installing kubernetes
@@ -123,8 +127,6 @@
 
         - name: Import gpg-pubkey key for installing kubernetes
           ansible.builtin.command: "{{ gpg_pubkey_leap }}"
-          args:
-            warn: false
           changed_when: false
           tags: install
 
@@ -138,8 +140,8 @@
           ansible.builtin.expect:
             command: zypper install --oldpackage "{{ kubeadm_version }}"
             responses:
-                (.*) [1/2/c/d/?](.): '2'
-                (.*)(y): 'y'
+              (.*) [1/2/c/d/?](.): '2'
+              (.*)(y): 'y'
           register: kubeadm_status
           until: kubeadm_status is not failed
           retries: "{{ max_retries }}"
@@ -149,8 +151,8 @@
           ansible.builtin.expect:
             command: zypper install --oldpackage "{{ kubelet_version }}"
             responses:
-                (.*) [1/2/c/d/?](.): '2'
-                (.*)(y): 'y'
+              (.*) [1/2/c/d/?](.): '2'
+              (.*)(y): 'y'
           register: kubelet_status
           until: kubelet_status is not failed
           retries: "{{ max_retries }}"
@@ -167,8 +169,8 @@
           community.general.zypper:
             name: "{{ kubectl_version }}"
             state: present
-            oldpackage: yes
-            force: yes
+            oldpackage: true
+            force: true
           register: state_kubectl
           until: state_kubectl is not failed
           retries: "{{ max_retries }}"
@@ -177,25 +179,22 @@
 
         - name: Versionlock k8s packages
           ansible.builtin.command: zypper addlock {{ item }}
-          args:
-            warn: false
           changed_when: false
           with_items: "{{ k8s_package_names }}"
           tags: install
-      when: ( os_supported_leap in compute_os ) and ( ansible_distribution_version >= os_supported_leap_version )
 
     - name: Start and enable docker service
       ansible.builtin.service:
         name: docker
         state: restarted
-        enabled: yes
+        enabled: true
       tags: install
 
     - name: Start and enable kubernetes - kubelet
       ansible.builtin.service:
         name: kubelet
         state: restarted
-        enabled: yes
+        enabled: true
       tags: install
 
     - name: Initialize grafana_status

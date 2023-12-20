@@ -1,4 +1,4 @@
-#  Copyright 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
+#  Copyright 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -14,59 +14,58 @@
 ---
 
 - name: Add leap repos
-  zypper_repository:
+  community.general.zypper_repository:
     name: "{{ item.name }}"
     repo: "{{ item.repo }}"
     state: present
-    autorefresh: yes
+    autorefresh: true
   with_items:
     - "{{ leap_repo }}"
   tags: install
 
 - name: Installing python-xml
-  package:
+  ansible.builtin.package:
     name: python-xml
     state: present
   tags: install
 
 - name: Add nvidia repo
-  zypper_repository:
+  community.general.zypper_repository:
     name: NVIDIA
     repo: "{{ nvidia_repo }}"
     state: present
-    disable_gpg_check: yes
-    auto_import_keys: yes
-    autorefresh: yes
+    disable_gpg_check: true
+    auto_import_keys: true
+    autorefresh: true
   tags: install
 
 - name: Install nvidia(This might take 10-15 minutes)
-  command: zypper --gpg-auto-import-keys install -l -y x11-video-nvidiaG06
+  ansible.builtin.command: zypper --gpg-auto-import-keys install -l -y x11-video-nvidiaG06
   changed_when: true
   tags: install
 
 - name: Permanently Disable swap
-  mount:
+  ansible.posix.mount:
     name: "swap"
     fstype: swap
     state: absent
   tags: install
 
 - name: Install common packages
-  package:
+  ansible.builtin.package:
     name: "{{ common_packages }}"
     state: present
   tags: install
 
-
 - name: Installing dkms
-  package:
+  ansible.builtin.package:
     name: dkms
     state: present
   changed_when: true
   tags: install
 
 - name: Add AMD ROCm repository for leap
-  zypper_repository:
+  community.general.zypper_repository:
     name: rocm
     repo: "{{ amd_repo }}"
     state: present
@@ -74,7 +73,7 @@
   tags: install
 
 - name: Import gpg-key for installing AMD ROCm
-  rpm_key:
+  ansible.builtin.rpm_key:
     key: "{{ gpg_key_amd }}"
     state: present
   tags: install
@@ -83,12 +82,12 @@
   ansible.builtin.expect:
     command: zypper install rocm-dkms
     responses:
-        (.*) [1/2/c/d/?](.): '2'
-        (.*)(y): 'y'
+      (.*) [1/2/c/d/?](.): '2'
+      (.*)(y): 'y'
   tags: install
 
 - name: Allowing modules
-  copy:
+  ansible.builtin.copy:
     src: module.conf
     dest: "{{ amd_gpu_dest }}"
     owner: root
@@ -97,11 +96,11 @@
   tags: install
 
 - name: Enable the modules amdgpu
-  modprobe:
+  community.general.modprobe:
     name: amdgpu
     state: present
   tags: install
-    
+
 - name: Reboot after installing GPU drivers
-  reboot:
+  ansible.builtin.reboot:
   tags: install

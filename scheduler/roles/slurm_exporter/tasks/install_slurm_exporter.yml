@@ -1,4 +1,4 @@
-#  Copyright 2020 Dell Inc. or its subsidiaries. All Rights Reserved.
+#  Copyright 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
       ansible.builtin.unarchive:
         src: "{{ go_pack_url }}"
         dest: "{{ installation_dir }}"
-        remote_src: yes
+        remote_src: true
       register: untar_go
       until: untar_go is not failed
       retries: "{{ max_retries }}"
@@ -32,7 +32,7 @@
   ansible.builtin.shell: echo $PATH
   environment:
     PATH: "{{ extended_path }}:{{ ansible_env.PATH }}"
-  changed_when: False
+  changed_when: false
 
 - name: Clone the source code
   ansible.builtin.git:
@@ -40,35 +40,35 @@
     dest: "{{ slurm_exporter_inst_dir }}"
     version: "{{ stable_commit_id }}"
 
-- name: export GOPATH
+- name: Export GOPATH
   ansible.builtin.shell: echo $GOPATH
   environment:
     PATH: "{{ ansible_env.PATH }}:/var/lib/go/bin/"
     GOPATH: "{{ go_modules_path }}"
-  changed_when: False
+  changed_when: false
 
 - name: Download dependencies
   ansible.builtin.command: "{{ go_exec_path }} mod download"
   args:
     chdir: "{{ slurm_exporter_inst_dir }}"
-  changed_when: False
+  changed_when: false
 
 - name: Build the exporter
   ansible.builtin.shell: "{{ go_exec_path }} build -o bin/prometheus-slurm-exporter {main,accounts,cpus,nodes,partitions,queue,scheduler,users}.go"
   args:
     chdir: "{{ slurm_exporter_inst_dir }}"
-  changed_when: False
+  changed_when: false
 
 - name: Run all tests included in _test.go files
   ansible.builtin.shell: "{{ go_exec_path }} test -v *.go"
   args:
     chdir: "{{ slurm_exporter_inst_dir }}"
-  changed_when: False
+  changed_when: False # noqa: yaml[truthy]
   failed_when: false
 
 - name: Copy executable to /usr/bin
   ansible.builtin.copy:
     src: "{{ slurm_exporter_exec }}"
     dest: "{{ system_path }}"
-    remote_src: yes
+    remote_src: true
     mode: "{{ file_permission }}"

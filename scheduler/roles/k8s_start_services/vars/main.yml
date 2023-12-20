@@ -45,11 +45,11 @@ docker_pull_limit_msg: "You have reached your docker pull rate limit. Please pro
 
 metallb_config_file_dest: /root/k8s/metal-config.yaml
 
-metallb_config_file_mode: 0655
+metallb_config_file_mode: "0655"
 
 metallb_deployment_file_dest: /root/k8s/metallb.yaml
 
-metallb_deployment_file_mode: 0655
+metallb_deployment_file_mode: "0655"
 
 metallb_yaml_url: https://raw.githubusercontent.com/google/metallb/v0.8.1/manifests/metallb.yaml
 
@@ -57,7 +57,7 @@ metallb_helm_url: https://metallb.github.io/metallb
 
 k8s_dashboard_admin_file_dest: /root/k8s/k8s_dashboard_admin.yaml
 
-k8s_dashboard_admin_file_mode: 0655
+k8s_dashboard_admin_file_mode: "0655"
 
 k8s_dashboard_yaml_url: https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.5/aio/deploy/recommended.yaml
 
@@ -85,7 +85,7 @@ slurm_exporter_config_file: extraScrapeConfigs.yaml
 
 slurm_exporter_config_file_path: /var/lib/
 
-slurm_exporter_file_mode: 0655
+slurm_exporter_file_mode: "0655"
 
 prometheus_path_on_host: /var/lib/prometheus-2.23.0.linux-amd64/
 
@@ -113,6 +113,6 @@ calico_warning_msg: "Warning: Calico pod is not in ready state, please check"
 
 calico_ready_state: "condition met"
 
-nfs_dir_mode: 0777
+nfs_dir_mode: "0777"
 
 pod_wait_time: 300

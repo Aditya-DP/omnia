@@ -1,4 +1,4 @@
-#  Copyright 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
+#  Copyright 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -14,21 +14,21 @@
 ---
 
 - name: Saving distribution of os
-  set_fact:
+  ansible.builtin.set_fact:
     compute_os: "{{ ansible_facts['distribution'] | lower }}"
 
 - name: Prepare RHEL and Rocky nodes
-  include_tasks: prepare_rhel_nodes.yml
+  ansible.builtin.include_tasks: prepare_rhel_nodes.yml
   when: ( os_supported_leap not in compute_os )
 
 - name: Prepare leap nodes
-  include_tasks: prepare_leap_nodes.yml
+  ansible.builtin.include_tasks: prepare_leap_nodes.yml
   when: ( os_supported_leap in compute_os ) and ( ansible_distribution_version >= os_supported_leap_version )
 
 - name: Deploy time ntp/chrony
-  include_tasks: ntp.yml
+  ansible.builtin.include_tasks: ntp.yml
   tags: install
 
 - name: Prepare hosts file
-  include_tasks: prepare_hosts_file.yml
+  ansible.builtin.include_tasks: prepare_hosts_file.yml
   tags: install

@@ -13,7 +13,7 @@
 # limitations under the License.
 ---
 
-nfs_share_dir_mode: 0777
+nfs_share_dir_mode: "0777"
 
 exports_file_path: /etc/exports
 

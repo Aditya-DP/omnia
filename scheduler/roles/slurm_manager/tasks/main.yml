@@ -17,7 +17,7 @@
   when: hostvars['127.0.0.1']['slurm_support']
   block:
     - name: Give slurm user permission to slurmctld spool
-      file:
+      ansible.builtin.file:
         path: "{{ spool_slurmctld_pth }}"
         owner: slurm
         group: slurm
@@ -25,7 +25,7 @@
         state: touch
 
     - name: Give slurm ownership to cluster state
-      file:
+      ansible.builtin.file:
         path: "{{ cluster_state_path }}"
         owner: slurm
         group: slurm
@@ -33,7 +33,7 @@
         state: touch
 
     - name: Create slurmctld log file on manager
-      file:
+      ansible.builtin.file:
         path: "{{ slurm_logpth }}"
         owner: slurm
         mode: "{{ tmp_mode }}"
@@ -42,7 +42,7 @@
         - slurmctld.log
 
     - name: Create log files on manager
-      file:
+      ansible.builtin.file:
         path: "{{ slurm_logpth }}"
         owner: slurm
         mode: "{{ tmp_mode }}"
@@ -51,21 +51,21 @@
         - "{{ log_files_manager }}"
 
     - name: Install packages for slurm
-      package:
+      ansible.builtin.package:
         name: "{{ slurm_packages }}"
         state: present
       tags: install
       when: os_supported_leap not in compute_os
 
     - name: Install packages for slurm
-      package:
+      ansible.builtin.package:
         name: "{{ leap_slurm_packages }}"
         state: present
       tags: install
       when: os_supported_leap in compute_os
 
     - name: Install development tools
-      package:
+      ansible.builtin.package:
         name: "{{ dev_tools }}"
         state: present
       tags: install
@@ -74,44 +74,44 @@
         - os_supported_redhat not in compute_os
 
     - name: Install development tools
-      package:
+      ansible.builtin.package:
         name: "{{ rhel_dev_tools }}"
         state: present
       tags: install
       when: os_supported_redhat in compute_os
 
     - name: Get the hostname
-      command: hostname
+      ansible.builtin.command: hostname
       register: machine_name
       changed_when: true
 
     - name: Add control machine name
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: "{{ slurm_confpth }}"
         regexp: "ControlMachine="
         line: "ControlMachine={{ machine_name.stdout }}"
 
     - name: Add slurm user name
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: "{{ slurm_confpth }}"
         regexp: "SlurmUser="
         line: "SlurmUser={{ slurm_user }}"
 
     - name: Install firewalld
-      package:
+      ansible.builtin.package:
         name: firewalld
         state: present
       tags: firewalld
 
     - name: Start and enable firewalld
-      service:
+      ansible.builtin.service:
         name: firewalld
         state: started
-        enabled: yes
+        enabled: true
       tags: firewalld
 
     - name: Firewall rule for slurm - tcp/udp ports
-      command: "firewall-cmd --zone=public --permanent --add-port={{ item }}"
+      ansible.builtin.command: "firewall-cmd --zone=public --permanent --add-port={{ item }}"
       with_items:
         - "{{ tcp_port1 }}"
         - "{{ tcp_port2 }}"
@@ -127,35 +127,35 @@
       tags: firewalld
 
     - name: Get network address/subnet mask
-      set_fact:
-        network_address: "{{ (ansible_default_ipv4.network + '/' + ansible_default_ipv4.netmask) | ipaddr('network/prefix') }}"
+      ansible.builtin.set_fact:
+        network_address: "{{ (ansible_default_ipv4.network + '/' + ansible_default_ipv4.netmask) | ansible.utils.ipaddr('network/prefix') }}"
       when: not hostvars['127.0.0.1']['ansible_collection_used']
 
     - name: Get network address/subnet mask
-      set_fact:
+      ansible.builtin.set_fact:
         network_address: "{{ (ansible_default_ipv4.network + '/' + ansible_default_ipv4.netmask) | ansible.utils.ipaddr('network/prefix') }}"
       when: hostvars['127.0.0.1']['ansible_collection_used']
 
     - name: Firewall rule slurm - allow all incoming traffic on internal network
-      command: |
+      ansible.builtin.command: |
             firewall-cmd --add-rich-rule='rule family={{ family }} source address={{ network_address }} accept'
       changed_when: true
       tags: firewalld
 
     - name: Reload firewalld
-      command: firewall-cmd --reload
+      ansible.builtin.command: firewall-cmd --reload
       changed_when: true
       tags: firewalld
 
     - name: Start mariadb
-      systemd:
+      ansible.builtin.systemd:
         name: mariadb
         state: restarted
-        enabled: yes
+        enabled: true
       tags: install
 
     - name: Grant permissions for slurm db
-      command: >-
+      ansible.builtin.command: >-
         mysql -u root -e "GRANT ALL ON slurm_acct_db.* TO '{{ db_user }}'@'{{
         db_host }}' identified by '{{ hostvars['127.0.0.1']['db_password'] }}'with
         grant option;"
@@ -163,7 +163,7 @@
       changed_when: true
 
     - name: Create slurmdbd.conf file
-      copy:
+      ansible.builtin.copy:
         src: slurmdbd.conf
         dest: "{{ slurmdbd_path }}"
         mode: "{{ slurmdbd_mode }}"
@@ -171,49 +171,49 @@
       tags: install
 
     - name: Add slurm user name
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: "{{ slurmdbd_path }}"
         regexp: "SlurmUser="
         line: "SlurmUser={{ slurm_user }}"
 
     - name: Add db address
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: "{{ slurmdbd_path }}"
         regexp: "DbdAddr="
         line: "DbdAddr={{ dbd_addr }}"
 
     - name: Add db host
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: "{{ slurmdbd_path }}"
         regexp: "DbdHost="
         line: "DbdHost={{ dbd_host }}"
 
     - name: Add storage password
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: "{{ slurmdbd_path }}"
         regexp: "StoragePass="
         line: "StoragePass={{ hostvars['127.0.0.1']['db_password'] }}"
 
     - name: Add storage user
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: "{{ slurmdbd_path }}"
         regexp: "StorageUser="
         line: "StorageUser={{ slurm_user }}"
 
     - name: Add log file path
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: "{{ slurmdbd_path }}"
         regexp: "LogFile="
         line: "LogFile={{ logfile }}"
 
     - name: Add pid file path
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: "{{ slurmdbd_path }}"
         regexp: "PidFile="
         line: "PidFile={{ pidfile }}"
 
     - name: Save slurm conf file in buffer
-      fetch:
+      ansible.builtin.fetch:
         src: "{{ slurm_confpth }}"
         dest: "{{ buffer_path }}"
         flat: true

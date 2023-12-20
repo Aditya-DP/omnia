@@ -24,7 +24,7 @@ ansible_cfg_dest:
 # Usage: fetch_omnia_inputs.yml
 config_filename: "omnia_config.yml"
 config_vaultname: .omnia_vault_key
-vault_key_permission: 0644
+vault_key_permission: "0644"
 min_length: 8
 max_length: 30
 omnia_config_syntax_fail_msg: "Failed. Syntax errors present in omnia_config.yml. Fix errors and re-run playbook again."
@@ -67,7 +67,7 @@ invalid_inventory_fail_msg: "Failed. Invalid inventory format. Provide inventory
 
 # Usage: install_packages.yml
 ansible_base_version: '2.9'
-ipaddr_collection: ansible.utils:2.5.2
+ipaddr_collection: ansible.utils:2.10.3
 ansible_collection_nfs: ansible.posix:1.4.0
 
 # Usage: fetch_ldap_client_inputs.yml

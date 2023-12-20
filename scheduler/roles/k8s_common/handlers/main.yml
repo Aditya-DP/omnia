@@ -1,4 +1,4 @@
-#  Copyright 2020 Dell Inc. or its subsidiaries. All Rights Reserved.
+#  Copyright 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -14,15 +14,15 @@
 ---
 
 - name: Start and Enable docker service
-  service:
+  ansible.builtin.service:
     name: docker
     state: restarted
-    enabled: yes
+    enabled: true
   tags: install
 
 - name: Start and Enable Kubernetes - kubelet
-  service:
+  ansible.builtin.service:
     name: kubelet
     state: started
-    enabled: yes
+    enabled: true
   tags: install

@@ -1,4 +1,4 @@
-#  Copyright 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
+#  Copyright 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -43,8 +43,9 @@ k8s_repo_dest: /etc/yum.repos.d/
 
 k8s_conf_dest: /etc/sysctl.d/
 
-k8s_repo_file_mode: 0644
+k8s_repo_file_mode: "0644"
 
-k8s_conf_file_mode: 0644
+k8s_conf_file_mode: "0644"
 grafana_conf_path: "/opt/omnia/.data/grafana_svc_details.ini"
 min_length_grafana: 5
+docker_repo_file_mode: "0644"
