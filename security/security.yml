@@ -95,14 +95,14 @@
   #   - /opt/omnia/ldap/manual/new/ansible-role-ldaptoolbox-openldap/tests/credentials-vault.yml
   vars:
     # Define suffix
-    - ldaptoolbox_openldap_suffix: "dc=omnia,dc=test"
+    # - ldaptoolbox_openldap_suffix: "dc=omnia,dc=test"
     # include extra schema
     - ldaptoolbox_openldap_custom_schema_srcdir: "/opt/omnia/ldap/ansible-role-ldaptoolbox-openldap/tests/files/ldaptoolbox.oldap/usr/local/openldap/etc/openldap/schema"
     - ldaptoolbox_openldap_custom_schema_list: [ custom.ldif ]
     # define certificates (must be deployed before)
-    - ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ '/etc/pki/tls/certs/ldapserver.crt' if ansible_os_family == 'RedHat' else '/etc/ssl/certs/ca-certificates.crt' }}"
-    - ldaptoolbox_openldap_olcTLSCertificateFile: "{{ '/etc/pki/tls/certs/ldapserver.crt' if ansible_os_family == 'RedHat' else '/etc/ssl/certs/ssl-cert-snakeoil.pem' }}"
-    - ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ '/etc/pki/tls/certs/ldapserver.key' if ansible_os_family == 'RedHat' else '/etc/ssl/private/ssl-cert-snakeoil.key' }}"
+    # - ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ '/etc/pki/tls/certs/ldapserver.crt' if ansible_os_family == 'RedHat' else '/etc/ssl/certs/ca-certificates.crt' }}"
+    # - ldaptoolbox_openldap_olcTLSCertificateFile: "{{ '/etc/pki/tls/certs/ldapserver.crt' if ansible_os_family == 'RedHat' else '/etc/ssl/certs/ssl-cert-snakeoil.pem' }}"
+    # - ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ '/etc/pki/tls/certs/ldapserver.key' if ansible_os_family == 'RedHat' else '/etc/ssl/private/ssl-cert-snakeoil.key' }}"
     # Accounts and passwords
     # - ldaptoolbox_openldap_config_olcRootDN: cn=admin,cn=config
     # - ldaptoolbox_openldap_config_olcRootPW_hash: "{{ ldaptoolbox_openldap_config_olcRootPW_hash_vault }}"

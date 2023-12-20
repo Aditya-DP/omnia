@@ -34,11 +34,11 @@
   ansible.builtin.command:
     cmd: "openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj /C=/ST=/L=/O=/CN= -keyout {{ TLS_Cetificates_directory_path }}/ldapserver.key  -out {{ TLS_Cetificates_directory_path }}/ldapserver.crt"
   
-  # - name: Set default tls certificate path when input not provided
-  #   ansible.builtin.set_fact:
-  #     ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ TLS_Cetificates_directory_path }}/ldapserver.crt"
-  #     ldaptoolbox_openldap_olcTLSCertificateFile: "{{ TLS_Cetificates_directory_path }}/ldapserver.crt"
-  #     ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ TLS_Cetificates_directory_path }}/ldapserver.key"
+- name: Set default tls certificate path when input not provided
+  ansible.builtin.set_fact:
+    ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ TLS_Cetificates_directory_path }}/ldapserver.crt"
+    ldaptoolbox_openldap_olcTLSCertificateFile: "{{ TLS_Cetificates_directory_path }}/ldapserver.crt"
+    ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ TLS_Cetificates_directory_path }}/ldapserver.key"
 
 - name: Genarate password hash for OpenLDAP config
   delegate_to: localhost
