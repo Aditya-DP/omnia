@@ -21,6 +21,7 @@ common_packages_xcat_ubuntu:
   - bzip2
   - tar
   - chrony
+  - rsyslog
 
 # Usage: install_xcat.yml
 xcat_directory_ubuntu: /root/xcat
