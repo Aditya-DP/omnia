@@ -104,11 +104,11 @@
     - ldaptoolbox_openldap_olcTLSCertificateFile: "{{ '/etc/pki/tls/certs/ldapserver.crt' if ansible_os_family == 'RedHat' else '/etc/ssl/certs/ssl-cert-snakeoil.pem' }}"
     - ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ '/etc/pki/tls/certs/ldapserver.key' if ansible_os_family == 'RedHat' else '/etc/ssl/private/ssl-cert-snakeoil.key' }}"
     # Accounts and passwords
-    - ldaptoolbox_openldap_config_olcRootDN: cn=admin,cn=config
+    # - ldaptoolbox_openldap_config_olcRootDN: cn=admin,cn=config
     # - ldaptoolbox_openldap_config_olcRootPW_hash: "{{ ldaptoolbox_openldap_config_olcRootPW_hash_vault }}"
-    - ldaptoolbox_openldap_database_olcRootDN: "cn=admin,{{ ldaptoolbox_openldap_suffix }}"
+    # - ldaptoolbox_openldap_database_olcRootDN: "cn=admin,{{ ldaptoolbox_openldap_suffix }}"
     # - ldaptoolbox_openldap_database_olcRootPW_hash: "{{ ldaptoolbox_openldap_database_olcRootPW_hash_vault }}"
-    - ldaptoolbox_openldap_monitor_olcRootDN: "cn=monitor"
+    # - ldaptoolbox_openldap_monitor_olcRootDN: "cn=monitor"
     # - ldaptoolbox_openldap_monitor_olcRootPW_hash: "{{ ldaptoolbox_openldap_monitor_olcRootPW_hash_vault }}"
     # No unlimitation
     - ldaptoolbox_openldap_database_olcLimits:

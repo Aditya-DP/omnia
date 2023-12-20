@@ -13,9 +13,9 @@
 # limitations under the License.
 ---
 
-# - name: Set domain for OpenLDAP
-#   ansible.builtin.set_fact:
-#     ldaptoolbox_openldap_suffix: "{{ (hostvars['127.0.0.1']['domain_name'].split('.') | map('regex_replace', '^', 'dc=') | list) | join(',') }}"
+- name: Set domain for OpenLDAP
+  ansible.builtin.set_fact:
+    ldaptoolbox_openldap_suffix: "{{ (hostvars['127.0.0.1']['domain_name'].split('.') | map('regex_replace', '^', 'dc=') | list) | join(',') }}"
 
 # - name: Create default Certificates
 #   when: hostvars['127.0.0.1']['TLS_Cetificates_directory_path'] == ''
