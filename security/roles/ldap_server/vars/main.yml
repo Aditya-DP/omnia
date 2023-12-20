@@ -22,8 +22,8 @@
 # ldaptoolbox_openldap_database_olcLimits:
 #          - "dn.base=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth size=unlimited  time=unlimited"
 # ldaptoolbox_openldap_syncrepl: []
-# python_version: python3.8
-# hashing_python_file: "{{ role_path }}/files/generate_hash.py"
+python_version: python3.8
+hashing_python_file: "{{ role_path }}/files/generate_hash.py"
 
 # directory_perm: "0700"
 
