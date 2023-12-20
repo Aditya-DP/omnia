@@ -1,4 +1,4 @@
-#  Copyright 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
+#  Copyright 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,13 +17,13 @@
   ansible.builtin.unarchive:
     src: "{{ prometheus_git_repo }}"
     dest: "{{ installation_dir }}"
-    remote_src: yes
+    remote_src: true
 
 - name: Copy prometheus executable to /usr/local/bin
   ansible.builtin.copy:
     src: "{{ prometheus_exec_path }}"
     dest: "{{ system_local_path }}"
-    remote_src: yes
+    remote_src: true
     mode: "{{ file_permission }}"
 
 - name: Configure prometheus for slurm exporter
@@ -40,6 +40,11 @@
             - targets: ['localhost:{{ slurm_exporter_port }}']
 
 - name: Install & configure nginx
+  when:
+    - grafana_svc_ip != ""
+    - grafana_svc_port != ""
+    - grafana_status
+    - grafana_cred_status
   block:
     - name: Install nginx
       ansible.builtin.package:
@@ -81,18 +86,13 @@
       ansible.builtin.service:
         name: nginx
         state: restarted
-        enabled: yes
-  when:
-    - grafana_svc_ip != ""
-    - grafana_svc_port != ""
-    - grafana_status
-    - grafana_cred_status
+        enabled: true
 
 - name: Skipping nginx installation - wait for 10 seconds
   ansible.builtin.pause:
     seconds: 10
     prompt: "{{ nginx_install_msg }}"
-  when: 
+  when:
     - not grafana_status or
       not grafana_cred_status or
       grafana_svc_ip == "" or

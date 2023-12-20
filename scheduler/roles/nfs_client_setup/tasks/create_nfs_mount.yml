@@ -24,8 +24,6 @@
     set -o pipefail && \
     mount | grep nfs
   changed_when: false
-  args:
-    warn: false
   register: mounted_share
   failed_when: false
   tags: nfs_client
@@ -42,10 +40,11 @@
     omnia_share_dir: "{{ hostvars['127.0.0.1']['omnia_usrhome_share'] }}"
 
 - name: Mounting NFS Share on compute node
-  ansible.builtin.command: "mount {{ mounthost }}:{{ omnia_share_dir }} {{ omnia_share_dir }}"
-  changed_when: true
-  args:
-    warn: false
+  ansible.posix.mount:
+    src: "{{ mounthost }}:{{ omnia_share_dir }}"
+    path: "{{ omnia_share_dir }}"
+    fstype: nfs
+    state: mounted
   tags: nfs_client
 
 - name: Configuring Automount NFS Shares on reboot

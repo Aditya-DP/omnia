@@ -15,6 +15,6 @@
 
 mounthost: "{{ groups['manager'][0] }}"
 
-nfs_mnt_dir_mode: 0777
+nfs_mnt_dir_mode: "0777"
 
 fstab_file_path: /etc/fstab

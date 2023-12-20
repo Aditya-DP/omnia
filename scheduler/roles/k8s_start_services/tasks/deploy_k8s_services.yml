@@ -17,7 +17,7 @@
   ansible.builtin.include_vars: ../../slurm_exporter/vars/main.yml
 
 - name: Include nfs_server_setup variables
-  include_vars: ../../nfs_server_setup/vars/main.yml
+  ansible.builtin.include_vars: ../../nfs_server_setup/vars/main.yml
 
 - name: Wait for CoreDNS to restart
   ansible.builtin.command: kubectl rollout status deployment/coredns -n kube-system  --timeout=5m
@@ -31,28 +31,28 @@
   register: k8s_pods
   tags: init
 
-#- name: Get metallb repo
-  #command: "helm repo add metallb '{{ metallb_helm_url }}'"
-  #changed_when: false
-  #tags: init
+# - name: Get metallb repo
+  # command: "helm repo add metallb '{{ metallb_helm_url }}'"
+  # changed_when: false
+  # tags: init
 
 - name: Create MetalLB Setup Config Files
   ansible.builtin.copy:
     src: metal-config.yaml
     dest: "{{ metallb_config_file_dest }}"
-    #owner: root
-    #group: root
+    # owner: root
+    # group: root
     mode: "{{ metallb_config_file_mode }}"
   tags: init
 
-#- name: Create MetalLB Setup Deployment Files
-  #copy:
-    #src: metallb.yaml
-    #dest: "{{ metallb_deployment_file_dest }}"
-    #owner: root
-    #group: root
-    #mode: "{{ metallb_deployment_file_mode }}"
-  #tags: init
+# - name: Create MetalLB Setup Deployment Files
+  # copy:
+    # src: metallb.yaml
+    # dest: "{{ metallb_deployment_file_dest }}"
+    # owner: root
+    # group: root
+    # mode: "{{ metallb_deployment_file_mode }}"
+  # tags: init
 
 - name: Create Metallb namespace
   ansible.builtin.command: "kubectl create -f https://raw.githubusercontent.com/metallb/metallb/v0.10.3/manifests/namespace.yaml"
@@ -73,7 +73,7 @@
   tags: init
 
 - name: Deploy Metallb
-  #command: "helm install metallb metallb/metallb  -f '{{ metallb_config_file_dest }}'"
+  # command: "helm install metallb metallb/metallb  -f '{{ metallb_config_file_dest }}'"
   ansible.builtin.command: "kubectl create -f  https://raw.githubusercontent.com/metallb/metallb/v0.10.3/manifests/metallb.yaml"
   changed_when: true
   when: "'metallb' not in k8s_pods.stdout"
@@ -95,8 +95,8 @@
   ansible.builtin.copy:
     src: k8s_dashboard_admin.yaml
     dest: "{{ k8s_dashboard_admin_file_dest }}"
-    #owner: root
-    #group: root
+    # owner: root
+    # group: root
     mode: "{{ k8s_dashboard_admin_file_mode }}"
 
 - name: Create admin user for K8s dashboard
@@ -140,7 +140,9 @@
     mode: "{{ nfs_dir_mode }}"
 
 - name: Start NFS Client Provisioner using NFS on manager node
-  ansible.builtin.shell: "export PATH=/usr/local/bin:$PATH && helm install nfs-omnia stable/nfs-client-provisioner --set nfs.server='{{ nfs_server_manager_node }}' --set nfs.path='{{ hostvars['127.0.0.1']['omnia_usrhome_share'] }}/kubernetes'"
+  ansible.builtin.shell: >
+    "export PATH=/usr/local/bin:$PATH && helm install nfs-omnia stable/nfs-client-provisioner --set nfs.server='{{ nfs_server_manager_node }}'"
+    " --set nfs.path='{{ hostvars['127.0.0.1']['omnia_usrhome_share'] }}/kubernetes'"
   changed_when: true
   when: "'nfs-client-provisioner' not in k8s_pods.stdout"
   tags: init
@@ -156,8 +158,8 @@
   ansible.builtin.stat:
     path: "{{ prometheus_path_on_host }}"
   register: prometheus_status
-  changed_when: False
-  ignore_errors: yes
+  changed_when: false
+  ignore_errors: true
   tags: init
 
 - name: Delete prometheus installed on host if it exists
@@ -171,8 +173,8 @@
   ansible.builtin.copy:
     src: "{{ slurm_exporter_config_file }}"
     dest: "{{ slurm_exporter_config_file_path }}"
-    #owner: root
-    #group: root
+    # owner: root
+    # group: root
     mode: "{{ slurm_exporter_file_mode }}"
   tags: init
 
@@ -181,7 +183,7 @@
     set -o pipefail && \
       ip route get 8.8.8.8 | awk '{print $7}'
   register: public_ip
-  changed_when: False
+  changed_when: false
   tags: init
 
 - name: Add the host IP to config file
@@ -208,7 +210,9 @@
   tags: init
 
 - name: Install nvidia-device-plugin
-  ansible.builtin.shell: "export PATH=/usr/local/bin:$PATH && helm install --version='{{ nvidia_device_plugin_version }}' --generate-name --set migStrategy='{{ mig_strategy }}' nvdp/nvidia-device-plugin"
+  ansible.builtin.shell: >
+    "export PATH=/usr/local/bin:$PATH && helm install --version='{{ nvidia_device_plugin_version }}'"
+    " --generate-name --set migStrategy='{{ mig_strategy }}' nvdp/nvidia-device-plugin"
   changed_when: true
   when:
     - "'nvidia-device-plugin' not in k8s_pods.stdout"
@@ -216,7 +220,9 @@
   tags: init
 
 - name: Install GPU Feature Discovery
-  ansible.builtin.shell: "export PATH=/usr/local/bin:$PATH && helm install --version='{{ gpu_feature_discovery_version }}' --generate-name --set migStrategy='{{ mig_strategy }}' nvgfd/gpu-feature-discovery"
+  ansible.builtin.shell: >
+    "export PATH=/usr/local/bin:$PATH && helm install --version='{{ gpu_feature_discovery_version }}'"
+    " --generate-name --set migStrategy='{{ mig_strategy }}' nvgfd/gpu-feature-discovery"
   changed_when: true
   when:
     - "'node-feature-discovery' not in k8s_pods.stdout"
@@ -249,11 +255,11 @@
       changed_when: true
       register: amd_gpu_enable
 
-#- name: Deploy Volcano Scheduling
-  #command: "kubectl apply -f '{{ volcano_scheduling_yaml_url }}'"
-  #changed_when: true
-  #when: "'volcano-system' not in k8s_pods.stdout"
-  #tags: init
+# - name: Deploy Volcano Scheduling
+  # command: "kubectl apply -f '{{ volcano_scheduling_yaml_url }}'"
+  # changed_when: true
+  # when: "'volcano-system' not in k8s_pods.stdout"
+  # tags: init
 
 - name: Install Spark Operator
   ansible.builtin.shell: "export PATH=/usr/local/bin:$PATH && helm repo add spark-operator '{{ spark_operator_repo }}'"
@@ -261,7 +267,9 @@
   tags: init
 
 - name: Install Spark Operator Namespace
-  ansible.builtin.shell: export PATH=/usr/local/bin:$PATH && helm install my-release spark-operator/spark-operator --set image.tag={{ operator_image_tag }} --namespace spark-operator --create-namespace
+  ansible.builtin.shell: >
+    "export PATH=/usr/local/bin:$PATH && helm install my-release spark-operator/spark-operator"
+    " --set image.tag={{ operator_image_tag }} --namespace spark-operator --create-namespace"
   changed_when: true
   when: "'spark-operator' not in k8s_pods.stdout"
   tags: init

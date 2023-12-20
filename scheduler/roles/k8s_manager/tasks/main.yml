@@ -17,13 +17,13 @@
   when: hostvars['127.0.0.1']['k8s_support']
   block:
     - name: Create directory for helm installer file
-      file:
+      ansible.builtin.file:
         path: "{{ helm_installer_file_directory }}"
         state: directory
         mode: "{{ helm_installer_file_directory_mode }}"
 
     - name: Get helm installer
-      get_url:
+      ansible.builtin.get_url:
         url: "{{ helm_installer_url }}"
         dest: "{{ helm_installer_file_dest }}"
         mode: "{{ helm_installer_file_mode }}"

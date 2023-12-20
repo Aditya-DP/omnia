@@ -17,18 +17,18 @@
   when: hostvars['127.0.0.1']['k8s_support']
   block:
     - name: Disable swap (if not already disabled)
-      command: /usr/sbin/swapoff -a
+      ansible.builtin.command: /usr/sbin/swapoff -a
       changed_when: true
       tags: init
 
     - name: Get hostname
-      command: hostname
+      ansible.builtin.command: hostname
       changed_when: true
       register: node_hostname
       tags: init
 
     - name: Reset kubeadm
-      command: kubeadm reset -f
+      ansible.builtin.command: kubeadm reset -f
       changed_when: true
       failed_when: false
       when:
@@ -37,9 +37,10 @@
         - node_hostname.stdout in hostvars['K8S_TOKEN_HOLDER']['k8s_nodes_not_ready']
       tags: init
 
-    - block:
+    - name: Tasks for k8s_start_workers
+      block:
         - name: Execute kubeadm join command
-          shell: >
+          ansible.builtin.shell: >
             kubeadm join --token={{ hostvars['K8S_TOKEN_HOLDER']['token'] }}
             --discovery-token-ca-cert-hash sha256:{{ hostvars['K8S_TOKEN_HOLDER']['hash'] }}
             {{ hostvars['K8S_TOKEN_HOLDER']['ip'] }}:{{ apiserver_bind_port }}
@@ -47,8 +48,9 @@
             - groups['manager'][0] != groups['compute'][0]
             - groups['compute']|length >= 1
             - node_hostname.stdout not in hostvars['K8S_TOKEN_HOLDER']['k8s_nodes_ready']
+          changed_when: true
           tags: init
       rescue:
         - name: Execute kubeadm join command failed
-          fail:
+          ansible.builtin.fail:
             msg: "{{ kubeadm_join_fail_msg }}"

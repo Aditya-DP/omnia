@@ -1,4 +1,4 @@
-#  Copyright 2021 Dell Inc. or its subsidiaries. All Rights Reserved.
+#  Copyright 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,13 +17,13 @@ docker_login_fail_msg: "Docker login failed! Please check the credentials and re
 
 k8s_root_directory: /root/.kube
 
-k8s_root_directory_mode: 0755
+k8s_root_directory_mode: "0755"
 
 k8s_config_src: /etc/kubernetes/admin.conf
 
 k8s_config_dest: /root/.kube/config
 
-k8s_config_file_mode: 0600
+k8s_config_file_mode: "0600"
 
 k8s_cert_path: /etc/kubernetes/pki/ca.crt
 
@@ -31,20 +31,20 @@ k8s_dummy_hostname: K8S_TOKEN_HOLDER
 
 yaml_repo_dir_path: /root/k8s
 
-yaml_repo_dir_mode: 0755
+yaml_repo_dir_mode: "0755"
 
 k8s_service_account_file_dest: /root/k8s/create_admin_user.yaml
 
-k8s_service_account_file_mode: 0655
+k8s_service_account_file_mode: "0655"
 
 cluster_role_binding_file_dest: /root/k8s/create_clusterRoleBinding.yaml
 
-cluster_role_binding_file_mode: 0655
+cluster_role_binding_file_mode: "0655"
 
 calico_yml_file_path: /root/k8s/kube-calico.yaml
 
-calico_yml_file_mode: 0644
+calico_yml_file_mode: "0644"
 
 flannel_yml_file_path: /root/k8s/kube-flannel.yaml
 
-flannel_yml_file_mode: 0644
+flannel_yml_file_mode: "0644"
