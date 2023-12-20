@@ -83,10 +83,10 @@
   tags: test
 
 - name: Apply ldap server installation and config
- hosts: manager
- roles:
-   - ldap_server
- tags: test
+  hosts: manager
+  roles:
+    - ldap_server
+  tags: test
 
 - name: Apply ldap server installation and config
   remote_user: root
