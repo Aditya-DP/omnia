@@ -21,6 +21,7 @@ fi
 if [[ "$validate_ubuntu_os" == "1" ]];
 then
     apt-add-repository ppa:deadsnakes/ppa -y
+    apt update
     echo "----------------------"
     echo "INSTALLING PYTHON 3.9:"
     echo "----------------------"
