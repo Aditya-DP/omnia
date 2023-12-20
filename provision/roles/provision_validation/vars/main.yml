@@ -25,6 +25,8 @@ control_plane_os_redhat: "redhat"
 control_plane_os_rocky: "rocky"
 control_plane_os_ubuntu: "ubuntu"
 control_plane_os_fail_msg: "Failed. Control plane OS should be RHEL, Rocky or Ubuntu."
+root_user_name: "root"
+user_fail_msg: "Failed. Omnia playbooks should run as root user."
 
 # Usage: package_installation.yml
 ansible_galaxy_collection:

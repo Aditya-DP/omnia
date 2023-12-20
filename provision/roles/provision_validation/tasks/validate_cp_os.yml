@@ -24,3 +24,10 @@
     - control_plane_os not in control_plane_os_redhat
     - control_plane_os not in control_plane_os_rocky
     - control_plane_os not in control_plane_os_ubuntu
+
+- name: Validate user
+  ansible.builtin.fail:
+    msg: "{{ user_fail_msg }}"
+  when:
+    - control_plane_os in control_plane_os_ubuntu
+    - ansible_env.USER != root_user_name
