@@ -98,6 +98,3 @@ fail_msg_database_root_password: "Database password invalid"
 success_msg_monitor_root_password: "Monitor password valid"
 fail_msg_monitor_root_password: "Monitor password invalid"
 ldap_cert_path_fail_msg: "LDAP cert path dont exist."
-
-min_length: 8
-max_length: 30
