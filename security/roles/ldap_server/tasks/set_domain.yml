@@ -26,7 +26,7 @@
   ansible.builtin.template:
     src: "{{ openldap_config_src_path }}"
     dest: "{{ openldap_config_dest_dir }}"
-    mode: "{{ ldaptoolbox_openldap_configuration_mode }}"
+    mode: "{{ openldap_configuration_mode }}"
 
 - name: Execute domain config file
   ansible.builtin.command: ldapadd -Y EXTERNAL -H "{{ ldap_host_string }}" -f "{{ openldap_config_dest_dir }}/add_domain.ldif"
