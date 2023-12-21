@@ -22,5 +22,6 @@ python_version: python3.8
 hashing_python_file: "{{ role_path }}/files/generate_hash.py"
 ldaptoolbox_olcPasswordHash: "{SHA}"
 openldap_configuration_mode: "0600"
+openldap_config_permissions: "0777"
 ldap_host_string: "ldapi://%2Fvar%2Frun%2Fslapd%2Fldapi"
 
