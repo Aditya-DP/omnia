@@ -74,31 +74,31 @@
     - login_node
   tags: freeipa
 
-# - name: Validate ldap server inputs
-#   hosts: localhost
-#   any_errors_fatal: true
-#   gather_facts: false
-#   roles:
-#     - ldap_validation
-#   tags: test
+- name: Validate ldap server inputs
+  hosts: localhost
+  any_errors_fatal: true
+  gather_facts: false
+  roles:
+    - ldap_validation
+  tags: test
 
-# - name: Apply ldap server installation and config
-#   hosts: manager
-#   roles:
-#     - ldap_server
-#   tags: test
+- name: Apply ldap server installation and config
+  hosts: manager
+  roles:
+    - ldap_server
+  tags: test
 
-# - name: Apply ldap server installation and config
-#   remote_user: root
-#   hosts: manager
-#   vars:
-#     - ldaptoolbox_openldap_database_olcLimits:
-#          - "dn.base=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth size=unlimited  time=unlimited"
-#     # No replication
-#     - ldaptoolbox_openldap_syncrepl: []
-#   roles:
-#     - /opt/omnia/ldap/ansible-role-ldaptoolbox-openldap
-#   tags: test
+- name: Apply ldap server installation and config
+  remote_user: root
+  hosts: manager
+  vars:
+    - ldaptoolbox_openldap_database_olcLimits:
+         - "dn.base=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth size=unlimited  time=unlimited"
+    # No replication
+    - ldaptoolbox_openldap_syncrepl: []
+  roles:
+    - /opt/omnia/ldap/ansible-role-ldaptoolbox-openldap
+  tags: test
 
 - name: Setup LDAP server domain
   hosts: manager
