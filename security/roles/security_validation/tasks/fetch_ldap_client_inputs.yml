@@ -17,7 +17,7 @@
   ansible.builtin.fail:
     msg: "{{ ldap_client_config_failure_msg }}"
   when:
-    - ( domain_name | default("", true) |  length < 1 or
+    - domain_name | default("", true) |  length < 1
 
 - name: Validate LDAP Connection type
   ansible.builtin.assert:
