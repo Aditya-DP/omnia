@@ -16,10 +16,10 @@
 - name: Adding the path in the bashrc files
   lineinfile:
     path: /root/.bashrc
-    line: "export PATH=/usr/local/openldap/sbin:/usr/local/openldap/sbin:$PATH"
+    line: "export PATH=/usr/local/openldap/sbin:/usr/local/openldap/bin:$PATH"
     insertafter: EOF
     state: present
-    regexp: "export PATH=/usr/local/openldap/sbin:/usr/local/openldap/sbin:$PATH"
+    regexp: "export PATH=/usr/local/openldap/sbin:/usr/local/openldap/bin:$PATH"
     backrefs: yes
 
 - name: Create ldap config directory
