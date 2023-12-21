@@ -3,12 +3,12 @@ dn: dc=omnia,dc=test
 objectClass: top
 objectClass: dcObject
 objectclass: organization
-o: "{{ hostvars['127.0.0.1']['openldap_organization'] }}"
+o: {{ hostvars['127.0.0.1']['openldap_organization'] }}
 description: Omnia set organization 
 
-dn: ou="{{ hostvars['127.0.0.1']['openldap_organization_unit'] }}",dc=omnia,dc=test
+dn: ou={{ hostvars['127.0.0.1']['openldap_organization_unit'] }},dc=omnia,dc=test
 objectClass: organizationalUnit
-ou: "{{ hostvars['127.0.0.1']['openldap_organization_unit'] }}"
+ou: {{ hostvars['127.0.0.1']['openldap_organization_unit'] }}
 description: Omnia set organizationalUnit 
 
 dn: ou=Group,dc=omnia,dc=test
