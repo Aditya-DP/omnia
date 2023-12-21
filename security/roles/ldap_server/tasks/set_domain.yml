@@ -1,0 +1,32 @@
+# Copyright 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+
+- name: Adding the path in the bashrc files
+  lineinfile:
+    path: /root/.bashrc
+    line: "export PATH=/usr/local/openldap/sbin:/usr/local/openldap/sbin:$PATH"
+    insertafter: EOF
+    state: present
+    backrefs: yes
+
+- name: Deploy domain config file 
+  ansible.builtin.template:
+    src: "{{ openldap_config_src_path }}"
+    dest: "{{ openldap_config_dest_dir }}"
+    mode: "{{ ldaptoolbox_openldap_configuration_mode }}"
+
+- name: Execute domain config file
+  ansible.builtin.command: ldapadd -Y EXTERNAL -H "{{ ldap_host_string }}" -f "{{ openldap_config_dest_dir }}/add_domain.ldif"
+  changed_when: false

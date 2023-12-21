@@ -27,7 +27,8 @@
   - name: Generate TLS certificates
     ansible.builtin.command:
       cmd: "openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj /C=/ST=/L=/O=/CN= -keyout {{ TLS_Cetificates_directory_path }}/ldapserver.key  -out {{ TLS_Cetificates_directory_path }}/ldapserver.crt"
-  
+    changed_when: false
+
 - name: Set default tls certificate path when input not provided
   ansible.builtin.set_fact:
     ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ TLS_Cetificates_directory_path }}/ldapserver.crt"

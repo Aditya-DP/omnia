@@ -101,3 +101,5 @@ openldap_config_root_password: ""     # will be converted to SSHA hash
 openldap_database_root_username: "admin"
 openldap_database_root_password: ""   # will be converted to SSHA hash
 openldap_monitor_root_password: ""    # will be converted to SSHA hash
+openldap_organization: "omnia"
+openldap_organization_unit: "People"

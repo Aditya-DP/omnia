@@ -3,11 +3,11 @@ dn: dc=omnia,dc=test
 objectClass: top
 objectClass: dcObject
 objectclass: organization
-o: omnia
+o: "{{ openldap_organization }}"
 
 dn: ou=People,dc=omnia,dc=test
 objectClass: organizationalUnit
-ou: People
+ou: "{{ openldap_organization_unit }}"
 
 dn: ou=Group,dc=omnia,dc=test
 objectClass: organizationalUnit
