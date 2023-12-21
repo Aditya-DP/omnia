@@ -13,7 +13,7 @@
 # limitations under the License.
 ---
 
-openldap_config_dest_dir: "/opt/omnia/ldap"
+openldap_config_dest_dir: "/opt/ldap"
 openldap_config_src_path: "{{ role_path }}/templates/add_domain.ldif"
 ldaptoolbox_openldap_config_olcRootDN: "cn={{ hostvars['127.0.0.1']['openldap_config_root_username'] }},cn=config"
 ldaptoolbox_openldap_database_olcRootDN: "cn={{ hostvars['127.0.0.1']['openldap_database_root_username'] }},{{ ldaptoolbox_openldap_suffix }}"

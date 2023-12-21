@@ -22,6 +22,12 @@
     regexp: "export PATH=/usr/local/openldap/sbin:/usr/local/openldap/sbin:$PATH"
     backrefs: yes
 
+- name: Create ldap config directory
+  ansible.builtin.file:
+    path: "{{ openldap_config_dest_dir }}"
+    state: directory
+    mode: "{{ openldap_config_permissions }}"
+
 - name: Deploy domain config file 
   ansible.builtin.template:
     src: "{{ openldap_config_src_path }}"
