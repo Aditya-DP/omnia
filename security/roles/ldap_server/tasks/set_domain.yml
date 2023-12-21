@@ -19,6 +19,7 @@
     line: "export PATH=/usr/local/openldap/sbin:/usr/local/openldap/sbin:$PATH"
     insertafter: EOF
     state: present
+    regexp: "export PATH=/usr/local/openldap/sbin:/usr/local/openldap/sbin:$PATH"
     backrefs: yes
 
 - name: Deploy domain config file 
