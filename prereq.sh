@@ -26,10 +26,6 @@ then
     echo "INSTALLING PYTHON 3.9:"
     echo "----------------------"
     apt install python3.9* python3-pip -y
-    echo "--------------"
-    echo "UPGRADING PIP:"
-    echo "--------------"
-    python3.9 -m pip install --upgrade pip
 else
     if [[ $(echo $sys_py_version | grep "3.9" | wc -l) != "1" || $(echo $sys_py_version | grep "Python" | wc -l) != "1" ]];
     then
@@ -38,11 +34,11 @@ else
     echo "----------------------"
     dnf install python39 -y
     fi
-    echo "--------------"
-    echo "UPGRADING PIP:"
-    echo "--------------"
-    python3.9 -m pip install --upgrade pip
 fi
+echo "--------------"
+echo "UPGRADING PIP:"
+echo "--------------"
+python3.9 -m pip install --upgrade pip
 echo "-------------------"
 echo "INSTALLING ANSIBLE:"
 echo "-------------------"
