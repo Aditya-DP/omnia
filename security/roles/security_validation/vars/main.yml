@@ -89,3 +89,15 @@ multiple_login_node_fail_msg: "Failed. Currently only one login node supported i
 warning_wait_time: 10
 login_node_warning_msg: "[WARNING] login group with ip for login node not present in the inventory.
 Proceeding execution with manager and compute nodes"
+
+
+success_msg_config_root_password: "Config password valid"
+fail_msg_config_root_password: Config password invalid"
+success_msg_database_root_password: "Database password valid"
+fail_msg_database_root_password: "Database password invalid"
+success_msg_monitor_root_password: "Monitor password valid"
+fail_msg_monitor_root_password: "Monitor password invalid"
+ldap_cert_path_fail_msg: "LDAP cert path dont exist."
+
+min_length: 8
+max_length: 30
