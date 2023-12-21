@@ -103,7 +103,8 @@
 - name: Setup LDAP server domain
   hosts: manager
   tasks:
-    include_role:
+    - name: Include domain setup task
+      ansible.builtin.include_role:
         name: ldap_server
         tasks_from: set_domain.yml
 
