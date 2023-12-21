@@ -3,11 +3,11 @@ dn: dc=omnia,dc=test
 objectClass: top
 objectClass: dcObject
 objectclass: organization
-o: "{{ openldap_organization }}"
+o: "{{ hostvars['127.0.0.1']['openldap_organization'] }}"
 
 dn: ou=People,dc=omnia,dc=test
 objectClass: organizationalUnit
-ou: "{{ openldap_organization_unit }}"
+ou: "{{ hostvars['127.0.0.1']['openldap_organization_unit'] }}"
 
 dn: ou=Group,dc=omnia,dc=test
 objectClass: organizationalUnit
