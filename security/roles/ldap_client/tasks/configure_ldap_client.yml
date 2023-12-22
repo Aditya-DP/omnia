@@ -61,3 +61,4 @@
     dest: "{{ tls_cert_path }}"
     mode: push
   delegate_to: "{{ hostvars[groups['manager'][0]]['ansible_env'].SSH_CONNECTION.split(' ')[2] }}" 
+  when: inventory_hostname not in groups["manager"]
