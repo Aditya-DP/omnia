@@ -34,15 +34,3 @@
     name: sssd
     state: restarted
     enabled: true
-
-- name: Display IP Address
-  debug:
-    var: ansible_default_ipv4.address
-
-- name: Display IP address and interface information
-  debug:
-    var: ansible_interfaces
-
-- name: Display IP
-  debug:
-    var: hostvars[inventory_hostname]['ansible_env'].SSH_CONNECTION.split(' ')[2]
