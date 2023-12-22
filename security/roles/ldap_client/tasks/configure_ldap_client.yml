@@ -56,13 +56,12 @@
       hostvars['127.0.0.1']['ldap_connection_type'] == 'ssl'
 
 - name: Copy the certificate to remote node
-  ansible.posix.synchronize:
-    src: "rsync://{{ hostvars[groups['manager'][0]]['ldaptoolbox_openldap_olcTLSCACertificateFile'] }}"
+  when: inventory_hostname in groups['manager']
+  copy:
+    src: "{{ ldaptoolbox_openldap_olcTLSCACertificateFile }}"
     dest: "{{ tls_cert_path }}"
-    mode: pull
   delegate_to: "{{ hostvars[item]['ansible_env'].SSH_CONNECTION.split(' ')[2] }}" 
   with_items: 
   - "{{ groups['compute'] }}"
-  - "{{ groups['manager'] }}"
 
   #{{ hostvars[item]['ansible_env'].SSH_CONNECTION.split(' ')[2] }}
