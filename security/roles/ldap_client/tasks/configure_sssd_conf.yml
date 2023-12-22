@@ -32,7 +32,7 @@
       ansible.builtin.replace:
         path: "{{ sssd_conf_dest }}"
         regexp: "ldap://server-ip"
-        replace: "ldap://{{ hostvars['127.0.0.1']['ldap_server_ip'] }}"
+        replace: "ldap://{{ hostvars[groups['manager'][0]]['ansible_env'].SSH_CONNECTION.split(' ')[2] }}"
 
     - name: Update the domain name
       ansible.builtin.replace:
@@ -92,13 +92,13 @@
       ansible.builtin.replace:
         path: "{{ sssd_conf_dest }}"
         regexp: "ldap_uri = ldaps://server-ip:636"
-        replace: "ldap_uri = ldaps://{{ hostvars['127.0.0.1']['ldap_server_ip'] }}:636"
+        replace: "ldap_uri = ldaps://{{ hostvars[groups['manager'][0]]['ansible_env'].SSH_CONNECTION.split(' ')[2] }}:636"
 
     - name: Update the ldap server IP
       ansible.builtin.replace:
         path: "{{ sssd_conf_dest }}"
         regexp: "ldap_chpass_uri = ldaps://server-ip:636"
-        replace: "ldap_chpass_uri = ldaps://{{ hostvars['127.0.0.1']['ldap_server_ip'] }}:636"
+        replace: "ldap_chpass_uri = ldaps://{{ hostvars[groups['manager'][0]]['ansible_env'].SSH_CONNECTION.split(' ')[2] }}:636"
   when:
     - hostvars['127.0.0.1']['ldap_connection_type'] == 'SSL' or
       hostvars['127.0.0.1']['ldap_connection_type'] == 'ssl'

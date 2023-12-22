@@ -55,9 +55,9 @@
     - hostvars['127.0.0.1']['ldap_connection_type'] == 'SSL' or
       hostvars['127.0.0.1']['ldap_connection_type'] == 'ssl'
 
-# - name: Copy the certificate to remote node
-#   ansible.posix.synchronize:
-#     src: "{{ hostvars[groups['manager'][0]]['ldaptoolbox_openldap_olcTLSCACertificateFile'] }}"
-#     dest: "{{ tls_cert_path }}"
-#     mode: push
-#   delegate_to: "{{ groups['manager'][0] }}" 
+- name: Copy the certificate to remote node
+  ansible.posix.synchronize:
+    src: "{{ hostvars[groups['manager'][0]]['ldaptoolbox_openldap_olcTLSCACertificateFile'] }}"
+    dest: "{{ tls_cert_path }}"
+    mode: push
+  delegate_to: "{{ hostvars[groups['manager'][0]]['ansible_env'].SSH_CONNECTION.split(' ')[2] }}" 
