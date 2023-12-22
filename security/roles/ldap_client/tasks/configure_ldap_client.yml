@@ -60,4 +60,5 @@
     src: "{{ ldaptoolbox_openldap_olcTLSCACertificateFile }}"
     dest: "{{ tls_cert_path }}"
     mode: "0644"
+    remote_src: true
   delegate_to: "{{ groups['manager'][0] }}" 
