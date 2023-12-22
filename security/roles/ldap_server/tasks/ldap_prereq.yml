@@ -25,7 +25,7 @@
     - hostvars['127.0.0.1']['Cetificate_file'] == ''
     - hostvars['127.0.0.1']['Cetificate_key_file'] == ''
   block:
-  - name: Set default certificates as true
+  - name: Set default certificates as
     ansible.builtin.set_fact:
       default_certs: true
 
@@ -41,6 +41,7 @@
       ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ TLS_Cetificates_directory_path }}/ldapserver.key"
 
 - name: Set tls certificate path for omnia playbook
+  delegate_to: localhost
   when: not default_certs
   block:
   - name: Copy the certificate to remote node

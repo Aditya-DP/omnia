@@ -38,6 +38,10 @@
   when: enable_secure_login_node
 
 - name: Fetch LDAP client inputs
+  ansible.builtin.include_tasks: fetch_ldap_server_input.yml
+  when: ldap_required
+
+- name: Fetch LDAP client inputs
   ansible.builtin.include_tasks: fetch_ldap_client_inputs.yml
   when: ldap_required
 
