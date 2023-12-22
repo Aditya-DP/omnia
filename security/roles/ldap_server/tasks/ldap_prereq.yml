@@ -52,7 +52,7 @@
     with_items:
       - "{{ hostvars['127.0.0.1']['CA_Cetificate_file'] }}"
       - "{{ hostvars['127.0.0.1']['Certificate_file'] }}"
-      - "{{ hostvars['127.0.0.1']['Cetificate_key_file'] }}"
+      - "{{ hostvars['127.0.0.1']['Certificate_key_file'] }}"
 
   - name: Set  tls certificate path for LTB playbook 
     ansible.builtin.set_fact:
