@@ -56,9 +56,8 @@
       hostvars['127.0.0.1']['ldap_connection_type'] == 'ssl'
 
 - name: Copy the certificate to remote node
-  ansible.builtin.fetch:
+  ansible.posix.synchronize:
     src: "{{ ldaptoolbox_openldap_olcTLSCACertificateFile }}"
     dest: "{{ tls_cert_path }}"
-    mode: "0644"
-    remote_src: true
+    mode: pull
   delegate_to: "{{ groups['manager'][0] }}" 
