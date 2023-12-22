@@ -50,15 +50,15 @@
       remote_src: false
       mode: "0644"
     with_items:
-      - "{{ hostvars['127.0.0.1']['CA_Cetificate_file'] }}"
+      - "{{ hostvars['127.0.0.1']['CA_Certificate_file'] }}"
       - "{{ hostvars['127.0.0.1']['Certificate_file'] }}"
       - "{{ hostvars['127.0.0.1']['Certificate_key_file'] }}"
 
   - name: Set  tls certificate path for LTB playbook 
     ansible.builtin.set_fact:
-      ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ TLS_Cetificates_directory_path }}/{{ hostvars['127.0.0.1']['CA_Cetificate_file'] | basename }}"
-      ldaptoolbox_openldap_olcTLSCertificateFile: "{{ TLS_Cetificates_directory_path }}/{{ hostvars['127.0.0.1']['Cetificate_file'] | basename }}"
-      ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ TLS_Cetificates_directory_path }}/{{ hostvars['127.0.0.1']['Cetificate_key_file'] | basename }}"
+      ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ TLS_Cetificates_directory_path }}/{{ hostvars['127.0.0.1']['CA_Certificate_file'] | basename }}"
+      ldaptoolbox_openldap_olcTLSCertificateFile: "{{ TLS_Cetificates_directory_path }}/{{ hostvars['127.0.0.1']['Certificate_file'] | basename }}"
+      ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ TLS_Cetificates_directory_path }}/{{ hostvars['127.0.0.1']['Certificate_key_file'] | basename }}"
 
 - name: Genarate password hash for OpenLDAP config
   delegate_to: localhost
