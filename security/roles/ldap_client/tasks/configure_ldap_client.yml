@@ -57,9 +57,12 @@
 
 - name: Copy the certificate to remote node
   ansible.posix.synchronize:
-    src: "{{ hostvars[groups['manager'][0]]['ldaptoolbox_openldap_olcTLSCACertificateFile'] }}"
-    dest: "rsync://{{ hostvars[item]['ansible_env'].SSH_CONNECTION.split(' ')[2] }}:{{ tls_cert_path }}"
-  delegate_to: "{{ hostvars[groups['manager'][0]]['ansible_env'].SSH_CONNECTION.split(' ')[2] }}" 
+    src: "rsync://{{ hostvars[groups['manager'][0]]['ldaptoolbox_openldap_olcTLSCACertificateFile'] }}"
+    dest: "{{ tls_cert_path }}"
+    mode: pull
+  delegate_to: "{{ hostvars[item]['ansible_env'].SSH_CONNECTION.split(' ')[2] }}" 
   with_items: 
   - "{{ groups['compute'] }}"
   - "{{ groups['manager'] }}"
+
+  #{{ hostvars[item]['ansible_env'].SSH_CONNECTION.split(' ')[2] }}
