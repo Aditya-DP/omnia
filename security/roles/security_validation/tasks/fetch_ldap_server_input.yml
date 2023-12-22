@@ -55,13 +55,16 @@
   - Certificate_file != ''
   - Certificate_key_file != ''
   block:
-  - name: Assert certificate files exist
-    assert:
-      that:
-        - "{{ item }}"
-      success_msg: "{{ ldap_cert_path_success_msg }}"
-      fail_msg: "{{ ldap_cert_path_fail_msg }}"
-      with_items:
-        - "{{ CA_Cetificate_file }}"
-        - "{{ Certificate_file }}"
-        - "{{ Certificate_key_file }}"
+  - name: Check certificate files exist
+    stat:
+      path: "{{ item }}"
+    register: file_status
+    failed_when: not file_status.stat.exists
+    with_items:
+      - "{{ CA_Cetificate_file }}"
+      - "{{ Certificate_file }}"
+      - "{{ Certificate_key_file }}"
+  rescue:
+    - name: Certificate path invalid
+      ansible.builtin.fail:
+        msg: "{{ ldap_cert_path_fail_msg }}"
