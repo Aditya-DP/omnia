@@ -38,3 +38,7 @@
 - name: Display IP Address
   debug:
     var: ansible_default_ipv4.address
+
+- name: Display IP address and interface information
+  debug:
+    var: ansible_interfaces
