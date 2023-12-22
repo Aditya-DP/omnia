@@ -56,11 +56,11 @@
   - Certificate_key_file != ''
   block:
   - name: Check certificate files exist
-    stat:
+    ansible.builtin.stat:
       path: "{{ item }}"
     register: file_status
     failed_when: not file_status.stat.exists
-    with_items:
+    loop:
       - "{{ CA_Cetificate_file }}"
       - "{{ Certificate_file }}"
       - "{{ Certificate_key_file }}"
