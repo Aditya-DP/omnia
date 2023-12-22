@@ -51,7 +51,7 @@
 
 - name: Validate Certificate directory
   when:
-  - CA_Cetificate_file != ''
+  - CA_Certificate_file != ''
   - Certificate_file != ''
   - Certificate_key_file != ''
   block:
@@ -61,7 +61,7 @@
     register: file_status
     failed_when: not file_status.stat.exists
     loop:
-      - "{{ CA_Cetificate_file }}"
+      - "{{ CA_Certificate_file }}"
       - "{{ Certificate_file }}"
       - "{{ Certificate_key_file }}"
   rescue:
