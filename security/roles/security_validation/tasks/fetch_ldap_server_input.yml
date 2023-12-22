@@ -61,9 +61,9 @@
     register: file_status
     failed_when: not file_status.stat.exists
     with_items:
-      - "{{ CA_Cetificate_file }}"
-      - "{{ Certificate_file }}"
-      - "{{ Certificate_key_file }}"
+      - CA_Cetificate_file
+      - Certificate_file
+      - Certificate_key_file
   rescue:
     - name: Certificate path invalid
       ansible.builtin.fail:
