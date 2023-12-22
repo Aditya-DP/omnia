@@ -34,3 +34,7 @@
     name: sssd
     state: restarted
     enabled: true
+
+- name: Display IP Address
+  debug:
+    var: ansible_default_ipv4.address
