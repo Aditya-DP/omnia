@@ -25,7 +25,7 @@
     - hostvars['127.0.0.1']['Cetificate_file'] == ''
     - hostvars['127.0.0.1']['Cetificate_key_file'] == ''
   block:
-  - name: Set default certificates as
+  - name: Set default certificates as true
     ansible.builtin.set_fact:
       default_certs: true
 
@@ -44,16 +44,15 @@
   when: not default_certs
   block:
   - name: Copy the certificate to remote node
-    ansible.builtin.fetch:
+    ansible.builtin.copy:
       src: "{{ item }}"
       dest: "{{ TLS_Cetificates_directory_path }}"
       remote_src: false
       mode: "0644"
-    delegate_to: localhost
     with_items:
-      - hostvars['127.0.0.1']['CA_Cetificate_file']
-      - hostvars['127.0.0.1']['Cetificate_file']
-      - hostvars['127.0.0.1']['Cetificate_key_file']
+      - "{{ hostvars['127.0.0.1']['CA_Cetificate_file'] }}"
+      - "{{ hostvars['127.0.0.1']['Cetificate_file'] }}"
+      - "{{ hostvars['127.0.0.1']['Cetificate_key_file'] }}"
 
   - name: Set  tls certificate path for LTB playbook 
     ansible.builtin.set_fact:
