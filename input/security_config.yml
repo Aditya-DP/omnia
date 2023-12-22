@@ -95,7 +95,9 @@ user_home_dir: "/home/omnia-share"
 # By default it is set to false indicating security features will not be configured
 enable_secure_login_node: false
 
-TLS_Cetificates_directory_path: ""
+CA_Cetificate_file: ""
+Certificate_file: ""
+Certificate_key_file: ""
 openldap_config_root_username: "admin"
 openldap_config_root_password: ""     # will be converted to SSHA hash
 openldap_database_root_username: "admin"

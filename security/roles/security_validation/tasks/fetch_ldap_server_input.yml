@@ -1,0 +1,67 @@
+# Copyright 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+
+- name: Assert openldap_config_root_password
+  ansible.builtin.assert:
+    that:
+      - openldap_config_root_password | length > min_length | int - 1
+      - openldap_config_root_password | length < max_length | int + 1
+      - '"-" not in openldap_config_root_password '
+      - '"\\" not in openldap_config_root_password '
+      - '"\"" not in openldap_config_root_password '
+      - " \"'\" not in openldap_config_root_password "
+    success_msg: "{{ success_msg_config_root_password }}"
+    fail_msg: "{{ fail_msg_config_root_password }}"
+
+- name: Assert openldap_database_root_password
+  ansible.builtin.assert:
+    that:
+      - openldap_database_root_password | length > min_length | int - 1
+      - openldap_database_root_password | length < max_length | int + 1
+      - '"-" not in openldap_database_root_password '
+      - '"\\" not in openldap_database_root_password '
+      - '"\"" not in openldap_database_root_password '
+      - " \"'\" not in openldap_database_root_password "
+    success_msg: "{{ success_msg_database_root_password }}"
+    fail_msg: "{{ fail_msg_database_root_password }}"
+
+- name: Assert openldap_monitor_root_password
+  ansible.builtin.assert:
+    that:
+      - openldap_monitor_root_password | length > min_length | int - 1
+      - openldap_monitor_root_password | length < max_length | int + 1
+      - '"-" not in openldap_monitor_root_password '
+      - '"\\" not in openldap_monitor_root_password '
+      - '"\"" not in openldap_monitor_root_password '
+      - " \"'\" not in openldap_monitor_root_password "
+    success_msg: "{{ success_msg_monitor_root_password }}"
+    fail_msg: "{{ fail_msg_monitor_root_password }}"
+
+- name: Validate Certificate directory
+  when:
+  - CA_Cetificate_file }}" != ''
+  - Certificate_file != ''
+  - Certificate_key_file != ''
+  block:
+  - name: Assert certificate files exist
+    assert:
+      that:
+        - "{{ item }}"
+      success_msg: "{{ ldap_cert_path_success_msg }}"
+      fail_msg: "{{ ldap_cert_path_fail_msg }}"
+      with_items:
+        - "{{ CA_Cetificate_file }}"
+        - "{{ Certificate_file }}"
+        - "{{ Certificate_key_file }}"

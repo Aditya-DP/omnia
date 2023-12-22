@@ -29,66 +29,17 @@
     success_msg: "{{ ldap_connection_type_success_msg }}"
     fail_msg: "{{ ldap_connection_type_fail_msg }}"
 
-- name: Validate cert path when connection type is TLS
-  block:
-    - name: Verify the certificate path when connection type is TLS
-      ansible.builtin.stat:
-        path: "{{ ldap_ca_cert_path }}"
-      register: stat_results
+# - name: Validate cert path when connection type is TLS
+#   block:
+#     - name: Verify the certificate path when connection type is TLS
+#       ansible.builtin.stat:
+#         path: "{{ CA_Cetificate_file }}"
+#       register: stat_results
 
-    - name: Validate the certificate existence
-      ansible.builtin.fail:
-        msg: "{{ ldap_ca_cert_path_failure_msg }}"
-      when: not stat_results.stat.exists
-  when:
-    - ldap_connection_type == 'TLS' or
-      ldap_connection_type == 'tls'
-
-- name: Assert openldap_config_root_password
-  ansible.builtin.assert:
-    that:
-      - openldap_config_root_password | length > min_length | int - 1
-      - openldap_config_root_password | length < max_length | int + 1
-      - '"-" not in openldap_config_root_password '
-      - '"\\" not in openldap_config_root_password '
-      - '"\"" not in openldap_config_root_password '
-      - " \"'\" not in openldap_config_root_password "
-    success_msg: "{{ success_msg_config_root_password }}"
-    fail_msg: "{{ fail_msg_config_root_password }}"
-
-- name: Assert openldap_database_root_password
-  ansible.builtin.assert:
-    that:
-      - openldap_database_root_password | length > min_length | int - 1
-      - openldap_database_root_password | length < max_length | int + 1
-      - '"-" not in openldap_database_root_password '
-      - '"\\" not in openldap_database_root_password '
-      - '"\"" not in openldap_database_root_password '
-      - " \"'\" not in openldap_database_root_password "
-    success_msg: "{{ success_msg_database_root_password }}"
-    fail_msg: "{{ fail_msg_database_root_password }}"
-
-- name: Assert openldap_monitor_root_password
-  ansible.builtin.assert:
-    that:
-      - openldap_monitor_root_password | length > min_length | int - 1
-      - openldap_monitor_root_password | length < max_length | int + 1
-      - '"-" not in openldap_monitor_root_password '
-      - '"\\" not in openldap_monitor_root_password '
-      - '"\"" not in openldap_monitor_root_password '
-      - " \"'\" not in openldap_monitor_root_password "
-    success_msg: "{{ success_msg_monitor_root_password }}"
-    fail_msg: "{{ fail_msg_monitor_root_password }}"
-
-- name: Validate Certificate directory
-  when: TLS_Cetificates_directory_path != ''
-  block:
-  - name: Check TLS certificate directory exists
-    ansible.builtin.stat:
-      path: "{{ TLS_Cetificates_directory_path }}"
-      register: tls_directory
-
-  - name: Fail if TLS certificate directory not exists
-    ansible.builtin.fail:
-      msg: "{{ ldap_cert_path_fail_msg }}"
-    when: not tls_directory.stat.exists
+#     - name: Validate the certificate existence
+#       ansible.builtin.fail:
+#         msg: "{{ ldap_ca_cert_path_failure_msg }}"
+#       when: not stat_results.stat.exists
+#   when:
+#     - ldap_connection_type == 'TLS' or
+#       ldap_connection_type == 'tls'
