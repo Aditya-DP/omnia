@@ -111,7 +111,8 @@
 - name: Apply ldap client installation and config
   hosts: manager, compute, login
   gather_facts: false
-  vars: "{{ ldaptoolbox_openldap_olcTLSCACertificateFile }}"
+  vars: 
+  - ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ ldaptoolbox_openldap_olcTLSCACertificateFile }}"
   roles:
     - ldap_client
   tags: ldap
