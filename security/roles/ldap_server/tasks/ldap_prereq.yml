@@ -41,15 +41,15 @@
       ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ TLS_Cetificates_directory_path }}/ldapserver.key"
 
 - name: Set tls certificate path for omnia playbook
-  delegate_to: localhost
   when: not default_certs
   block:
   - name: Copy the certificate to remote node
-    ansible.builtin.copy:
+    ansible.builtin.fetch:
       src: "{{ item }}"
       dest: "{{ TLS_Cetificates_directory_path }}"
       remote_src: false
       mode: "0644"
+    delegate_to: localhost
     with_items:
       - hostvars['127.0.0.1']['CA_Cetificate_file']
       - hostvars['127.0.0.1']['Cetificate_file']
