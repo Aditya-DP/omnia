@@ -23,6 +23,7 @@
 - name: Search schema
   ansible.builtin.command: ldapsearch -Y EXTERNAL -H "{{ ldap_host_string }}" -b "{{ ldaptoolbox_openldap_suffix }}"  
   changed_when: false
+  ignore_errors: true
   register: schema_output
 
 - name: Verify and add domain config
