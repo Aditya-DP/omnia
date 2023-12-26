@@ -74,7 +74,7 @@
     success_msg: "{{ visualization_support_success_msg }}"
     fail_msg: "{{ visualization_support_fail_msg }}"
 
-- name: Waiting for {{ idrac_omnia_telemetry_support_false_warn_time }} seconds
+- name: Please wait, This task will take few seconds
   ansible.builtin.pause:
     seconds: "{{ idrac_omnia_telemetry_support_false_warn_time }}"
     prompt: "{{ idrac_omnia_telemetry_support_warn_msg }}"
@@ -158,6 +158,7 @@
       register: ipaddresspool_output
 
     - name: Validations for pod_external_ip_start_range and pod_external_ip_end_range
+      when: "'metallb-system' not in ipaddresspool_output.stdout"
       block:
         - name: Validate format of pod_external_ip_start_range
           ansible.builtin.assert:
@@ -207,7 +208,6 @@
               - start_range_octets[2] != end_range_octets[2] or start_range_octets[3] | int < end_range_octets[3] | int
             fail_msg: "{{ validation_error_msg_same_third_octet_order }}"
             success_msg: "{{ validation_success_msg_same_third_octet_order }}"
-      when: "'metallb-system' not in ipaddresspool_output.stdout"
 
 # Encrypt telemetry_config.yml
 - name: Create ansible vault key

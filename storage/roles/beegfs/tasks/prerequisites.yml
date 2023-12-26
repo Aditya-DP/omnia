@@ -1,4 +1,4 @@
-#  Copyright 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
+#  Copyright 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -77,10 +77,8 @@
   register: kernel_version
   changed_when: false
 
-- name: Install kernel-devel package
+- name: Install kernel-devel package # noqa: command-instead-of-module
   ansible.builtin.command: "yum install kernel-devel-{{ kernel_version.stdout }} -y"
-  args:
-    warn: false
   changed_when: false
 
 - name: Install common packages for BeeGFS client

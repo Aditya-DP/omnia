@@ -76,6 +76,7 @@
       register: ipaddresspool_output
 
     - name: Convert admin_nic_subnet to first two octets and Set pod_external_ip_range
+      when: "'metallb-system' not in ipaddresspool_output.stdout"
       block:
 
         - name: Convert admin_nic_subnet to first two octets
@@ -97,8 +98,6 @@
         - name: Combine parts to set final pod_external_ip_range
           ansible.builtin.set_fact:
             pod_external_ip_range: "{{ pod_ext_ip_range_part1 }}.{{ pod_ext_ip_range_part2 }}-{{ pod_ext_ip_range_part1 }}.{{ pod_ext_ip_range_part3 }}"
-
-      when: "'metallb-system' not in ipaddresspool_output.stdout"
 
 - name: Create ansible vault key
   ansible.builtin.set_fact:

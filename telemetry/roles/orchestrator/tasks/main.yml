@@ -55,6 +55,7 @@
           register: k8s_nodes
 
         - name: Reset kubeadm & initialise k8s
+          when: "' Ready' not in k8s_nodes.stdout"
           block:
             - name: Reset kubeadm
               ansible.builtin.command: "kubeadm reset --cri-socket={{ crio_socket_path }} -f"
@@ -62,7 +63,6 @@
 
             - name: Initialise k8s
               ansible.builtin.include_tasks: k8s_init.yml
-          when: "' Ready' not in k8s_nodes.stdout"
 
         - name: Deploy K8s dashboard
           ansible.builtin.import_tasks: k8s_services.yml

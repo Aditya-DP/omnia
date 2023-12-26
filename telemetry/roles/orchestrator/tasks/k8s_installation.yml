@@ -28,7 +28,7 @@
     state: present
 
 - name: Permanently Disable swap
-  ansible.builtin.mount:
+  ansible.posix.mount:
     name: "swap"
     fstype: swap
     state: absent
@@ -50,7 +50,7 @@
     mode: "{{ conf_file_mode }}"
 
 - name: Enable the kernel modules overlay and br_netfilter
-  ansible.builtin.modprobe:
+  community.general.modprobe:
     name: "{{ item }}"
     state: present
   with_items:
@@ -110,6 +110,7 @@
   when: os_supported_rocky in mgmt_os
 
 - name: Install and configure crio for RHEL
+  when: os_supported_rhel in mgmt_os
   block:
     - name: Fetch redhat subscription status
       ansible.builtin.command: subscription-manager list
@@ -136,11 +137,10 @@
       when: "'Subscribed' not in rhsm_status.stdout"
 
     - name: Add versionlock cri-o
-      ansible.builtin.command: yum versionlock cri-o
-      args:
-        warn: false
-      changed_when: true
-  when: os_supported_rhel in mgmt_os
+      community.general.yum_versionlock:
+        state: present
+        name:
+          - cri-o
 
 - name: Install k8s packages
   ansible.builtin.package:
@@ -148,12 +148,12 @@
     state: present
 
 - name: Versionlock kubernetes
-  ansible.builtin.command: "yum versionlock '{{ item }}'"
-  args:
-    warn: false
+  community.general.yum_versionlock:
+    state: present
+    name:
+      - "{{ item }}"
   with_items:
     - "{{ k8s_packages }}"
-  changed_when: true
 
 - name: Add docker community edition repository for docker-ce-cli
   ansible.builtin.get_url:

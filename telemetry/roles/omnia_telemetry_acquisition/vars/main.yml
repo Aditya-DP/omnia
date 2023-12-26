@@ -39,4 +39,4 @@ telemetry_package_list: "{{ playbook_dir }}/../provision/roles/xcat_repo_manipul
 omnia_telemetry_template_path: "templates/omnia_telemetry_service_template.j2"
 omnia_telemetry_service_shell_file_path: /opt/omnia/telemetry/omnia_telemetry
 omnia_telemetry_service_path: /etc/systemd/system/omnia_telemetry.service
-omnia_telemetry_service_file_permissions: 0600
+omnia_telemetry_service_file_permissions: "0600"

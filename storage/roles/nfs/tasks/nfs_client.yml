@@ -1,4 +1,4 @@
-#  Copyright 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
+#  Copyright 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -51,12 +51,11 @@
     set -o pipefail && \
     mount | grep nfs
   changed_when: false
-  args:
-    warn: false
   register: mounted_share
   failed_when: false
 
 - name: Create directory and mount NFS
+  when: mount_exp not in mounted_share.stdout
   block:
     - name: Create directory for NFS client
       block:
@@ -72,26 +71,23 @@
 
     - name: Mount NFS client
       block:
-        - name: Mount NFS client when mount options are provided
+        - name: Mount NFS client when mount options are provided # noqa: command-instead-of-module
           ansible.builtin.command: "mount -o {{ item.client_mount_options }} -t nfs {{ item.server_ip }}:{{ item.server_share_path }} {{ client_mount_path }}"
           changed_when: true
-          args:
-            warn: false
           async: "{{ sync_value }}"
           poll: "{{ poll_value }}"
           register: nfs_mount_status
           when: mount_option_status
 
-        - name: Mount NFS client when mount options are not provided
+        - name: Mount NFS client when mount options are not provided # noqa: command-instead-of-module
           ansible.builtin.command: >-
             mount -o {{ default_client_mount_options }} -t nfs {{ item.server_ip }}:{{ item.server_share_path }} {{ client_mount_path }}
           changed_when: true
-          args:
-            warn: false
           async: "{{ sync_value }}"
           poll: "{{ poll_value }}"
           register: nfs_mount_status
           when: not mount_option_status
+
       rescue:
         - name: Status of NFS mount when NFS server is not available on mentioned server_share_path
           ansible.builtin.fail:
@@ -114,4 +110,3 @@
         path: "{{ fstab_path }}"
         line: "{{ item.server_ip }}:{{ item.server_share_path }}     {{ client_mount_path }}  nfs     {{ default_client_mount_options }}"
       when: not mount_option_status
-  when: mount_exp not in mounted_share.stdout

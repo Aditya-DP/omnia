@@ -36,6 +36,7 @@
   register: k8s_pods
 
 - name: Initialize kubeadm (This process may take 5-10min)
+  when: "'master' not in k8s_nodes.stdout"
   block:
     - name: Initialize kubeadm (This process may take 5-10min)
       ansible.builtin.command: "kubeadm init --cri-socket={{ crio_socket_path }} --pod-network-cidr='{{ k8s_net_cidr }}' \
@@ -58,7 +59,6 @@
       changed_when: false
       failed_when: false
       register: k8s_pods
-  when: "'master' not in k8s_nodes.stdout"
 
 - name: Setup directory for Kubernetes environment for root
   ansible.builtin.file:
@@ -77,8 +77,6 @@
 
 - name: Update the kubernetes config file permissions
   ansible.builtin.shell: "chown $(id -u):$(id -g) '{{ k8s_config_dest }}'"
-  args:
-    warn: false
   changed_when: true
 
 - name: Cluster token

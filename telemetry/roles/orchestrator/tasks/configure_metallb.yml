@@ -1,4 +1,4 @@
-#  Copyright 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
+#  Copyright 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
   failed_when: false
 
 - name: Configure MetalLB
+  when: pod_external_ip_range is defined and "'metallb-system' not in ipaddresspool_output.stdout"
   block:
     - name: Create IP Address Pool YAML file
       ansible.builtin.copy:
@@ -50,4 +51,3 @@
     - name: Deploy MetalLB L2 Advertisement
       ansible.builtin.command: "kubectl apply -f '{{ metallb_l2advertisement_file_dest }}'"
       changed_when: true
-  when: pod_external_ip_range is defined and "'metallb-system' not in ipaddresspool_output.stdout"

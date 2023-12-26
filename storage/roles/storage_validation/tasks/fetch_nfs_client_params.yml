@@ -1,4 +1,4 @@
-#  Copyright 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
+#  Copyright 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -55,6 +55,7 @@
     nfs_client_declaration: false
 
 - name: Check for variable declaration and update status
+  when: nfs_client_support
   block:
     - name: Updating nfs_client_declaration value when values are declared correctly
       ansible.builtin.set_fact:
@@ -67,7 +68,6 @@
       ansible.builtin.fail:
         msg: "{{ nfs_client_declaration_msg }}"
       when: not nfs_client_declaration
-  when: nfs_client_support
 
 - name: Test reachablility of NFS server
   ansible.builtin.command: ping -c3 {{ item.server_ip }}

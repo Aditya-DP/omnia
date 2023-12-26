@@ -1,4 +1,4 @@
-#  Copyright 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
+#  Copyright 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 #  limitations under the License.
 ---
 - name: Permanently Disable swap
-  ansible.builtin.mount:
+  ansible.posix.mount:
     name: "swap"
     fstype: swap
     state: absent
@@ -35,7 +35,7 @@
     mode: "{{ conf_file_mode }}"
 
 - name: Enable the kernel modules overlay and br_netfilter
-  ansible.builtin.modprobe:
+  community.general.modprobe:
     name: "{{ item }}"
     state: present
   with_items:
@@ -75,10 +75,8 @@
   changed_when: true
 
 - name: Reloading deamon
-  ansible.builtin.command: systemctl daemon-reload
-  changed_when: true
-  args:
-    warn: false
+  ansible.builtin.systemd:
+    daemon_reload: true
 
 - name: Start and enable crio
   ansible.builtin.service:
@@ -110,8 +108,6 @@
 
 - name: Import gpg-pubkey key for installing kubernetes
   ansible.builtin.command: "{{ gpg_pubkey_leap }}"
-  args:
-    warn: false
   changed_when: false
 
 - name: Refresh repositories and installing conntrack-tools
@@ -165,14 +161,12 @@
   when: version_kubectl not in kubectl_status.stdout
 
 - name: Install common packages
-  zypper:
+  community.general.zypper:
     name: "{{ common_packages }}"
     state: present
 
 - name: Versionlock k8s packages
   ansible.builtin.command: zypper addlock {{ item }}
-  args:
-    warn: false
   changed_when: false
   with_items: "{{ k8s_package_names }}"
 
