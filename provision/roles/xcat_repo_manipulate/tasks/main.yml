@@ -27,6 +27,9 @@
       ansible.builtin.include_vars: "{{ item }}"
       with_items: "{{ create_repo_role_vars }}"
 
+    - name: Include vars for {{ control_plane_os }}
+      ansible.builtin.include_vars: "{{ role_path }}/vars/{{ control_plane_os }}.yml"
+
     - name: Check xcat_repo_manipulate role pre-requisites
       ansible.builtin.include_tasks: pre_requisites.yml
 
@@ -36,16 +39,8 @@
     - name: Fetch osimage name
       ansible.builtin.include_tasks: fetch_osimage.yml
 
-    - name: Configure xCAT on rhel based OS
-      ansible.builtin.include_tasks: rhel/main.yml
-      when:
-        - control_plane_os in control_plane_os_redhat or
-          control_plane_os in control_plane_os_rocky
-
-    - name: Configure xCAT on ubuntu OS
-      ansible.builtin.include_tasks: ubuntu/main.yml
-      when:
-        - control_plane_os in control_plane_os_ubuntu
+    - name: Configure xCAT on {{ control_plane_os }}
+      ansible.builtin.include_tasks: "{{ control_plane_os }}/main.yml"
 
     - name: Configure postscripts
       ansible.builtin.include_tasks: postscripts/main.yml

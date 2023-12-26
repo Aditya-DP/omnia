@@ -27,7 +27,7 @@
       ansible.builtin.include_tasks: pre_requisites.yml
 
     - name: Install xCAT on {{ control_plane_os }}
-      ansible.builtin.include_tasks: {{ control_plane_os }}/main.yml
+      ansible.builtin.include_tasks: "{{ control_plane_os }}/main.yml"
 
     - name: Configuration of xcat
       ansible.builtin.include_tasks: configure_xcat.yml
