@@ -20,9 +20,6 @@ xcat_manpath_env: "/opt/xcat/share/man:$MANPATH"
 perl_badlang_env: 0
 create_repo_role_vars:
   - "{{ role_path }}/vars/postscripts.yml"
-control_plane_os_redhat: "redhat"
-control_plane_os_rocky: "rocky"
-control_plane_os_ubuntu: "ubuntu"
 
 # Usage: check_telemetry_encryption.yml
 telemetry_config_filename: "{{ playbook_dir }}/../input/telemetry_config.yml"
@@ -33,6 +30,9 @@ ansible_vault_search_key: "$ANSIBLE_VAULT;"
 # Usage: pre_requisites.yml
 xcat_connection_search_key: "connection failure"
 xcat_status_fail_msg: "Failed. xCAT services are not running. Please run provision.yml or prepare_cp.yml to install xCAT."
+control_plane_os_redhat: "redhat"
+control_plane_os_rocky: "rocky"
+control_plane_os_ubuntu: "ubuntu"
 
 # Usage: create_osimage.yml
 osimage_search_key: install-compute
