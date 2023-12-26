@@ -20,3 +20,5 @@ xcat_ubuntu_path:
 ubuntu22_unwanted_package: /install/{{ ubuntu22_directory }}/x86_64/dists/jammy/restricted/binary-amd64/Packages
 os_supported_ubuntu: ubuntu
 ubuntu22_version: "22.04"
+remoteshell_script_path: /install/postscripts/remoteshell
+remoteshell_regexp: "^(.*)MaxStartups 1024(.*)"

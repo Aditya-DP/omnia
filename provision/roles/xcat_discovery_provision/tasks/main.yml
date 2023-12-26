@@ -50,6 +50,9 @@
 
     - name: Configuration of postscripts
       ansible.builtin.include_tasks: postscripts/main.yml
+      when:
+        - control_plane_os in control_plane_os_redhat or
+          control_plane_os in control_plane_os_rocky
 
     - name: Configure DHCP
       ansible.builtin.include_tasks: configure_dhcp.yml

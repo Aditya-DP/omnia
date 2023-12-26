@@ -13,15 +13,16 @@
 # limitations under the License.
 ---
 
-- name: Copy rsyslog.conf
-  ansible.builtin.copy:
-    src: "{{ rsyslog_src }}"
-    dest: "{{ rsyslog_dest }}"
-    mode: "{{ apt_file_mode }}"
-  register: copy_rsyslog
+- name: Update rsyslog.conf
+  ansible.builtin.replace:
+    path: "{{ rsyslog_dest }}"
+    regexp: "{{ item.regexp }}"
+    replace: "{{ item.replace }}"
+  with_items: "{{ rsyslog_conf }}"
+  register: update_rsyslog
 
 - name: Restart rsyslog service
   ansible.builtin.systemd:
     name: rsyslog.service
     state: restarted
-  when: copy_rsyslog.changed # noqa: no-handler
+  when: update_rsyslog.changed # noqa: no-handler

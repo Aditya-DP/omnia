@@ -1,6 +1,6 @@
 #!/bin/sh
 while true
 do
- python3.9 {{ role_path }}/files/utils/monitor_status.py
+ {{ python_version }} {{ role_path }}/files/utils/monitor_status.py
  sleep 180
 done

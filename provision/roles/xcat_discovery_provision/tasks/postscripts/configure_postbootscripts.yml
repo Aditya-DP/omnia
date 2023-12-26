@@ -17,25 +17,12 @@
   ansible.builtin.command: chdef all postbootscripts="otherpkgs"
   changed_when: true
 
-- name: Postscripts for RHEL/Rocky
-  when:
-    - control_plane_os in control_plane_os_redhat or
-      control_plane_os in control_plane_os_rocky
-  block:
-    - name: Configure bmc postbootscripts
-      ansible.builtin.include_tasks: configure_postscripts_bmc.yml
-      when: bmc_postscripts_config_status
+- name: Configure bmc postbootscripts
+  ansible.builtin.include_tasks: configure_postscripts_bmc.yml
+  when: bmc_postscripts_config_status
 
-    - name: Configure ib postbootscripts
-      ansible.builtin.include_tasks: configure_postscripts_ib.yml
+- name: Configure ib postbootscripts
+  ansible.builtin.include_tasks: configure_postscripts_ib.yml
 
-    - name: Configure admin postbootscripts
-      ansible.builtin.include_tasks: configure_postscripts_admin.yml
-
-- name: Postscripts for ubuntu
-  when:
-    - control_plane_os in control_plane_os_ubuntu
-  block:
-    - name: Configure postscripts to configure hostname
-      ansible.builtin.command: chdef all -p postbootscripts=omnia_hostname_ubuntu
-      changed_when: true
+- name: Configure admin postbootscripts
+  ansible.builtin.include_tasks: configure_postscripts_admin.yml

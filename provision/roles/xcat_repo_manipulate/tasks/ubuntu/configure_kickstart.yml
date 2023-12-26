@@ -20,6 +20,12 @@
     mode: "{{ item.mode }}"
   with_items: "{{ xcat_ubuntu_path }}"
 
+- name: Delete maxstartups line in remoteshell script
+  ansible.builtin.lineinfile:
+    path: "{{ remoteshell_script_path }}"
+    regexp: "{{ remoteshell_regexp }}"
+    state: absent
+
 - name: Ubuntu 22.04 configuration
   when:
     - provision_os | lower == os_supported_ubuntu
