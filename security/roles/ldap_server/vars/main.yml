@@ -24,4 +24,5 @@ ldaptoolbox_olcPasswordHash: "{SHA}"
 openldap_configuration_mode: "0600"
 openldap_config_permissions: "0777"
 ldap_host_string: "ldapi://%2Fvar%2Frun%2Fslapd%2Fldapi"
+tls_cert_path: "/etc/openldap/certs/"
 
