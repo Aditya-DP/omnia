@@ -21,9 +21,6 @@ perl_badlang_env: 0
 control_plane_os_redhat: "redhat"
 control_plane_os_rocky: "rocky"
 control_plane_os_ubuntu: "ubuntu"
-xcat_prepare_cp_vars:
-  - "{{ role_path }}/vars/rhel.yml"
-  - "{{ role_path }}/vars/ubuntu.yml"
 
 # Usage: pre_requisites.yml
 selinux_status_fail_msg: "selinux is not disabled. Disable it in /etc/sysconfig/selinux and reboot the system"
