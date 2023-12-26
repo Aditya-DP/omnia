@@ -35,7 +35,7 @@
     changed_when: false
   
   - name: Copy Certificate to contol plane for client setup
-    copy:
+    fetch:
       src: "{{ TLS_Certificates_directory_path }}/ldapserver.crt"
       dest: "{{ tls_cert_path }}"
     delegate_to: localhost
@@ -59,6 +59,12 @@
       - "{{ hostvars['127.0.0.1']['CA_Certificate_file'] }}"
       - "{{ hostvars['127.0.0.1']['Certificate_file'] }}"
       - "{{ hostvars['127.0.0.1']['Certificate_key_file'] }}"
+
+  - name: Copy Certificate to contol plane for client setup
+    copy:
+      src: "{{ hostvars['127.0.0.1']['CA_Certificate_file'] }}"
+      dest: "{{ tls_cert_path }}"
+    delegate_to: localhost
 
   - name: Set  tls certificate path for LTB playbook 
     ansible.builtin.set_fact:
