@@ -1,4 +1,4 @@
-# Copyright 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
+# Copyright 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 # usage: get_node_inventory.yml, update_timescaledb_details.yml
 slurm_telemetry_support: false
 slurm_telemetry_code_dir: "{{ mount_location }}slurm"
-slurm_telemetry_code_dir_mode: 0755
+slurm_telemetry_code_dir_mode: "0755"
 awx_namespace: awx
 awx_username: admin
 awx_fail_msg: "AWX service not found. AWX needs to be installed"
@@ -26,7 +26,7 @@ os_username: root
 # usage: deploy_slurm_telemetry
 slurm_telemetry_image: slurm_telemetry
 slurm_telemetry_image_tag: latest
-monster_config_file_mode: 0644
+monster_config_file_mode: "0644"
 
 manager_group: manager
 compute_group: compute
