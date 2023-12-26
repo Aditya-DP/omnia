@@ -61,11 +61,7 @@
       hostvars['127.0.0.1']['ldap_connection_type'] == 'ssl'
 
 - name: Copy the certificate to remote node
-  when: inventory_hostname in groups['manager']
   copy:
-    src: "{{ ldaptoolbox_openldap_olcTLSCACertificateFile }}"
+    src: "{{ tls_cert_path }}"
     dest: "{{ tls_cert_path }}"
-  delegate_to: "{{ hostvars[item]['ansible_env'].SSH_CONNECTION.split(' ')[2] }}" 
-  with_items: 
-  - "{{ groups['compute'] }}"
-  - "{{ groups['manager'] }}"
+
