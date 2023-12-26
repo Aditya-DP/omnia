@@ -33,6 +33,12 @@
     ansible.builtin.command:
       cmd: "openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj /C=/ST=/L=/O=/CN= -keyout {{ TLS_Certificates_directory_path }}/ldapserver.key  -out {{ TLS_Certificates_directory_path }}/ldapserver.crt"
     changed_when: false
+  
+  - name: Copy Certificate to contol plane for client setup
+    copy:
+      src: "{{ TLS_Certificates_directory_path }}/ldapserver.crt"
+      dest: "{{ tls_cert_path }}"
+    delegate_to: localhost
 
   - name: Set default tls certificate path for LTB playbook
     ansible.builtin.set_fact:

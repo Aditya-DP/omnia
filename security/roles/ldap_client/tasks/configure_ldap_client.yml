@@ -13,6 +13,11 @@
 #  limitations under the License.
 ---
 
+# - name: Identify Manager node and ldapserver
+#   when: groups['manager'][0] not in groups['ldapserver'] 
+#   ansible.builtin.set_fact:
+#     ldap_server: true
+
 - name: Install packages for LDAP Client
   ansible.builtin.package:
     name: "{{ ldap_client_packages }}"
@@ -64,5 +69,3 @@
   with_items: 
   - "{{ groups['compute'] }}"
   - "{{ groups['manager'] }}"
-
-  #{{ hostvars[item]['ansible_env'].SSH_CONNECTION.split(' ')[2] }}
