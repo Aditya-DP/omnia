@@ -38,6 +38,7 @@
     fetch:
       src: "{{ TLS_Certificates_directory_path }}/ldapserver.crt"
       dest: "{{ tls_cert_path }}"
+      flat: true
     delegate_to: localhost
 
   - name: Set default tls certificate path for LTB playbook
