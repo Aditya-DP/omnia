@@ -1,4 +1,4 @@
-# Copyright 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
+# Copyright 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -44,6 +44,9 @@
     fail_msg: "{{ ldap_connection_type_fail_msg }}"
 
 - name: Validate cert path when connection type is TLS
+  when:
+    - ldap_connection_type == 'TLS' or
+      ldap_connection_type == 'tls'
   block:
     - name: Verify the certificate path when connection type is TLS
       ansible.builtin.stat:
@@ -54,6 +57,3 @@
       ansible.builtin.fail:
         msg: "{{ ldap_ca_cert_path_failure_msg }}"
       when: not stat_results.stat.exists
-  when:
-    - ldap_connection_type == 'TLS' or
-      ldap_connection_type == 'tls'

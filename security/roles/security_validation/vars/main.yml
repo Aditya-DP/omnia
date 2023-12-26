@@ -1,4 +1,4 @@
-# Copyright 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
+# Copyright 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 ---
 
 # Usage: include_security_config.yml
-vault_key_permission: 0644
+vault_key_permission: "0644"
 ansible_vault_search_key: "$ANSIBLE_VAULT;"
 security_config_file: "{{ role_path }}/../../../input/security_config.yml"
 security_vaultname: "{{ role_path }}/../../../input/.security_vault.key"

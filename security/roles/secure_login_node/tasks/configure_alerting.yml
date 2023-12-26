@@ -1,4 +1,4 @@
-#  Copyright 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
+#  Copyright 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@
     enabled: true
 
 - name: Install packages
+  when: os_leap in ansible_distribution | lower
   block:
     - name: Install python3
       ansible.builtin.package:
@@ -40,9 +41,9 @@
         name: ansible
         state: present
         executable: pip3
-  when: os_leap in ansible_distribution | lower
 
 - name: Install ansible
+  when: os_leap not in ansible_distribution | lower
   block:
     - name: Install python3.8
       ansible.builtin.package:
@@ -58,7 +59,6 @@
         name: ansible==5.10.0
         state: present
         executable: pip3.8
-  when: os_leap not in ansible_distribution | lower
 
 - name: Fetch ansible-galaxy path
   ansible.builtin.command: whereis ansible-galaxy

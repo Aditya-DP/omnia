@@ -15,6 +15,7 @@
 ---
 
 - name: Install and configure Openldap client
+  when: hostvars['127.0.0.1']['ldap_required']
   block:
       - name: Install required packages
         ansible.builtin.include_tasks: configure_ldap_client.yml
@@ -24,4 +25,3 @@
 
       - name: Configure system for authselect with sssd
         ansible.builtin.include_tasks: configure_authselect.yml
-  when: hostvars['127.0.0.1']['ldap_required']
