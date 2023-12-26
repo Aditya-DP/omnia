@@ -62,6 +62,5 @@
 
 - name: Copy the certificate to remote node
   copy:
-    src: "{{ tls_cert_path }}"
+    src: "{{ ldaptoolbox_openldap_olcTLSCACertificateFile }}"
     dest: "{{ tls_cert_path }}"
-
