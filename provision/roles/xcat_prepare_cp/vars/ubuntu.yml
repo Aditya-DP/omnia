@@ -55,5 +55,12 @@ postgresql_conf_dest_ubuntu: "{{ postgresql_conf_dir_ubuntu }}/postgresql.conf"
 pg_hba_conf_path: /etc/postgresql/{{ psql_version }}/main/pg_hba.conf
 
 # Usage: configure_rsyslog.yml
-rsyslog_src: "{{ role_path }}/files/rsyslog.conf"
 rsyslog_dest: /etc/rsyslog.conf
+rsyslog_conf:
+  - { regexp: "\\$FileOwner", replace: "#$FileOwner" }
+  - { regexp: "\\$FileGroup", replace: "#$FileGroup" }
+  - { regexp: "\\$FileCreateMode", replace: "#$FileCreateMode" }
+  - { regexp: "\\$DirCreateMode", replace: "#$DirCreateMode" }
+  - { regexp: "\\$Umask", replace: "#$Umask" }
+  - { regexp: "\\$PrivDropToUser", replace: "#$PrivDropToUser" }
+  - { regexp: "\\$PrivDropToGroup", replace: "#$PrivDropToGroup" }

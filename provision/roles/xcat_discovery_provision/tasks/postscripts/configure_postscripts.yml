@@ -17,66 +17,42 @@
   ansible.builtin.command: chdef all postscripts="syslog,remoteshell,syncfiles"
   changed_when: true
 
-- name: Postscripts for RHEL/Rocky
+- name: Configure ntp postscripts
+  ansible.builtin.include_tasks: configure_postscripts_ntp.yml
+
+- name: Copy hostname script to postscripts
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode }}"
+  with_items: "{{ hostname_postscripts_path }}"
+
+- name: Configure postscripts to configure hostname
+  ansible.builtin.command: chdef all -p postscripts=omnia_hostname
+  changed_when: true
+
+- name: Verify OFED repo created
+  ansible.builtin.stat:
+    path: "{{ mlnx_ofed_repo }}/{{ mlnx_ofed_path.split('/')[-1] }}"
+  register: ofed_repo_stat
+  when: ofed_config_status
+
+- name: Configure postscripts for OFED
+  ansible.builtin.command: chdef all -p postscripts=omnia_ofed
+  changed_when: true
   when:
-    - control_plane_os in control_plane_os_redhat or
-      control_plane_os in control_plane_os_rocky
-  block:
-    - name: Configure ntp postscripts
-      ansible.builtin.include_tasks: configure_postscripts_ntp.yml
+    - ofed_config_status
+    - ofed_repo_stat.stat.exists
 
-    - name: Copy hostname script to postscripts
-      ansible.builtin.copy:
-        src: "{{ item.src }}"
-        dest: "{{ item.dest }}"
-        mode: "{{ item.mode }}"
-      with_items: "{{ hostname_postscripts_path }}"
+- name: Verify CUDA repo created
+  ansible.builtin.stat:
+    path: "{{ cuda_core_path }}"
+  register: cuda_repo_stat
+  when: cuda_config_status
 
-    - name: Configure postscripts to configure hostname
-      ansible.builtin.command: chdef all -p postscripts=omnia_hostname
-      changed_when: true
-
-    - name: Verify OFED repo created
-      ansible.builtin.stat:
-        path: "{{ mlnx_ofed_repo }}/{{ mlnx_ofed_path.split('/')[-1] }}"
-      register: ofed_repo_stat
-      when: ofed_config_status
-
-    - name: Configure postscripts for OFED
-      ansible.builtin.command: chdef all -p postscripts=omnia_ofed
-      changed_when: true
-      when:
-        - ofed_config_status
-        - ofed_repo_stat.stat.exists
-
-    - name: Verify CUDA repo created
-      ansible.builtin.stat:
-        path: "{{ cuda_core_path }}"
-      register: cuda_repo_stat
-      when: cuda_config_status
-
-    - name: Configure postscripts for CUDA
-      ansible.builtin.command: chdef all -p postscripts=omnia_cuda
-      changed_when: true
-      when:
-        - cuda_config_status
-        - cuda_repo_stat.stat.exists
-
-- name: Postscripts for ubuntu
+- name: Configure postscripts for CUDA
+  ansible.builtin.command: chdef all -p postscripts=omnia_cuda
+  changed_when: true
   when:
-    - control_plane_os in control_plane_os_ubuntu
-  block:
-    - name: Copy ubuntu script to postscripts
-      ansible.builtin.copy:
-        src: "{{ item.src }}"
-        dest: "{{ item.dest }}"
-        mode: "{{ item.mode }}"
-      with_items: "{{ ubuntu_postscripts_path }}"
-
-    - name: Configure postscripts to configure ssh
-      ansible.builtin.command: chdef all -p postscripts=omnia_ssh_config_ubuntu
-      changed_when: true
-
-    - name: Configure postscripts to configure hostname
-      ansible.builtin.command: chdef all -p postscripts=omnia_hostname_ubuntu
-      changed_when: true
+    - cuda_config_status
+    - cuda_repo_stat.stat.exists
