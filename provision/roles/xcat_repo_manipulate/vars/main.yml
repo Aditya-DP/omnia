@@ -20,8 +20,6 @@ xcat_manpath_env: "/opt/xcat/share/man:$MANPATH"
 perl_badlang_env: 0
 create_repo_role_vars:
   - "{{ role_path }}/vars/postscripts.yml"
-  - "{{ role_path }}/vars/rhel.yml"
-  - "{{ role_path }}/vars/ubuntu.yml"
 control_plane_os_redhat: "redhat"
 control_plane_os_rocky: "rocky"
 control_plane_os_ubuntu: "ubuntu"
