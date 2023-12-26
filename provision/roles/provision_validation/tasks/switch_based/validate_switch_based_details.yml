@@ -48,8 +48,7 @@
 - name: Fail if unique IPs are not present
   ansible.builtin.fail:
     msg: "{{ fail_unique_switch_v3_ip }}"
-  when:
-    - switch_based_ip_list | length != switch_based_details | length
+  when: switch_based_ip_list | union(switch_based_details) | length != (switch_based_ip_list | length + switch_based_details | length)
 
 - name: Test using ping
   ansible.builtin.command: |
