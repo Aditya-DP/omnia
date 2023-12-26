@@ -19,6 +19,9 @@
     certificate_path: "{{ hostvars['127.0.0.1']['ldap_ca_cert_path'].split('/') | select | list }}"
 
 - name: Update sssd.conf file for TLS connection type
+  when:
+    - hostvars['127.0.0.1']['ldap_connection_type'] == 'TLS' or
+      hostvars['127.0.0.1']['ldap_connection_type'] == 'tls'
   block:
     - name: Create sssd.conf file
       ansible.builtin.copy:
@@ -53,6 +56,9 @@
         replace: "ldap_tls_cacert = {{ tls_cert_path + certificate_path[-1] }}"
 
     - name: Update bind dn details if it is provided in input file
+      when:
+        - hostvars['127.0.0.1']['ldap_bind_username'] | length > 1
+        - hostvars['127.0.0.1']['ldap_bind_password'] | length > 1
       block:
         - name: Update the certificate path
           ansible.builtin.replace:
@@ -71,14 +77,11 @@
             path: "{{ sssd_conf_dest }}"
             regexp: "#ldap_default_authtok = blank"
             replace: "ldap_default_authtok = {{ hostvars['127.0.0.1']['ldap_bind_password'] }}"
-      when:
-        - hostvars['127.0.0.1']['ldap_bind_username'] | length > 1
-        - hostvars['127.0.0.1']['ldap_bind_password'] | length > 1
-  when:
-    - hostvars['127.0.0.1']['ldap_connection_type'] == 'TLS' or
-      hostvars['127.0.0.1']['ldap_connection_type'] == 'tls'
 
 - name: Update sssd.conf file for SSL connection type
+  when:
+    - hostvars['127.0.0.1']['ldap_connection_type'] == 'SSL' or
+      hostvars['127.0.0.1']['ldap_connection_type'] == 'ssl'
   block:
     - name: Create sssd.conf file
       ansible.builtin.copy:
@@ -99,6 +102,3 @@
         path: "{{ sssd_conf_dest }}"
         regexp: "ldap_chpass_uri = ldaps://server-ip:636"
         replace: "ldap_chpass_uri = ldaps://{{ hostvars['127.0.0.1']['ldap_server_ip'] }}:636"
-  when:
-    - hostvars['127.0.0.1']['ldap_connection_type'] == 'SSL' or
-      hostvars['127.0.0.1']['ldap_connection_type'] == 'ssl'
