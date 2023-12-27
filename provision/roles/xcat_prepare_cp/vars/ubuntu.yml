@@ -13,8 +13,12 @@
 #  limitations under the License.
 ---
 
+# Usage: pre_requisites.yml
+xcatd_service: "xcatd"
+postgresql_service: "postgresql"
+
 # Usage: package_installation.yml
-common_packages_xcat_ubuntu:
+common_packages_xcat:
   - dpkg-dev
   - wget
   - unzip

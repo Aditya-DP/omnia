@@ -34,7 +34,6 @@ xcat_status_fail_msg: "Failed. xCAT services are not running. Please run provisi
 repo_precheck: "Failed. Please run provision/repo_manipulate.yml."
 control_plane_os_redhat: "redhat"
 control_plane_os_rocky: "rocky"
-control_plane_os_ubuntu: "ubuntu"
 
 # Usage: fetch_osimage.yml
 osimage_search_key: install-compute

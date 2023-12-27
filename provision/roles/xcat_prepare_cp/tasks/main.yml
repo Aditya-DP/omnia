@@ -26,6 +26,10 @@
     - name: Check xcat installation pre-requisites
       ansible.builtin.include_tasks: pre_requisites.yml
 
+    - name: Common packages installation for xcat
+      ansible.builtin.include_tasks: package_installation.yml
+      when: not xcat_installation_status
+
     - name: Install xCAT on {{ control_plane_os }}
       ansible.builtin.include_tasks: "{{ control_plane_os }}/main.yml"
 

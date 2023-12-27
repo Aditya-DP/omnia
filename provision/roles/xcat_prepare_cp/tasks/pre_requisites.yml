@@ -68,21 +68,6 @@
   failed_when: false
   register: site_table_check
 
-- name: Set service_extension variable for RHEL/Rocky
-  ansible.builtin.set_fact:
-    xcatd_service: "xcatd.service"
-    postgresql_service: "postgresql.service"
-  when:
-    - control_plane_os in control_plane_os_redhat or
-      control_plane_os in control_plane_os_rocky
-
-- name: Set service_extension variable
-  ansible.builtin.set_fact:
-    xcatd_service: "xcatd"
-    postgresql_service: "postgresql"
-  when:
-    - control_plane_os in control_plane_os_ubuntu
-
 - name: Set xcat_installation_status to true
   ansible.builtin.set_fact:
     xcat_installation_status: true

@@ -14,15 +14,8 @@
 ---
 
 # Usage: pre_requisites.yml
-xcatd_service: "xcatd"
-postgresql_service: "postgresql"
+xcatd_service: "xcatd.service"
+postgresql_service: "postgresql.service"
 
-# Usage: configure_kickstart.yml
-xcat_ubuntu_path:
-  - { src: "{{ role_path }}/files/temp_ks_ubuntu.tmpl", dest: "/opt/xcat/share/xcat/install/ubuntu/compute.subiquity.tmpl", mode: "0644" }
-
-ubuntu22_unwanted_package: /install/{{ ubuntu22_directory }}/x86_64/dists/jammy/restricted/binary-amd64/Packages
-os_supported_ubuntu: ubuntu
-ubuntu22_version: "22.04"
-remoteshell_script_path: /install/postscripts/remoteshell
-remoteshell_regexp: "^(.*)MaxStartups 1024(.*)"
+# Usage: mtms/dynamic_ipmi_enable.yml
+dhcp_path: /var/lib/dhcpd/dhcpd.leases

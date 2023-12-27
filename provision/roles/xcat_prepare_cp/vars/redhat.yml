@@ -13,6 +13,10 @@
 #  limitations under the License.
 ---
 
+# Usage: pre_requisites.yml
+xcatd_service: "xcatd.service"
+postgresql_service: "postgresql.service"
+
 # Usage: package_installation.yml
 common_packages_xcat:
   - createrepo

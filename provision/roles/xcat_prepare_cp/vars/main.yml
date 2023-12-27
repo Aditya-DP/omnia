@@ -26,9 +26,8 @@ warning_wait_time: 30
 reprovision_warning_msg: "[WARNING] xcatd services are not running in the server. Re-provisioning of nodes will be skipped for the given inventory."
 control_plane_os_redhat: "redhat"
 control_plane_os_rocky: "rocky"
-control_plane_os_ubuntu: "ubuntu"
 
-# Usage: rhel/package_installation.yml, ubuntu/package_installation.yml
+# Usage: package_installation.yml
 ansible_galaxy_collection:
   - ansible.utils:2.5.2
   - community.general:4.8.7

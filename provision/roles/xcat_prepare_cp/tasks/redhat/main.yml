@@ -13,10 +13,6 @@
 # limitations under the License.
 ---
 
-- name: Common packages installation for xcat
-  ansible.builtin.include_tasks: package_installation.yml
-  when: not xcat_installation_status
-
 - name: Configure firewall settings
   ansible.builtin.include_tasks: firewall_settings.yml
   when: not xcat_installation_status
