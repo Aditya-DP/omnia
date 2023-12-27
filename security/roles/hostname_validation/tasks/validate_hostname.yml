@@ -54,4 +54,4 @@
           - hostvars['127.0.0.1']['domain_name'] == ms_domain_name
         success_msg: "{{ server_domain_name_success }}"
         fail_msg: "{{ server_domain_name_fail }}"
-  when: authentication_system == 'openldap' or authentication_system == 'freeipa'
+  when: "authentication_system == 'openldap' or authentication_system == 'freeipa'"
