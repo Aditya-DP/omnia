@@ -31,21 +31,21 @@
 
   - name: Generate TLS certificates
     ansible.builtin.command:
-      cmd: "openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj /C=/ST=/L=/O=/CN= -keyout {{ TLS_Certificates_directory_path }}/ldapserver.key  -out {{ TLS_Certificates_directory_path }}/ldapserver.crt"
+      cmd: "openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj /C=/ST=/L=/O=/CN= -keyout {{ TLS_Certificates_directory_path }}/{{ cert_key }}  -out {{ TLS_Certificates_directory_path }}/{{ cert_file }}"
     changed_when: false
   
   - name: Copy Certificate to contol plane for client setup
     fetch:
-      src: "{{ TLS_Certificates_directory_path }}/ldapserver.crt"
+      src: "{{ TLS_Certificates_directory_path }}/{{ cert_file }}"
       dest: "{{ tls_cert_path }}"
       flat: true
     delegate_to: localhost
 
   - name: Set default tls certificate path for LTB playbook
     ansible.builtin.set_fact:
-      ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ TLS_Certificates_directory_path }}/ldapserver.crt"
-      ldaptoolbox_openldap_olcTLSCertificateFile: "{{ TLS_Certificates_directory_path }}/ldapserver.crt"
-      ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ TLS_Certificates_directory_path }}/ldapserver.key"
+      ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ TLS_Certificates_directory_path }}/{{ cert_file }}"
+      ldaptoolbox_openldap_olcTLSCertificateFile: "{{ TLS_Certificates_directory_path }}/{{ cert_file }}"
+      ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ TLS_Certificates_directory_path }}/{{ cert_key }}"
 
 - name: Set tls certificate path for omnia playbook
   when: not default_certs

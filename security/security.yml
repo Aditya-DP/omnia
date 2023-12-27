@@ -74,48 +74,38 @@
     - login_node
   tags: freeipa
 
-# - name: Validate ldap server inputs
-#   hosts: localhost
-#   any_errors_fatal: true
-#   gather_facts: false
+# - name: Apply ldap server installation and config
+#   hosts: manager
 #   roles:
-#     - ldap_validation
+#     - ldap_server
 #   tags: test
 
-- name: Apply ldap server installation and config
-  hosts: manager
-  roles:
-    - ldap_server
-  tags: test
+# - name: Apply ldap server installation and config
+#   remote_user: root
+#   hosts: manager
+#   vars:
+#     - ldaptoolbox_openldap_database_olcLimits:
+#          - "dn.base=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth size=unlimited  time=unlimited"
+#     # No replication
+#     - ldaptoolbox_openldap_syncrepl: []
+#   roles:
+#     - /opt/omnia/ldap/ansible-role-ldaptoolbox-openldap
+#   tags: test
 
-- name: Apply ldap server installation and config
-  remote_user: root
-  hosts: manager
-  vars:
-    - ldaptoolbox_openldap_database_olcLimits:
-         - "dn.base=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth size=unlimited  time=unlimited"
-    # No replication
-    - ldaptoolbox_openldap_syncrepl: []
-  roles:
-    - /opt/omnia/ldap/ansible-role-ldaptoolbox-openldap
-  tags: test
+# - name: Setup LDAP server domain
+#   hosts: manager
+#   tasks:
+#     - name: Include domain setup task
+#       ansible.builtin.include_role:
+#         name: ldap_server
+#         tasks_from: set_domain.yml
 
-- name: Setup LDAP server domain
-  hosts: manager
-  tasks:
-    - name: Include domain setup task
-      ansible.builtin.include_role:
-        name: ldap_server
-        tasks_from: set_domain.yml
-
-- name: Apply ldap client installation and config
-  hosts: manager, compute, login
-  gather_facts: false
-  # vars: 
-  # - ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ ldaptoolbox_openldap_olcTLSCACertificateFile }}"
-  roles:
-    - ldap_client
-  tags: ldap
+# - name: Apply ldap client installation and config
+#   hosts: manager, compute, login
+#   gather_facts: false
+#   roles:
+#     - ldap_client
+#   tags: ldap
 
 - name: Configure secure login
   hosts: login

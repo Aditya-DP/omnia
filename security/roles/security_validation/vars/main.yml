@@ -19,16 +19,13 @@ ansible_vault_search_key: "$ANSIBLE_VAULT;"
 security_config_file: "{{ role_path }}/../../../input/security_config.yml"
 security_vaultname: "{{ role_path }}/../../../input/.security_vault.key"
 login_node_security_config_file: "{{ role_path }}/../../../input/login_node_security_config.yml"
-ldap_freeipa_failure_msg: "Failed. Both ldap_required and freeipa_required cannot be true"
 hosts_file_dest: "/etc/hosts"
 hosts_file_mode: "0644"
 security_config_syntax_fail_msg: "Failed. Syntax errors present in security_config.yml. Fix errors and re-run playbook again."
 
 # Usage: fetch_inputs.yml
-ldap_required_success_msg: "ldap_required variable successfully validated"
-ldap_required_fail_msg: "Failed. ldap_required should be either true or false"
-freeipa_required_success_msg: "freeipa_required variable sccessfully validated"
-freeipa_required_fail_msg: "Failed. freeipa_required should be either true or false"
+authentication_system_success_msg: "authentication_system variable successfully validated"
+authentication_system_fail_msg: "Failed. authentication_system should be either openldap or freeipa"
 min_length: 8
 max_length: 30
 domain_name_length: '63'
@@ -40,7 +37,7 @@ success_msg_directory_manager_password: "directory_manager_password successfully
 fail_msg_directory_manager_password: "Failed. Incorrect format provided for directory_manager_password"
 success_msg_kerberos_admin_password: "kerberos_admin_password successfully validated"
 fail_msg_kerberos_admin_password: "Failed. Incorrect format provided for kerberos_admin_password"
-input_config_failure_msg: "Failed. Since, freeipa_required is true,please provide few additional parameters in input/security_config.yml."
+input_config_failure_msg: "Failed. Since, authentication_system is freeipa,please provide few additional parameters in input/security_config.yml."
 secure_login_node_success_msg: "enable_secure_login_node successfully validated"
 secure_login_node_fail_msg: "Failed. enable_secure_login_node should be either true or false"
 secure_login_node_warning_msg: "[WARNING] enable_secure_login_node is true in security_config.yml and
@@ -90,7 +87,7 @@ warning_wait_time: 10
 login_node_warning_msg: "[WARNING] login group with ip for login node not present in the inventory.
 Proceeding execution with manager and compute nodes"
 
-
+# Usasge: fetch_ldap_server_inputs.yml
 success_msg_config_root_password: "Config password valid"
 fail_msg_config_root_password: Config password invalid"
 success_msg_database_root_password: "Database password valid"

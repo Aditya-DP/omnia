@@ -28,18 +28,3 @@
         ldap_connection_type == 'ssl'
     success_msg: "{{ ldap_connection_type_success_msg }}"
     fail_msg: "{{ ldap_connection_type_fail_msg }}"
-
-# - name: Validate cert path when connection type is TLS
-#   block:
-#     - name: Verify the certificate path when connection type is TLS
-#       ansible.builtin.stat:
-#         path: "{{ CA_Cetificate_file }}"
-#       register: stat_results
-
-#     - name: Validate the certificate existence
-#       ansible.builtin.fail:
-#         msg: "{{ ldap_ca_cert_path_failure_msg }}"
-#       when: not stat_results.stat.exists
-#   when:
-#     - ldap_connection_type == 'TLS' or
-#       ldap_connection_type == 'tls'

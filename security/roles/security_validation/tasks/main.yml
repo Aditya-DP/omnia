@@ -31,7 +31,7 @@
 
 - name: Fetch freeIPA inputs
   ansible.builtin.include_tasks: fetch_freeipa_inputs.yml
-  when: freeipa_required
+  when: authentication_system == "freeipa"
 
 - name: Fetch security inputs
   ansible.builtin.include_tasks: fetch_security_inputs.yml
@@ -39,11 +39,11 @@
 
 - name: Fetch LDAP client inputs
   ansible.builtin.include_tasks: fetch_ldap_server_input.yml
-  when: ldap_required
+  when: authentication_system == "openldap"
 
 - name: Fetch LDAP client inputs
   ansible.builtin.include_tasks: fetch_ldap_client_inputs.yml
-  when: ldap_required
+  when: authentication_system == "openldap"
 
 # - name: Encrypt security_config.yml
 #   ansible.builtin.include_tasks: encrypt_security_config.yml

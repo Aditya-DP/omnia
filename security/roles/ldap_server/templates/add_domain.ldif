@@ -1,4 +1,4 @@
-# Custom ldif schema
+# Add organization
 dn: {{ ldaptoolbox_openldap_suffix }}
 objectClass: top
 objectClass: dcObject

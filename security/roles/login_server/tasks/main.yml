@@ -38,5 +38,4 @@
       changed_when: true
   when:
     - os_leap not in ansible_distribution | lower
-    - hostvars['127.0.0.1']['freeipa_required']
-    - not hostvars['127.0.0.1']['ldap_required']
+    - hostvars['127.0.0.1']['authentication_system'] == 'freeipa'

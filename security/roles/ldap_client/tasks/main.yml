@@ -24,4 +24,4 @@
 
       - name: Configure system for authselect with sssd
         ansible.builtin.include_tasks: configure_authselect.yml
-  when: hostvars['127.0.0.1']['ldap_required']
+  when: hostvars['127.0.0.1']['authentication_system'] == 'openldap'

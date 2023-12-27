@@ -18,11 +18,11 @@
 # SIMPLY APPEND THE REQUIRD VALUES AGAINST THE PARAMETER OF YOUR CHOICE.
 #***********************************************************************
 
-# Boolean indicating whether FreeIPA is required or not
-# It can be set to true or false
-# By default it is set to true indicating FreeIPA will be installed on all the nodes
-# If freeipa_required is set to false, then FreeIPA will not be installed
-freeipa_required: true
+# Varibale indicating whether FreeIPA or OpenLDAP must be setup
+# It can be set to "freeipa" or "openldap"
+# By default it is set to "openldap" indicating LDAP will be installed on all the nodes
+# For FreeIPA, this must be set to "freeipa", then FreeIPA will be installed
+authentication_system: “openldap”
 
 # A Kerberos realm is the domain over which a Kerberos authentication server has the authority to authenticate a user, host or service.
 # A realm name is often, but not always the upper case version of the name of the DNS domain over which it presides
@@ -51,12 +51,6 @@ kerberos_admin_password: ""
 # For LDAP - If dc=dell,dc=omnia,dc=com Provide dell.omnia.com
 domain_name: "omnia.test"
 
-# Boolean indicating whether ldap client is required or not
-# It can be set to true or false
-# By default it is set to false indicating FreeIPA will be installed on all the nodes
-# If ldap_required is set to True, then FreeIPA will not be installed
-ldap_required: false
-
 # This field accepts Valid LDAP Server IP
 # This cannot be blank when ldap_reqired is set to true
 ldap_server_ip: ""
@@ -66,11 +60,18 @@ ldap_server_ip: ""
 # If SSL is provided, then secure ldap connection occrs on the port 636
 ldap_connection_type: "TLS"
 
-# This variable accepts Server Certificate Path
+# These variables accept Certificate file Paths
 # Make sure certificate is present in the path provided
 # The certificate should have .pem or .crt extension.
-# This variable is mandatory if connection type is TLS
-# ldap_ca_cert_path: "/etc/openldap/certs/omnialdap.pem"
+# The certificate key should have .key extension
+# This variable are optional i.e. if not provided, then default certificate will be created
+# The variables accepts values as follows
+# Certificate Authority file path
+CA_Certificate_file: ""
+# LDAP Certificate file path
+Certificate_file: ""
+# LDAP Certificate key file path
+Certificate_key_file: ""
 
 # This variable accepts the user home directory path for ldap configuration
 # If nfs mount is created for user home, make sure you provide the
@@ -78,30 +79,27 @@ ldap_connection_type: "TLS"
 # Default value is /home/omnia-share
 user_home_dir: "/home/omnia-share"
 
-# If LDAP server is configured with bind dn then bind dn user to be provided
-# By default the bind dn user is admin
-# Update this variable if bind dn is different from admin
-# If this value is not provided (when bind is configured in server)
-# then ldap authentication fails
-# ldap_bind_username: "admin"
+# LDAP server is configured using three admin users for configuration, database, and monitor
+# By default the user for configuration and database is admin
+# Update this variable if these users are different from admin
+openldap_config_root_username: "admin"
+openldap_database_root_username: "admin"
 
-# If LDAP server is configured with bind dn then bind dn password to be provided
-# If this value is not provided (when bind is configured in server)
-# then ldap authentication fails
-# ldap_bind_password: ""
+# LDAP server is configured using three admin users for configuration, database, and monitor
+# It is mandatory to provide password for All three admin users for LDAP server setup  
+openldap_config_root_password: ""
+openldap_database_root_password: ""
+openldap_monitor_root_password: ""
 
 # Boolean indicating whether login node is requires security features or not
 # It can be set to true or false
 # By default it is set to false indicating security features will not be configured
 enable_secure_login_node: false
 
-CA_Certificate_file: ""
-Certificate_file: ""
-Certificate_key_file: ""
-openldap_config_root_username: "admin"
-openldap_config_root_password: ""     # will be converted to SSHA hash
-openldap_database_root_username: "admin"
-openldap_database_root_password: ""   # will be converted to SSHA hash
-openldap_monitor_root_password: ""    # will be converted to SSHA hash
+# LDAP server is configured using organizations
+# These  organizations and its units are necessary for user creation and group mapping 
+# Eg. openldap_organization: "omnia", openldap_organization_unit: "People"
+# Here user belong to Omnia organizarion and is part of People unit
+# These value have default values which can be changed as per requirements
 openldap_organization: "omnia"
 openldap_organization_unit: "People"
