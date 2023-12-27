@@ -13,8 +13,7 @@
 # limitations under the License.
 ---
 
-openldap_config_dest_dir: "/opt/ldap"
-openldap_config_src_path: "{{ role_path }}/templates/add_domain.ldif"
+# Usage: ldap_prereq.yml
 ldaptoolbox_openldap_config_olcRootDN: "cn={{ hostvars['127.0.0.1']['openldap_config_root_username'] }},cn=config"
 ldaptoolbox_openldap_database_olcRootDN: "cn={{ hostvars['127.0.0.1']['openldap_database_root_username'] }},{{ ldaptoolbox_openldap_suffix }}"
 ldaptoolbox_openldap_monitor_olcRootDN: "cn=monitor"
@@ -23,6 +22,12 @@ hashing_python_file: "{{ role_path }}/files/generate_hash.py"
 ldaptoolbox_olcPasswordHash: "{SHA}"
 openldap_configuration_mode: "0600"
 openldap_config_permissions: "0777"
-ldap_host_string: "ldapi://%2Fvar%2Frun%2Fslapd%2Fldapi"
 tls_cert_path: "/etc/openldap/certs/"
+cert_file: "ldapserver.crt"
+cert_key: "ldapserver.key"
+
+# Usage: set_domain.yml
+openldap_config_dest_dir: "/opt/ldap"
+openldap_config_src_path: "{{ role_path }}/templates/add_domain.ldif"
+ldap_host_string: "ldapi://%2Fvar%2Frun%2Fslapd%2Fldapi"
 
