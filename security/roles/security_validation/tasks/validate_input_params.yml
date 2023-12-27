@@ -18,10 +18,14 @@
     # authentication_system: {{ authentication_system | lower }}
     enable_secure_login_node: "{{ enable_secure_login_node | lower }}"
 
+- name: Print the value of authentication_system
+  debug:
+    msg: "{{ authentication_system }}"
+
 - name: Verify the value of authentication_system
   ansible.builtin.assert:
     that:
-      - "authentication_system == 'openldap'"
+      - "{{ authentication_system }}  == 'openldap'"
     success_msg: "{{ authentication_system_success_msg }}"
     fail_msg: "{{ authentication_system_fail_msg }}"
 
