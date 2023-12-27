@@ -22,7 +22,7 @@
 # It can be set to "freeipa" or "openldap"
 # By default it is set to "openldap" indicating LDAP will be installed on all the nodes
 # For FreeIPA, this must be set to "freeipa", then FreeIPA will be installed
-authentication_system: “openldap”
+authentication_system: "openldap"
 
 # A Kerberos realm is the domain over which a Kerberos authentication server has the authority to authenticate a user, host or service.
 # A realm name is often, but not always the upper case version of the name of the DNS domain over which it presides
