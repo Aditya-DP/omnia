@@ -158,7 +158,7 @@ os_supported_rhel: rhel
 os_supported_ubuntu: ubuntu
 provision_os_success_msg: "provision_os validated"
 provision_os_fail_msg: "Failed. Incorrect provision_os selected. Supported provision_os values are {{ os_supported_rocky }} or {{ os_supported_rhel }}
-in RHEL/Rocky control plane. For control plane OS ubuntu, only provision_os {{ os_supported_ubuntu }} is supported"
+in RHEL/Rocky control plane. If control plane OS ubuntu, only provision_os {{ os_supported_ubuntu }} is supported"
 iso_file_path_missing_msg: "Incorrect iso_file_path provided. Make sure ISO file is present in the provided iso_file_path."
 iso_file_path_success_msg: "iso_file_path validated"
 iso_file_path_fail_msg: "Failed. Invalid iso_file_path: {{ iso_file_path }} provided. Make sure iso_file_path variable in provision_config.yml contains value
