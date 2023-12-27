@@ -20,6 +20,14 @@ provision_validation_vars:
   - "{{ role_path }}/vars/switch_based.yml"
 nic_wait_time: 30
 
+# Usage: validate_cp_os.yml
+control_plane_os_redhat: "redhat"
+control_plane_os_rocky: "rocky"
+control_plane_os_ubuntu: "ubuntu"
+control_plane_os_fail_msg: "Failed. Control plane OS should be RHEL, Rocky or Ubuntu."
+root_user_name: "root"
+user_fail_msg: "Failed. Omnia playbooks should run as root user."
+
 # Usage: package_installation.yml
 ansible_galaxy_collection:
   - ansible.utils:2.10.3
@@ -28,16 +36,6 @@ pip_version: pip3.9
 netaddr_pip_package: netaddr
 pexpect_pip_package: pexpect
 max_retries: 10
-provision_package_fail_msg: "Failed. Unable to install {{ common_packages_provision }} packages.
-Please make sure all required repos are reachable. Remove or Update unreachable repos configured."
-common_packages_provision:
-  - python3-netaddr
-  - openssl
-  - dos2unix
-  - net-snmp
-  - net-snmp-utils
-  - sshpass
-  - python3-pexpect
 
 # Usage: create_provision_ini.yml
 provision_conf_path: "/opt/omnia/.data/provision.ini"
@@ -155,35 +153,31 @@ default_lease_time_fail_msg: "Failed. Please provide a valid default_lease_time"
 timezone_success_msg: "timezone validated"
 timezone_fail_msg: "Failed. Incorrect timezone provided. Please check the file timezone.txt in files folder"
 language_fail_msg: "Failed. Only en-US language supported"
+os_supported_rocky: rocky
+os_supported_rhel: rhel
+os_supported_ubuntu: ubuntu
 provision_os_success_msg: "provision_os validated"
-provision_os_fail_msg: "Failed. Incorrect provision_os selected. Supported OS are {{ os_supported_rocky }} or {{ os_supported_rhel }}"
+provision_os_fail_msg: "Failed. Incorrect provision_os selected. Supported provision_os values are {{ os_supported_rocky }} or {{ os_supported_rhel }}
+in RHEL/Rocky control plane. If control plane OS ubuntu, only provision_os {{ os_supported_ubuntu }} is supported"
 iso_file_path_missing_msg: "Incorrect iso_file_path provided. Make sure ISO file is present in the provided iso_file_path."
 iso_file_path_success_msg: "iso_file_path validated"
 iso_file_path_fail_msg: "Failed. Invalid iso_file_path: {{ iso_file_path }} provided. Make sure iso_file_path variable in provision_config.yml contains value
 mentioned in the variables provision_os: {{ provision_os }} and provision_os_version: {{ provision_os_version }}"
-dns_empty_warning_msg: "[WARNING] primary_dns and secondary_dns is empty. DHCP routing in compute nodes for internet access won't be configured."
-primary_dns_empty_msg: "primary_dns is empty and secondary_dns provided. If one dns entry present, provide primary_dns only."
-primary_dns_success_msg: "primary_dns successfully validated"
-primary_dns_fail_msg: "Failed. Incorrect primary_dns provided"
-primary_dns_not_reachable_msg: "Failed. primary_dns is not reachable. Provide valid dns"
-secondary_dns_success_msg: "secondary_dns successfully validated"
-secondary_dns_fail_msg: "Failed. Incorrect secondary_dns provided"
-secondary_dns_not_reachable_msg: "[WARNING] secondary_dns is not reachable"
 ping_search_key: "100% packet loss"
 provision_password_fail_msg: "Failed. Incorrect provision_password format in provision_config.yml"
 min_length: 8
 max_length: 30
 warning_wait_time: 30
 postgresdb_password_fail_msg: "Failed. postgresdb_password should contain only alphanumeric characters and minimum length 8 in provision_config.yml"
-os_supported_rocky: rocky
-os_supported_rhel: rhel
 mount_point_success_msg: "mountpoint of disk_partition successfully validated"
 mount_point_fail_msg: "Failed. Supported disk_partition mount_point values are /home, /var, /tmp, /usr, swap"
 desired_capacity_success_msg: "desired_capacity of disk_partition successfully validated"
 desired_capacity_fail_msg: "Failed. Provide valid integer value to desired_capacity of disk_partition"
 supported_rhel_os_version: ["8.0", "8.1", "8.2", "8.3", "8.4", "8.5", "8.6", "8.7", "8.8", "8.9"]
+supported_ubuntu_os_version: ["20.04", "22.04"]
 provision_os_version_fail_msg: "Failed. Invalid provision_os_version: {{ provision_os_version }} provided in provision_config.yml.
-Supported provision_os_version values are 8.0,8.1,8.2,8.3,8.4,8.5,8.6,8.7,8.8"
+Supported provision_os_version values for provision_os rhel/rocky are 8.0,8.1,8.2,8.3,8.4,8.5,8.6,8.7,8.8.
+For provision_os ubuntu supported versions are 20.04,22.04"
 rocky_update_warning_msg: "[WARNING] Rocky Linux OS version on the cluster will be upgraded to the latest 8.x irrespective of provision_os_version
 provided in provision_config.yml"
 
@@ -215,7 +209,6 @@ Make sure CUDA toolkit rpm file is present in the provided cuda_toolkit_path var
 # Usage: validate_repo_path.yml
 update_repos_success_msg: "Validated update_repos"
 update_repos_fail_msg: "Failed. update_repos variable in provision_config.yml should be either true or false"
-control_plane_os_redhat: "redhat"
 repo_path_count_success_msg: "Validated rhel_repo_local_path count"
 repo_path_count_fail_msg: "Failed. rhel_repo_local_path variable in provision_config.yml does not have details of repositories AppStream and BaseOS"
 repo_path_success_msg: "Validated repo,repo_url and repo_name in rhel_repo_local_path"

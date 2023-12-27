@@ -21,7 +21,7 @@
 - name: Call python utility to create the dynamic list of feasible IPs
   ansible.builtin.command: |
     {{ python_version }} {{ create_dynamic_ip_path }} {{ bmc_nic_subnet }} {{ bmc_nic_netmask }}
-    {{ bmc_username }} {{ bmc_password }}
+    {{ bmc_username }} {{ bmc_password }} {{ dhcp_path }}
   no_log: true
   failed_when: false
   changed_when: false

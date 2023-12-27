@@ -24,6 +24,9 @@
       ansible.builtin.include_vars: "{{ item }}"
       with_items: "{{ xcat_discovery_role_vars }}"
 
+    - name: Include vars for {{ control_plane_os }}
+      ansible.builtin.include_vars: "{{ role_path }}/vars/{{ control_plane_os }}.yml"
+
     - name: Check xcat_discovery_provision role pre-requisites
       ansible.builtin.include_tasks: pre_requisites.yml
 
@@ -50,6 +53,9 @@
 
     - name: Configuration of postscripts
       ansible.builtin.include_tasks: postscripts/main.yml
+      when:
+        - control_plane_os in control_plane_os_redhat or
+          control_plane_os in control_plane_os_rocky
 
     - name: Configure DHCP
       ansible.builtin.include_tasks: configure_dhcp.yml

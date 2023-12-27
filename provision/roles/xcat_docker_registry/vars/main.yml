@@ -13,6 +13,10 @@
 # limitations under the License.
 ---
 
+# Usage: main.yml
+control_plane_os_redhat: "redhat"
+control_plane_os_rocky: "rocky"
+
 # Usage: create_docker_registry.yml
 docker_repo_url: https://download.docker.com/linux/centos/docker-ce.repo
 docker_repo_dest: /etc/yum.repos.d/docker-ce.repo

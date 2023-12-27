@@ -13,6 +13,9 @@
 # limitations under the License.
 ---
 
+# Usage: main.yml
+control_plane_os_redhat: "redhat"
+
 # Usage: setup_subscription_manager.yml
 os_supported_rhel: "redhat"
 rhsm_release_file_path: "/opt/omnia/.data/rhsm_release"

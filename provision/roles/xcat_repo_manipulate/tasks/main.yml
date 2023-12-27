@@ -27,32 +27,23 @@
       ansible.builtin.include_vars: "{{ item }}"
       with_items: "{{ create_repo_role_vars }}"
 
+    - name: Include vars for {{ control_plane_os }}
+      ansible.builtin.include_vars: "{{ role_path }}/vars/{{ control_plane_os }}.yml"
+
     - name: Check xcat_repo_manipulate role pre-requisites
       ansible.builtin.include_tasks: pre_requisites.yml
 
     - name: Create xcat osimage
       ansible.builtin.include_tasks: create_osimage.yml
 
-    - name: User defined disk partition configuration
-      ansible.builtin.include_tasks: disk_partition.yml
-      when: disk_partition_configuration
-
-    - name: Enable internet access
-      ansible.builtin.include_tasks: internet_access.yml
-
     - name: Fetch osimage name
       ansible.builtin.include_tasks: fetch_osimage.yml
 
-    - name: Manage subscription-manager
-      ansible.builtin.include_tasks: manage_subscription_manager.yml
-      when:
-        - update_repos
-        - os_supported_rhel in control_plane_os
-        - provision_os | lower == provision_os_rhel
-        - not rhel_repo_path_status
+    - name: Configure xCAT on {{ control_plane_os }}
+      ansible.builtin.include_tasks: "{{ control_plane_os }}/main.yml"
 
-    - name: Create omnia repo
-      ansible.builtin.include_tasks: omnia_repo_config.yml
-
-    - name: Create omnia-common repo
+    - name: Configure postscripts
       ansible.builtin.include_tasks: postscripts/main.yml
+      when:
+        - control_plane_os in control_plane_os_redhat or
+          control_plane_os in control_plane_os_rocky

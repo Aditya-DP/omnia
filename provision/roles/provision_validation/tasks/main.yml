@@ -17,6 +17,12 @@
   ansible.builtin.include_vars: "{{ item }}"
   with_items: "{{ provision_validation_vars }}"
 
+- name: Validate control plane OS
+  ansible.builtin.include_tasks: validate_cp_os.yml
+
+- name: Include vars for {{ control_plane_os }}
+  ansible.builtin.include_vars: "{{ role_path }}/vars/{{ control_plane_os }}.yml"
+
 - name: Common packages installation for provision
   ansible.builtin.include_tasks: package_installation.yml
 
@@ -53,6 +59,9 @@
 
 - name: Validate rhel_repo_path
   ansible.builtin.include_tasks: validate_repo_path.yml
+  when:
+    - control_plane_os in control_plane_os_redhat or
+      control_plane_os in control_plane_os_rocky
 
 - name: Validate apptainer_support
   ansible.builtin.include_tasks: validate_apptainer_support.yml

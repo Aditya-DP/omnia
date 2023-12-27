@@ -27,7 +27,7 @@
     mode: "{{ item.mode }}"
   with_items: "{{ hostname_postscripts_path }}"
 
-- name: Configure postscripts to configure hostname and admin ip in static
+- name: Configure postscripts to configure hostname
   ansible.builtin.command: chdef all -p postscripts=omnia_hostname
   changed_when: true
 

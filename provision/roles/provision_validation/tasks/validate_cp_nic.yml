@@ -24,7 +24,9 @@
       admin_nic_subnet | default("", true) | length < 1
 
 - name: Fetch the network interfaces in UP state in the system
-  ansible.builtin.shell: set -o pipefail && /usr/sbin/ip a | awk '/state UP/{print $2}'
+  ansible.builtin.shell: |
+    set -o pipefail
+    /usr/sbin/ip a | awk '/state UP/{print $2}'
   register: nic_addr_up
   changed_when: false
   tags: init

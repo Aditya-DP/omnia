@@ -13,6 +13,11 @@
 # limitations under the License.
 ---
 
+# Usage: main.yml
+control_plane_os_redhat: "redhat"
+control_plane_os_rocky: "rocky"
+control_plane_os_ubuntu: "ubuntu"
+
 # Usage: clean_provision_setup.yml
 xcat_packages_path: "/opt/xcat/share/xcat/tools/go-xcat"
 xcat_cert_path: "/root/.xcat"
@@ -37,22 +42,13 @@ xcat_del_files:
   - /var/lib/dhcpd/dhcpd.leases~
   - /var/lib/dhcpd/dhcpd.leases.rpmsave
   - /var/lib/dhcpd
+  - /var/lib/dhcp
   - /var/lib/dhclient
   - /etc/dhcp/dhcpd.conf.rpmsave
   - /etc/dhcp/dhcpd.conf.xcatbak
   - /etc/dhcp/dhclient.conf
-pg_dir_path: "/var/lib/pgsql"
 omnia_dir: "/opt/omnia"
 file_permission: "754"
-xcat_download_files:
-  - /root/xcat
-  - /etc/yum.repos.d/xcat-core.repo
-  - /etc/yum.repos.d/xcat-dep.repo
-xcat_package: xCAT
-postgres_packages:
-  - postgresql*
-  - perl-DBD-Pg
-control_plane_os_redhat: "redhat"
 
 # Usage:clean_telemetry_setup.yml
 exports_path: /etc/exports

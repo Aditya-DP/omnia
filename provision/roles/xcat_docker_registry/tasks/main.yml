@@ -15,3 +15,6 @@
 
 - name: Create docker registry
   ansible.builtin.include_tasks: create_docker_registry.yml
+  when:
+    - control_plane_os in control_plane_os_redhat or
+      control_plane_os in control_plane_os_rocky

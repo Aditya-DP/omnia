@@ -1,4 +1,4 @@
-# Copyright 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
+# Copyright 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,9 @@
 ---
 
 - name: Check selinux status
+  when:
+    - control_plane_os in control_plane_os_redhat or
+      control_plane_os in control_plane_os_rocky
   block:
     - name: Fetch selinux mode
       ansible.builtin.command: sestatus
@@ -69,8 +72,8 @@
   ansible.builtin.set_fact:
     xcat_installation_status: true
   when:
-    - "'xcatd.service' in ansible_facts.services"
-    - "'postgresql.service' in ansible_facts.services"
-    - "'running' in ansible_facts.services['xcatd.service'].state"
-    - "'running' in ansible_facts.services['postgresql.service'].state"
+    - xcatd_service in ansible_facts.services
+    - postgresql_service in ansible_facts.services
+    - "'running' in ansible_facts.services[xcatd_service].state"
+    - "'running' in ansible_facts.services[postgresql_service].state"
     - "'#key,value' in site_table_check.stdout"

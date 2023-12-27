@@ -27,6 +27,7 @@ for repo_file in $internet_repo_file_list
 do
   if [ -f /etc/yum.repos.d/$repo_file ]; then
     echo "Disabling repos"
+    sed -i -e 's/enabled=1/enabled=0/' /etc/yum.repos.d/$repo_file
   fi
 done
 

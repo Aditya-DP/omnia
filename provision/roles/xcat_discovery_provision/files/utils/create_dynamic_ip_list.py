@@ -26,7 +26,7 @@ password = sys.argv[4]
 
 ip_list = []
 valid_ip_list = []
-dhcp_file_path = "/var/lib/dhcpd/dhcpd.leases"
+dhcp_file_path = sys.argv[5]
 dynamic_ip_path = "/opt/omnia/dynamic_ip_list"
 
 

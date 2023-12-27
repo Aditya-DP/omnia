@@ -13,10 +13,6 @@
 # limitations under the License.
 ---
 
-- name: Set control_plane_os
-  ansible.builtin.set_fact:
-    control_plane_os: "{{ ansible_distribution | lower }}"
-
 - name: Install common packages for provision
   block:
     - name: Install common packages for provision
