@@ -20,6 +20,9 @@
 - name: Validate control plane OS
   ansible.builtin.include_tasks: validate_cp_os.yml
 
+- name: Include vars for {{ control_plane_os }}
+  ansible.builtin.include_vars: "{{ role_path }}/vars/{{ control_plane_os }}.yml"
+
 - name: Common packages installation for provision
   ansible.builtin.include_tasks: package_installation.yml
 
