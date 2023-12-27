@@ -20,6 +20,6 @@ common_packages_provision:
   - dos2unix
   - sshpass
   - python3-pexpect
-  - chro
+  - chrony
 provision_package_fail_msg: "Failed. Unable to install {{ common_packages_provision }} packages.
 Please make sure all required repos are reachable. Remove or Update unreachable repos configured."
