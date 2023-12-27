@@ -15,13 +15,13 @@
 
 - name: Set authentication_system, enable_secure_login_node required value
   ansible.builtin.set_fact:
-    authentication_system: "{{ authentication_system | lower }}"
+    # authentication_system: "{{ authentication_system | lower }}"
     enable_secure_login_node: "{{ enable_secure_login_node | lower }}"
 
 - name: Verify the value of authentication_system
   ansible.builtin.assert:
     that:
-      - authentication_system == openldap or authentication_system == freeipa
+      - authentication_system == "openldap" or authentication_system == "freeipa"
     success_msg: "{{ authentication_system_success_msg }}"
     fail_msg: "{{ authentication_system_fail_msg }}"
 
