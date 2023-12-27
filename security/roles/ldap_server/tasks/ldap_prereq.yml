@@ -33,6 +33,7 @@
     ansible.builtin.command:
       cmd: "openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj /C=/ST=/L=/O=/CN= -keyout {{ TLS_Certificates_directory_path }}/{{ cert_key }}  -out {{ TLS_Certificates_directory_path }}/{{ cert_file }}"
     changed_when: false
+    no_log: true
   
   - name: Copy Certificate to contol plane for client setup
     fetch:
