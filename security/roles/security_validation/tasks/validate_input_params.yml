@@ -21,7 +21,7 @@
 - name: Verify the value of authentication_system
   ansible.builtin.assert:
     that:
-      - "authentication_system == openldap"
+      - "authentication_system == 'openldap'"
     success_msg: "{{ authentication_system_success_msg }}"
     fail_msg: "{{ authentication_system_fail_msg }}"
 
