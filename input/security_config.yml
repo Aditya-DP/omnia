@@ -51,10 +51,6 @@ kerberos_admin_password: ""
 # For LDAP - If dc=dell,dc=omnia,dc=com Provide dell.omnia.com
 domain_name: "omnia.test"
 
-# This field accepts Valid LDAP Server IP
-# This cannot be blank when ldap_reqired is set to true
-ldap_server_ip: ""
-
 # Connection Type can be TLS, SSL
 # If TLS is given, make sure valid server certificate path is provided
 # If SSL is provided, then secure ldap connection occrs on the port 636
