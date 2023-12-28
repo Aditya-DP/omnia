@@ -21,6 +21,14 @@ ldap_client_packages:
   - oddjob-mkhomedir
   - openssl-perl
 
+ldap_client_package_ubuntu:
+  - sssd
+  - sssd-ldap
+  - oddjob-mkhomedir
+  - slapd
+  - ldap-utils
+  - openssl
+
 sssd_conf_dest: "/etc/sssd/sssd.conf"
 file_permission: "0600"
 tls_cert_path: "/etc/openldap/certs/"
@@ -30,3 +38,4 @@ sasl_nacanon_replace1: "SASL_NOCANON\ton\nBASE\t{{ reqd_domain_name }}"
 sasl_nacanon_replace2: "SASL_NOCANON\ton\nURI\tldap://{{ hostvars[groups['manager'][0]]['ansible_env'].SSH_CONNECTION.split(' ')[2] }}"
 sasl_nacanon_replace3: "SASL_NOCANON\ton\nTLS_CACERT\t{{ tls_cert_path }}"
 sasl_nacanon_replace4: "SASL_NOCANON\ton\nURI\tldap://{{ hostvars[groups['manager'][0]]['ansible_env'].SSH_CONNECTION.split(' ')[2] }}:636"
+file_mode: "0644"

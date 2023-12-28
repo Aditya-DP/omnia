@@ -16,6 +16,12 @@
 - name: Configure authselect with sssd
   ansible.builtin.command: authselect select sssd with-mkhomedir --force
   changed_when: false
+  when: ansible_facts['distribution'] == 'Redhat'
+ 
+- name: Configure pam-auth with sssd
+  ansible.builtin.command: pam-auth-update --enable mkhomedir
+  changed_when: false
+  when: ansible_facts['distribution'] == 'Ubuntu'
 
 - name: Start and enable sssd.service
   ansible.builtin.systemd:
