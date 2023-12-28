@@ -14,6 +14,6 @@
 ---
 
 - name: Prepare OpenLDAP variables
-  ansible.builtin.include_tasks: ldap_prereq.yml
+  ansible.builtin.include_tasks: ldap_prereq_{{ ansible_distribution | lower }}.yml
 
     
