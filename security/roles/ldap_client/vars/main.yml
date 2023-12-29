@@ -21,14 +21,6 @@ ldap_client_packages:
   - oddjob-mkhomedir
   - openssl-perl
 
-ldap_client_package_ubuntu:
-  - sssd
-  - sssd-ldap
-  - oddjob-mkhomedir
-  - slapd
-  - ldap-utils
-  - openssl
-
 sssd_conf_dest: "/etc/sssd/sssd.conf"
 file_permission: "0600"
 tls_cert_path: "/etc/openldap/certs/"

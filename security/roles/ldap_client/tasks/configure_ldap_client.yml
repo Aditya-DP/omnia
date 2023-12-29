@@ -18,17 +18,10 @@
 #   ansible.builtin.set_fact:
 #     ldap_server: true
 
-- name: Install packages for LDAP Client[Redhat]
+- name: Install packages for LDAP Client
   ansible.builtin.package:
     name: "{{ ldap_client_packages }}"
     state: present
-  when: ansible_facts['distribution'] == 'Redhat'
- 
-- name: Install packages for LDAP Client[Ubuntu]
-  ansible.builtin.package:
-    name: "{{ ldap_client_package_ubuntu }}"
-    state: present
-  when: ansible_facts['distribution'] == 'Ubuntu'
 
 - name: Extract the domain name required by LDAP
   ansible.builtin.set_fact:
@@ -71,4 +64,4 @@
   copy:
     src: "{{ hostvars[groups['manager'][0]]['ldaptoolbox_openldap_olcTLSCACertificateFile'] }}"
     dest: "{{ tls_cert_path }}"
-    mode: "{{ file_mode}}"
+    mode: "{{ file_mode }}"
