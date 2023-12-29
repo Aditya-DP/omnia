@@ -1,0 +1,109 @@
+# Copyright 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+
+- name: Set variables for OpenLDAP
+  ansible.builtin.set_fact:
+    ldaptoolbox_openldap_suffix: "{{ (hostvars['127.0.0.1']['domain_name'].split('.') | map('regex_replace', '^', 'dc=') | list) | join(',') }}"
+    TLS_Certificates_directory_path: "/etc/pki/tls/certs"
+    default_certs: false
+
+- name: Create default Certificates
+  when: 
+    - hostvars['127.0.0.1']['CA_Certificate_file'] == ''
+    - hostvars['127.0.0.1']['Certificate_file'] == ''
+    - hostvars['127.0.0.1']['Certificate_key_file'] == ''
+  block:
+  - name: Set default certificates as true
+    ansible.builtin.set_fact:
+      default_certs: true
+
+  - name: Generate TLS certificates
+    ansible.builtin.command:
+      cmd: "openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj /C=/ST=/L=/O=/CN= -keyout {{ TLS_Certificates_directory_path }}/{{ rhel_cert_key }}  -out {{ TLS_Certificates_directory_path }}/{{ rhel_cert_file }}"
+    changed_when: false
+    no_log: true
+  
+  - name: Copy Certificate to contol plane for client setup
+    fetch:
+      src: "{{ TLS_Certificates_directory_path }}/{{ rhel_cert_file }}"
+      dest: "{{ tls_cert_path }}"
+      flat: true
+    delegate_to: localhost
+
+  - name: Set default tls certificate path for LTB playbook
+    ansible.builtin.set_fact:
+      ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ TLS_Certificates_directory_path }}/{{ rhel_cert_file }}"
+      ldaptoolbox_openldap_olcTLSCertificateFile: "{{ TLS_Certificates_directory_path }}/{{ rhel_cert_file }}"
+      ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ TLS_Certificates_directory_path }}/{{ rhel_cert_key }}"
+
+- name: Set tls certificate path for omnia playbook
+  when: not default_certs
+  block:
+  - name: Copy the certificate to remote node
+    ansible.builtin.copy:
+      src: "{{ item }}"
+      dest: "{{ TLS_Certificates_directory_path }}"
+      remote_src: false
+      mode: "0644"
+    with_items:
+      - "{{ hostvars['127.0.0.1']['CA_Certificate_file'] }}"
+      - "{{ hostvars['127.0.0.1']['Certificate_file'] }}"
+      - "{{ hostvars['127.0.0.1']['Certificate_key_file'] }}"
+
+  - name: Copy Certificate to contol plane for client setup
+    copy:
+      src: "{{ hostvars['127.0.0.1']['CA_Certificate_file'] }}"
+      dest: "{{ tls_cert_path }}"
+    delegate_to: localhost
+
+  - name: Set  tls certificate path for LTB playbook 
+    ansible.builtin.set_fact:
+      ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ TLS_Certificates_directory_path }}/{{ hostvars['127.0.0.1']['CA_Certificate_file'] | basename }}"
+      ldaptoolbox_openldap_olcTLSCertificateFile: "{{ TLS_Certificates_directory_path }}/{{ hostvars['127.0.0.1']['Certificate_file'] | basename }}"
+      ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ TLS_Certificates_directory_path }}/{{ hostvars['127.0.0.1']['Certificate_key_file'] | basename }}"
+
+- name: Genarate password hash for OpenLDAP config
+  delegate_to: localhost
+  ansible.builtin.command: "{{ python_version }} {{ hashing_python_file }} {{ hostvars['127.0.0.1']['openldap_config_root_password'] }}"
+  register: password_hash
+  no_log: true
+
+- name: Set variables for OpenLDAP config password
+  ansible.builtin.set_fact:
+    ldaptoolbox_openldap_config_olcRootPW_hash: "{{ password_hash.stdout }}"
+  no_log: true
+
+- name: Genarate password hashes for OpenLDAP database
+  delegate_to: localhost
+  ansible.builtin.command: "{{ python_version }} {{ hashing_python_file }} {{ hostvars['127.0.0.1']['openldap_database_root_password'] }}"
+  register: password_hash
+  no_log: true
+
+- name: Set variables for OpenLDAP database password
+  ansible.builtin.set_fact:
+    ldaptoolbox_openldap_database_olcRootPW_hash: "{{ password_hash.stdout }}"
+  no_log: true
+
+- name: Genarate password hashes for OpenLDAP monitor
+  delegate_to: localhost
+  ansible.builtin.command: "{{ python_version }} {{ hashing_python_file }} {{ hostvars['127.0.0.1']['openldap_monitor_root_password'] }}"
+  register: password_hash
+  no_log: true
+
+- name: Set variables for OpenLDAP monitor password
+  ansible.builtin.set_fact:
+    ldaptoolbox_openldap_monitor_olcRootPW_hash: "{{ password_hash.stdout }}"
+  no_log: true
+

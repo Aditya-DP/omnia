@@ -13,6 +13,11 @@
 #  limitations under the License.
 ---
 
+# - name: Identify Manager node and ldapserver
+#   when: groups['manager'][0] not in groups['ldapserver'] 
+#   ansible.builtin.set_fact:
+#     ldap_server: true
+
 - name: Install packages for LDAP Client
   ansible.builtin.package:
     name: "{{ ldap_client_packages }}"
@@ -56,8 +61,7 @@
       hostvars['127.0.0.1']['ldap_connection_type'] == 'ssl'
 
 - name: Copy the certificate to remote node
-  ansible.builtin.copy:
-    src: "{{ hostvars['127.0.0.1']['ldap_ca_cert_path'] }}"
+  copy:
+    src: "{{ hostvars[groups['manager'][0]]['ldaptoolbox_openldap_olcTLSCACertificateFile'] }}"
     dest: "{{ tls_cert_path }}"
-    remote_src: false
-    mode: "0644"
+    mode: "{{ file_mode }}"

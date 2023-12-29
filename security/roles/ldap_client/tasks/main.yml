@@ -15,7 +15,7 @@
 ---
 
 - name: Install and configure Openldap client
-  when: hostvars['127.0.0.1']['ldap_required']
+  when: hostvars['127.0.0.1']['authentication_system'] == 'openldap'
   block:
       - name: Install required packages
         ansible.builtin.include_tasks: configure_ldap_client.yml

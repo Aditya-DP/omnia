@@ -1,4 +1,4 @@
-#  Copyright 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+#  Copyright 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -24,16 +24,14 @@
   ansible.builtin.include_tasks: "{{ role_path }}/../login_node/tasks/check_prerequisites.yml"
   when:
     - os_leap not in ansible_distribution | lower
-    - hostvars['127.0.0.1']['freeipa_required']
-    - not hostvars['127.0.0.1']['ldap_required']
+    - hostvars['127.0.0.1']['authentication_system'] == 'freeipa'
 
 - name: FreeIPA configuration
   ansible.builtin.include_tasks: ipa_configuration.yml
   when:
-    - hostvars['127.0.0.1']['freeipa_required']
+    - hostvars['127.0.0.1']['authentication_system'] == 'freeipa'
     - freeipa_client_status
     - os_leap not in ansible_distribution | lower
-    - not hostvars['127.0.0.1']['ldap_required']
     - hostvars['127.0.0.1']['enable_secure_login_node']
 
 - name: Configure security features
