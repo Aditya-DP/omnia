@@ -16,7 +16,7 @@
 - name: Set variables for OpenLDAP
   ansible.builtin.set_fact:
     ldaptoolbox_openldap_suffix: "{{ (hostvars['127.0.0.1']['domain_name'].split('.') | map('regex_replace', '^', 'dc=') | list) | join(',') }}"
-    TLS_Certificates_directory_path: "/etc/pki/tls/certs" # noqa var-naming.capitals
+    tls_certificates_directory_path: "/etc/pki/tls/certs"
     default_certs: false
 
 - name: Create default Certificates
@@ -31,22 +31,22 @@
 
   - name: Generate TLS certificates
     ansible.builtin.command:
-      cmd: "openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj /C=/ST=/L=/O=/CN= -keyout {{ TLS_Certificates_directory_path }}/{{ rhel_cert_key }}  -out {{ TLS_Certificates_directory_path }}/{{ rhel_cert_file }}"
+      cmd: "openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj /C=/ST=/L=/O=/CN= -keyout {{ tls_certificates_directory_path }}/{{ rhel_cert_key }}  -out {{ tls_certificates_directory_path }}/{{ rhel_cert_file }}"
     changed_when: false
     no_log: true
   
   - name: Copy Certificate to contol plane for client setup
     fetch:
-      src: "{{ TLS_Certificates_directory_path }}/{{ rhel_cert_file }}"
+      src: "{{ tls_certificates_directory_path }}/{{ rhel_cert_file }}"
       dest: "{{ tls_cert_path }}"
       flat: true
     delegate_to: localhost
 
   - name: Set default tls certificate path for LTB playbook
     ansible.builtin.set_fact:
-      ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ TLS_Certificates_directory_path }}/{{ rhel_cert_file }}"
-      ldaptoolbox_openldap_olcTLSCertificateFile: "{{ TLS_Certificates_directory_path }}/{{ rhel_cert_file }}"
-      ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ TLS_Certificates_directory_path }}/{{ rhel_cert_key }}"
+      ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ tls_certificates_directory_path }}/{{ rhel_cert_file }}"
+      ldaptoolbox_openldap_olcTLSCertificateFile: "{{ tls_certificates_directory_path }}/{{ rhel_cert_file }}"
+      ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ tls_certificates_directory_path }}/{{ rhel_cert_key }}"
 
 - name: Set tls certificate path for omnia playbook
   when: not default_certs
@@ -54,7 +54,7 @@
   - name: Copy the certificate to remote node
     ansible.builtin.copy:
       src: "{{ item }}"
-      dest: "{{ TLS_Certificates_directory_path }}"
+      dest: "{{ tls_certificates_directory_path }}"
       remote_src: false
       mode: "0644"
     with_items:
@@ -70,9 +70,9 @@
 
   - name: Set  tls certificate path for LTB playbook 
     ansible.builtin.set_fact:
-      ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ TLS_Certificates_directory_path }}/{{ hostvars['127.0.0.1']['CA_Certificate_file'] | basename }}"
-      ldaptoolbox_openldap_olcTLSCertificateFile: "{{ TLS_Certificates_directory_path }}/{{ hostvars['127.0.0.1']['Certificate_file'] | basename }}"
-      ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ TLS_Certificates_directory_path }}/{{ hostvars['127.0.0.1']['Certificate_key_file'] | basename }}"
+      ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ tls_certificates_directory_path }}/{{ hostvars['127.0.0.1']['CA_Certificate_file'] | basename }}"
+      ldaptoolbox_openldap_olcTLSCertificateFile: "{{ tls_certificates_directory_path }}/{{ hostvars['127.0.0.1']['Certificate_file'] | basename }}"
+      ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ tls_certificates_directory_path }}/{{ hostvars['127.0.0.1']['Certificate_key_file'] | basename }}"
 
 - name: Genarate password hash for OpenLDAP config
   delegate_to: localhost
