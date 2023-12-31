@@ -89,7 +89,7 @@
 
 - name: Set variables for OpenLDAP config password
   ansible.builtin.set_fact:
-    ldaptoolbox_openldap_config_olcRootPW_hash: "{{ password_hash.stdout }}"
+    ldaptoolbox_openldap_config_olcRootPW_hash: "{{ password_hash.stdout }}" # noqa var-naming
   no_log: true
 
 - name: Genarate password hashes for OpenLDAP database
@@ -101,7 +101,7 @@
 
 - name: Set variables for OpenLDAP database password
   ansible.builtin.set_fact:
-    ldaptoolbox_openldap_database_olcRootPW_hash: "{{ password_hash.stdout }}"
+    ldaptoolbox_openldap_database_olcRootPW_hash: "{{ password_hash.stdout }}" # noqa var-naming
   no_log: true
 
 - name: Genarate password hashes for OpenLDAP monitor
@@ -113,6 +113,5 @@
 
 - name: Set variables for OpenLDAP monitor password
   ansible.builtin.set_fact:
-    ldaptoolbox_openldap_monitor_olcRootPW_hash: "{{ password_hash.stdout }}"
+    ldaptoolbox_openldap_monitor_olcRootPW_hash: "{{ password_hash.stdout }}" # noqa var-naming
   no_log: true
-
