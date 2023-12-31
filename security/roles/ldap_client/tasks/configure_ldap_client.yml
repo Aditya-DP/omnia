@@ -14,7 +14,7 @@
 ---
 
 # - name: Identify Manager node and ldapserver
-#   when: groups['manager'][0] not in groups['ldapserver'] 
+#   when: groups['manager'][0] not in groups['ldapserver']
 #   ansible.builtin.set_fact:
 #     ldap_server: true
 
@@ -61,7 +61,7 @@
       hostvars['127.0.0.1']['ldap_connection_type'] == 'ssl'
 
 - name: Copy the certificate to remote node
-  copy:
+  ansible.builtin.copy:
     src: "{{ hostvars[groups['manager'][0]]['ldaptoolbox_openldap_olcTLSCACertificateFile'] }}"
     dest: "{{ tls_cert_path }}"
     mode: "{{ file_mode }}"

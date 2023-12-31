@@ -16,7 +16,7 @@
 - name: Set variables for OpenLDAP
   ansible.builtin.set_fact:
     ldaptoolbox_openldap_suffix: "{{ (hostvars['127.0.0.1']['domain_name'].split('.') | map('regex_replace', '^', 'dc=') | list) | join(',') }}"
-    TLS_Certificates_directory_path: "/etc/pki/tls/certs"
+    TLS_Certificates_directory_path: "/etc/pki/tls/certs" # noqa var-naming.capitals
     default_certs: false
 
 - name: Create default Certificates
