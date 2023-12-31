@@ -85,6 +85,7 @@
   ansible.builtin.command: "{{ python_version }} {{ hashing_python_file }} {{ hostvars['127.0.0.1']['openldap_config_root_password'] }}"
   register: password_hash
   no_log: true
+  changed_when: false
 
 - name: Set variables for OpenLDAP config password
   ansible.builtin.set_fact:
