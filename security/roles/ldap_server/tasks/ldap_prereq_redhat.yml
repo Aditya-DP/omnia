@@ -20,33 +20,36 @@
     default_certs: false
 
 - name: Create default Certificates
-  when: 
+  when:
     - hostvars['127.0.0.1']['CA_Certificate_file'] == ''
     - hostvars['127.0.0.1']['Certificate_file'] == ''
     - hostvars['127.0.0.1']['Certificate_key_file'] == ''
   block:
-  - name: Set default certificates as true
-    ansible.builtin.set_fact:
-      default_certs: true
+    - name: Set default certificates as true
+      ansible.builtin.set_fact:
+        default_certs: true
 
-  - name: Generate TLS certificates
-    ansible.builtin.command:
-      cmd: "openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj /C=/ST=/L=/O=/CN= -keyout {{ tls_certificates_directory_path }}/{{ rhel_cert_key }}  -out {{ tls_certificates_directory_path }}/{{ rhel_cert_file }}"
-    changed_when: false
-    no_log: true
-  
-  - name: Copy Certificate to contol plane for client setup
-    fetch:
-      src: "{{ tls_certificates_directory_path }}/{{ rhel_cert_file }}"
-      dest: "{{ tls_cert_path }}"
-      flat: true
-    delegate_to: localhost
+    - name: Generate TLS certificates
+      ansible.builtin.command:
+        cmd: >
+        "openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj /C=/ST=/L=/O=/CN= -keyout
+        {{ tls_certificates_directory_path }}/{{ rhel_cert_key }}
+        -out {{ tls_certificates_directory_path }}/{{ rhel_cert_file }}"
+      changed_when: false
+      no_log: true
+    
+    - name: Copy Certificate to contol plane for client setup
+      fetch:
+        src: "{{ tls_certificates_directory_path }}/{{ rhel_cert_file }}"
+        dest: "{{ tls_cert_path }}"
+        flat: true
+      delegate_to: localhost
 
-  - name: Set default tls certificate path for LTB playbook
-    ansible.builtin.set_fact:
-      ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ tls_certificates_directory_path }}/{{ rhel_cert_file }}"
-      ldaptoolbox_openldap_olcTLSCertificateFile: "{{ tls_certificates_directory_path }}/{{ rhel_cert_file }}"
-      ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ tls_certificates_directory_path }}/{{ rhel_cert_key }}"
+    - name: Set default tls certificate path for LTB playbook
+      ansible.builtin.set_fact:
+        ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ tls_certificates_directory_path }}/{{ rhel_cert_file }}"
+        ldaptoolbox_openldap_olcTLSCertificateFile: "{{ tls_certificates_directory_path }}/{{ rhel_cert_file }}"
+        ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ tls_certificates_directory_path }}/{{ rhel_cert_key }}"
 
 - name: Set tls certificate path for omnia playbook
   when: not default_certs
