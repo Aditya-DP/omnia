@@ -35,7 +35,7 @@
         {{ tls_certificates_directory_path }}/{{ rhel_cert_key }}
         -out {{ tls_certificates_directory_path }}/{{ rhel_cert_file }}
       changed_when: false
-      # no_log: true
+      no_log: true
 
     - name: Copy Certificate to contol plane for client setup
       ansible.builtin.fetch:
