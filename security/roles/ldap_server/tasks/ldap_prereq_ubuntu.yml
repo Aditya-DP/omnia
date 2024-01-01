@@ -20,32 +20,32 @@
     default_certs: false
 
 - name: Create default Certificates
-  when: 
+  when:
     - hostvars['127.0.0.1']['CA_Certificate_file'] == ''
     - hostvars['127.0.0.1']['Certificate_file'] == ''
     - hostvars['127.0.0.1']['Certificate_key_file'] == ''
   block:
-  - name: Set default certificates as true
-    ansible.builtin.set_fact:
-      default_certs: true
+    - name: Set default certificates as true
+      ansible.builtin.set_fact:
+        default_certs: true
 
-  - name: Generate TLS certificates
-    ansible.builtin.apt:
-      pkg:
-      - ssl-cert
-  
-  - name: Copy Certificate to contol plane for client setup
-    fetch:
-      src: "{{ tls_certificates_directory_path }}/certs/{{ deb_ca_cert_file }}"
-      dest: "{{ tls_cert_path }}"
-      flat: true
-    delegate_to: localhost
+    - name: Generate TLS certificates
+      ansible.builtin.apt:
+        pkg:
+          - ssl-cert
 
-  - name: Set default tls certificate path for LTB playbook
-    ansible.builtin.set_fact:
-      ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ tls_certificates_directory_path }}/certs/{{ deb_ca_cert_file }}"
-      ldaptoolbox_openldap_olcTLSCertificateFile: "{{ tls_certificates_directory_path }}/certs/{{ deb_cert_file }}"
-      ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ tls_certificates_directory_path }}/private/{{ deb_cert_key }}"
+    - name: Copy Certificate to contol plane for client setup
+      ansible.builtin.fetch:
+        src: "{{ tls_certificates_directory_path }}/certs/{{ deb_ca_cert_file }}"
+        dest: "{{ tls_cert_path }}"
+        flat: true
+      delegate_to: localhost
+
+    - name: Set default tls certificate path for LTB playbook
+      ansible.builtin.set_fact:
+        ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ tls_certificates_directory_path }}/certs/{{ deb_ca_cert_file }}" # noqa var-naming
+        ldaptoolbox_openldap_olcTLSCertificateFile: "{{ tls_certificates_directory_path }}/certs/{{ deb_cert_file }}" # noqa var-naming
+        ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ tls_certificates_directory_path }}/private/{{ deb_cert_key }}" # noqa var-naming
 
 - name: Set tls certificate path for omnia playbook
   when: not default_certs
