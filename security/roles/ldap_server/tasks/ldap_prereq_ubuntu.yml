@@ -57,9 +57,9 @@
         remote_src: false
         mode: "0644"
       with_items:
-        - { file: "{{ hostvars['127.0.0.1']['CA_Certificate_file'] }}" ,directory: certs }
-        - { file: "{{ hostvars['127.0.0.1']['Certificate_file'] }}" ,directory: certs }
-        - { file: "{{ hostvars['127.0.0.1']['Certificate_key_file'] }}" ,directory: private }
+        - { file: "{{ hostvars['127.0.0.1']['CA_Certificate_file'] }}", directory: certs }
+        - { file: "{{ hostvars['127.0.0.1']['Certificate_file'] }}", directory: certs }
+        - { file: "{{ hostvars['127.0.0.1']['Certificate_key_file'] }}", directory: private }
 
     - name: Copy Certificate to contol plane for client setup
       ansible.builtin.copy:

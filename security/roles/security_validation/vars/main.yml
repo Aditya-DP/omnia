@@ -14,7 +14,7 @@
 ---
 
 # Usage: include_security_config.yml
-vault_key_permission: 0644
+vault_key_permission: "0644"
 ansible_vault_search_key: "$ANSIBLE_VAULT;"
 security_config_file: "{{ role_path }}/../../../input/security_config.yml"
 security_vaultname: "{{ role_path }}/../../../input/.security_vault.key"

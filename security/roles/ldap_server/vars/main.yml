@@ -14,14 +14,15 @@
 ---
 
 # Usage: ldap_prereq_Redhat.yml
-ldaptoolbox_openldap_config_olcRootDN: "cn={{ hostvars['127.0.0.1']['openldap_config_root_username'] }},cn=config"
-ldaptoolbox_openldap_database_olcRootDN: "cn={{ hostvars['127.0.0.1']['openldap_database_root_username'] }},{{ ldaptoolbox_openldap_suffix }}"
-ldaptoolbox_openldap_monitor_olcRootDN: "cn=monitor"
+ldaptoolbox_openldap_config_olcRootDN: "cn={{ hostvars['127.0.0.1']['openldap_config_root_username'] }},cn=config" # noqa var-naming
+ldaptoolbox_openldap_database_olcRootDN: "cn={{ hostvars['127.0.0.1']['openldap_database_root_username'] }},{{ ldaptoolbox_openldap_suffix }}" # noqa var-naming
+ldaptoolbox_openldap_monitor_olcRootDN: "cn=monitor" # noqa var-naming
 python_version: python3.9
 hashing_python_file: "{{ role_path }}/files/generate_hash.py"
-ldaptoolbox_olcPasswordHash: "{SHA}"
+ldaptoolbox_olcPasswordHash: "{SHA}" # noqa var-naming
 openldap_configuration_mode: "0600"
 openldap_config_permissions: "0777"
+openldap_cert_permissions: "0644"
 tls_cert_path: "/etc/openldap/certs/"
 rhel_cert_file: "ldapserver.crt"
 rhel_cert_key: "ldapserver.key"
@@ -35,4 +36,3 @@ deb_cert_key: "ssl-cert-snakeoil.key"
 openldap_config_dest_dir: "/opt/ldap"
 openldap_config_src_path: "{{ role_path }}/templates/add_domain.ldif"
 ldap_host_string: "ldapi://%2Fvar%2Frun%2Fslapd%2Fldapi"
-

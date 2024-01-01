@@ -51,19 +51,19 @@
 
 - name: Validate Certificate directory
   when:
-  - CA_Certificate_file != ''
-  - Certificate_file != ''
-  - Certificate_key_file != ''
+    - CA_Certificate_file != ''
+    - Certificate_file != ''
+    - Certificate_key_file != ''
   block:
-  - name: Check certificate files exist
-    ansible.builtin.stat:
-      path: "{{ item }}"
-    register: file_status
-    failed_when: not file_status.stat.exists
-    loop:
-      - "{{ CA_Certificate_file }}"
-      - "{{ Certificate_file }}"
-      - "{{ Certificate_key_file }}"
+    - name: Check certificate files exist
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      register: file_status
+      failed_when: not file_status.stat.exists
+      loop:
+        - "{{ CA_Certificate_file }}"
+        - "{{ Certificate_file }}"
+        - "{{ Certificate_key_file }}"
   rescue:
     - name: Certificate path invalid
       ansible.builtin.fail:

@@ -14,14 +14,14 @@
 ---
 
 - name: Adding the path in the bashrc files
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /root/.bashrc
     line: "export PATH=/usr/local/openldap/sbin:/usr/local/openldap/bin:$PATH"
     insertafter: EOF
     state: present
 
 - name: Search schema
-  ansible.builtin.command: ldapsearch -Y EXTERNAL -H "{{ ldap_host_string }}" -b "{{ ldaptoolbox_openldap_suffix }}"  
+  ansible.builtin.command: ldapsearch -Y EXTERNAL -H "{{ ldap_host_string }}" -b "{{ ldaptoolbox_openldap_suffix }}"
   changed_when: false
   ignore_errors: true
   register: schema_output
@@ -30,18 +30,18 @@
 - name: Verify and add domain config
   when: schema_output is not search("Omnia_set_organization")
   block:
-  - name: Create ldap config directory
-    ansible.builtin.file:
-      path: "{{ openldap_config_dest_dir }}"
-      state: directory
-      mode: "{{ openldap_config_permissions }}"
+    - name: Create ldap config directory
+      ansible.builtin.file:
+        path: "{{ openldap_config_dest_dir }}"
+        state: directory
+        mode: "{{ openldap_config_permissions }}"
 
-  - name: Deploy domain config file 
-    ansible.builtin.template:
-      src: "{{ openldap_config_src_path }}"
-      dest: "{{ openldap_config_dest_dir }}"
-      mode: "{{ openldap_configuration_mode }}"
+    - name: Deploy domain config file
+      ansible.builtin.template:
+        src: "{{ openldap_config_src_path }}"
+        dest: "{{ openldap_config_dest_dir }}"
+        mode: "{{ openldap_configuration_mode }}"
 
-  - name: Execute domain config file
-    ansible.builtin.command: "ldapadd -Y EXTERNAL -H {{ ldap_host_string }} -f {{ openldap_config_dest_dir }}/add_domain.ldif"
-    changed_when: false
+    - name: Execute domain config file
+      ansible.builtin.command: "ldapadd -Y EXTERNAL -H {{ ldap_host_string }} -f {{ openldap_config_dest_dir }}/add_domain.ldif"
+      changed_when: false
