@@ -84,7 +84,7 @@
   delegate_to: localhost
   ansible.builtin.command: "{{ python_version }} {{ hashing_python_file }} {{ hostvars['127.0.0.1']['openldap_config_root_password'] }}"
   register: password_hash
-  # no_log: true
+  no_log: true
   changed_when: false
 
 - name: Set variables for OpenLDAP config password
@@ -96,7 +96,7 @@
   delegate_to: localhost
   ansible.builtin.command: "{{ python_version }} {{ hashing_python_file }} {{ hostvars['127.0.0.1']['openldap_database_root_password'] }}"
   register: password_hash
-  # no_log: true
+  no_log: true
   changed_when: false
 
 - name: Set variables for OpenLDAP database password
@@ -108,7 +108,7 @@
   delegate_to: localhost
   ansible.builtin.command: "{{ python_version }} {{ hashing_python_file }} {{ hostvars['127.0.0.1']['openldap_monitor_root_password'] }}"
   register: password_hash
-  # no_log: true
+  no_log: true
   changed_when: false
 
 - name: Set variables for OpenLDAP monitor password
