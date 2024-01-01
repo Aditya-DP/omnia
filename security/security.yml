@@ -50,7 +50,7 @@
       ansible.builtin.include_role:
         name: hostname_validation
         tasks_from: validate_hostname.yml
-  tags: freeipa, ldap, test
+  tags: freeipa, ldap
 
 - name: Apply login common installation and config
   hosts: manager, login, compute
@@ -78,7 +78,6 @@
   hosts: manager
   roles:
     - ldap_server
-  tags: test
 
 - name: Apply ldap server installation and config
   remote_user: root
@@ -90,7 +89,6 @@
     - ldaptoolbox_openldap_syncrepl: []
   roles:
     - /opt/omnia/ldap/ansible-role-ldaptoolbox-openldap # noqa: role-name[path]
-  tags: test
 
 - name: Setup LDAP server domain
   hosts: manager
