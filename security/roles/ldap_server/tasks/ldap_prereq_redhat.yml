@@ -30,10 +30,10 @@
         default_certs: true
 
     - name: Generate TLS certificates
-      ansible.builtin.command: >
-        "openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj /C=/ST=/L=/O=/CN= -keyout
+      ansible.builtin.command: |
+        openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj /C=/ST=/L=/O=/CN= -keyout
         {{ tls_certificates_directory_path }}/{{ rhel_cert_key }}
-        -out {{ tls_certificates_directory_path }}/{{ rhel_cert_file }}"
+        -out {{ tls_certificates_directory_path }}/{{ rhel_cert_file }}
       changed_when: false
       # no_log: true
 
