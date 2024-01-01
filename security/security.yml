@@ -89,7 +89,7 @@
     # No replication
     - ldaptoolbox_openldap_syncrepl: []
   roles:
-    - /opt/omnia/ldap/ansible-role-ldaptoolbox-openldap # noqa role-name[path]
+    - /opt/omnia/ldap/ansible-role-ldaptoolbox-openldap # noqa: role-name[path]
   tags: test
 
 - name: Setup LDAP server domain
