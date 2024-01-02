@@ -29,7 +29,7 @@
 - name: Check freeipa ui accessible or not
   ansible.builtin.uri:
     url: "https://{{ server_hostname }}"
-    status_code: "{{ return_status | int }}"
+    status_code: "{{ return_status }}"
     return_content: true
   register: freeipa_url_status
   failed_when: false
