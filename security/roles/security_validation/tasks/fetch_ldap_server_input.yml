@@ -13,9 +13,9 @@
 # limitations under the License.
 ---
 
-- name: Set variables for LYB role path
+- name: Set variables for LTB role path
   ansible.builtin.set_fact:
-  ltb_repo_path: "/opt/omnia/ldap/ansible-role-ldaptoolbox-openldap" # noqa var-naming
+  ltb_repo_path: "/opt/omnia/ldap/ansible-role-ldaptoolbox-openldap"
 
 - name: Assert openldap_config_root_password
   ansible.builtin.assert:
