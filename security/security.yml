@@ -85,7 +85,7 @@
   tasks:
     - name: Include LTB role
       ansible.builtin.include_role:
-        name: "{{ ltb_repo_path }}"
+        name: "{{ hostvars['127.0.0.1']['ltb_repo_path'] }}"
 
 - name: Setup LDAP server domain
   hosts: manager
