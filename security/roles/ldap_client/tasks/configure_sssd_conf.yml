@@ -16,7 +16,7 @@
 - name: Extract the domain name required by LDAP
   ansible.builtin.set_fact:
     reqd_domain_name: "{{ (hostvars['127.0.0.1']['domain_name'].split('.') | map('regex_replace', '^', 'dc=') | list) | join(',') }}"
-    certificate_path: "{{ hostvars[groups['manager'][0]]['ldaptoolbox_openldap_olcTLSCACertificateFile'] | basename }}"
+    certificate_path: "{{ hostvars[groups['auth_server'][0]]['ldaptoolbox_openldap_olcTLSCACertificateFile'] | basename }}"
 
 - name: Update sssd.conf file for TLS connection type
   when:
@@ -35,7 +35,7 @@
       ansible.builtin.replace:
         path: "{{ sssd_conf_dest }}"
         regexp: "ldap://server-ip"
-        replace: "ldap://{{ hostvars[groups['manager'][0]]['ansible_env'].SSH_CONNECTION.split(' ')[2] }}"
+        replace: "ldap://{{ hostvars[groups['auth_server'][0]]['ansible_env'].SSH_CONNECTION.split(' ')[2] }}"
 
     - name: Update the domain name
       ansible.builtin.replace:
@@ -95,10 +95,10 @@
       ansible.builtin.replace:
         path: "{{ sssd_conf_dest }}"
         regexp: "ldap_uri = ldaps://server-ip:636"
-        replace: "ldap_uri = ldaps://{{ hostvars[groups['manager'][0]]['ansible_env'].SSH_CONNECTION.split(' ')[2] }}:636"
+        replace: "ldap_uri = ldaps://{{ hostvars[groups['auth_server'][0]]['ansible_env'].SSH_CONNECTION.split(' ')[2] }}:636"
 
     - name: Update the ldap server IP
       ansible.builtin.replace:
         path: "{{ sssd_conf_dest }}"
         regexp: "ldap_chpass_uri = ldaps://server-ip:636"
-        replace: "ldap_chpass_uri = ldaps://{{ hostvars[groups['manager'][0]]['ansible_env'].SSH_CONNECTION.split(' ')[2] }}:636"
+        replace: "ldap_chpass_uri = ldaps://{{ hostvars[groups['auth_server'][0]]['ansible_env'].SSH_CONNECTION.split(' ')[2] }}:636"

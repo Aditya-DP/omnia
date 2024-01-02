@@ -60,19 +60,19 @@
     - login_common
   tags: freeipa
 
-# - name: Apply login server installation and config
-#   hosts: manager
-#   gather_facts: false
-#   roles:
-#     - login_server
-#   tags: freeipa
+- name: Apply login server installation and config
+  hosts: manager
+  gather_facts: false
+  roles:
+    - login_server
+  tags: freeipa
 
-# - name: Install FreeIPA client on login and compute nodes
-#   hosts: login, compute
-#   gather_facts: false
-#   roles:
-#     - login_node
-#   tags: freeipa
+- name: Install FreeIPA client on login and compute nodes
+  hosts: login, compute
+  gather_facts: false
+  roles:
+    - login_node
+  tags: freeipa
 
 - name: Apply ldap server installation and config
   hosts: manager
@@ -81,14 +81,14 @@
 
 - name: Apply ldap server installation and config
   remote_user: root
-  hosts: manager
+  hosts: auth_server
   tasks:
     - name: Include LTB role
       ansible.builtin.include_role:
         name: "{{ hostvars['127.0.0.1']['ltb_repo_path'] }}"
 
 - name: Setup LDAP server domain
-  hosts: manager
+  hosts: auth_server
   tasks:
     - name: Include domain setup task
       ansible.builtin.include_role:
@@ -96,7 +96,7 @@
         tasks_from: set_domain.yml
 
 - name: Apply ldap client installation and config
-  hosts: manager, compute, login
+  hosts: all
   gather_facts: false
   roles:
     - ldap_client

@@ -62,6 +62,6 @@
 
 - name: Copy the certificate to remote node
   ansible.builtin.copy:
-    src: "{{ hostvars[groups['manager'][0]]['ldaptoolbox_openldap_olcTLSCACertificateFile'] }}"
+    src: "{{ hostvars[groups['auth_server'][0]]['ldaptoolbox_openldap_olcTLSCACertificateFile'] }}"
     dest: "{{ tls_cert_path }}"
     mode: "{{ file_mode }}"
