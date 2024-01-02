@@ -75,7 +75,7 @@
   tags: freeipa
 
 - name: Apply ldap server installation and config
-  hosts: manager
+  hosts: auth_server
   roles:
     - ldap_server
 
