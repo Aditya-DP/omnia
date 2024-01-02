@@ -82,8 +82,10 @@
 - name: Apply ldap server installation and config
   remote_user: root
   hosts: manager
-  ansible.builtin.include_role:
-    - ltb_repo_path # noqa: role-name[path]
+  tasks:
+    - name: Include LTB role
+      ansible.builtin.include_role:
+      name: ltb_repo_path
 
 - name: Setup LDAP server domain
   hosts: manager
