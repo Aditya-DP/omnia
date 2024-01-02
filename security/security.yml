@@ -83,7 +83,7 @@
   remote_user: root
   hosts: manager
   roles:
-    - "{{ ltb_repo_path }}" # noqa: role-name[path]
+    - hostvars['127.0.0.1']['ltb_repo_path'] # noqa: role-name[path]
 
 - name: Setup LDAP server domain
   hosts: manager
