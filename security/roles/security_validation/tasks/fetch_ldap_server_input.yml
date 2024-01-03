@@ -13,6 +13,20 @@
 # limitations under the License.
 ---
 
+- name: Set variables for LTB role path
+  ansible.builtin.set_fact:
+    ltb_repo_path: "/opt/omnia/ldap/ansible-role-ldaptoolbox-openldap"
+
+- name: Check certificate files exist
+  ansible.builtin.stat:
+    path: "{{ ltb_repo_path }}"
+  register: dir_status
+
+- name: Fail if LTB role directory doesn't exist
+  ansible.builtin.fail:
+    msg: "{{ fail_msg_ltb_dir }}"
+  when: not dir_status.stat.exists
+
 - name: Assert openldap_config_root_password
   ansible.builtin.assert:
     that:

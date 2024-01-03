@@ -75,23 +75,20 @@
   tags: freeipa
 
 - name: Apply ldap server installation and config
-  hosts: manager
+  hosts: auth_server
   roles:
     - ldap_server
 
 - name: Apply ldap server installation and config
   remote_user: root
-  hosts: manager
-  vars:
-    - ldaptoolbox_openldap_database_olcLimits:
-        - "dn.base=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth size=unlimited  time=unlimited"
-    # No replication
-    - ldaptoolbox_openldap_syncrepl: []
-  roles:
-    - /opt/omnia/ldap/ansible-role-ldaptoolbox-openldap # noqa: role-name[path]
+  hosts: auth_server
+  tasks:
+    - name: Include LTB role
+      ansible.builtin.include_role:
+        name: "{{ hostvars['127.0.0.1']['ltb_repo_path'] }}"
 
 - name: Setup LDAP server domain
-  hosts: manager
+  hosts: auth_server
   tasks:
     - name: Include domain setup task
       ansible.builtin.include_role:
@@ -99,7 +96,7 @@
         tasks_from: set_domain.yml
 
 - name: Apply ldap client installation and config
-  hosts: manager, compute, login
+  hosts: all
   gather_facts: false
   roles:
     - ldap_client
