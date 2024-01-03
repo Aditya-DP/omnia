@@ -15,6 +15,9 @@
 
 - name: Set variables for OpenLDAP
   ansible.builtin.set_fact:
+    ldaptoolbox_openldap_database_olcLimits: # noqa var-naming
+      - "dn.base=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth size=unlimited  time=unlimited"
+    ldaptoolbox_openldap_syncrepl: []
     ldaptoolbox_openldap_suffix: "{{ (hostvars['127.0.0.1']['domain_name'].split('.') | map('regex_replace', '^', 'dc=') | list) | join(',') }}"
     tls_certificates_directory_path: "/etc/ssl/"
     default_certs: false
@@ -77,38 +80,17 @@
         ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ tls_certificates_directory_path }}/{{ hostvars['127.0.0.1']['Certificate_key_file']
          | basename }}" # noqa var-naming
 
-- name: Genarate password hash for OpenLDAP config
-  delegate_to: localhost
-  ansible.builtin.command: "{{ python_version }} {{ hashing_python_file }} {{ hostvars['127.0.0.1']['openldap_config_root_password'] }}"
-  register: password_hash
-  no_log: true
-  changed_when: false
-
-- name: Set variables for OpenLDAP config password
+- name: Set variables for LTB config password
   ansible.builtin.set_fact:
-    ldaptoolbox_openldap_config_olcRootPW_hash: "{{ password_hash.stdout }}" # noqa var-naming
+    ldaptoolbox_openldap_config_olcRootPW_hash: "{{ hostvars['127.0.0.1']['openldap_config_root_password_hash'] }}" # noqa var-naming
   no_log: true
 
-- name: Genarate password hashes for OpenLDAP database
-  delegate_to: localhost
-  ansible.builtin.command: "{{ python_version }} {{ hashing_python_file }} {{ hostvars['127.0.0.1']['openldap_database_root_password'] }}"
-  register: password_hash
-  no_log: true
-  changed_when: false
-
-- name: Set variables for OpenLDAP database password
+- name: Set variables for LTB database password
   ansible.builtin.set_fact:
-    ldaptoolbox_openldap_database_olcRootPW_hash: "{{ password_hash.stdout }}" # noqa var-naming
+    ldaptoolbox_openldap_database_olcRootPW_hash: "{{ hostvars['127.0.0.1']['openldap_database_root_password_hash'] }}" # noqa var-naming
   no_log: true
 
-- name: Genarate password hashes for OpenLDAP monitor
-  delegate_to: localhost
-  ansible.builtin.command: "{{ python_version }} {{ hashing_python_file }} {{ hostvars['127.0.0.1']['openldap_monitor_root_password'] }}"
-  register: password_hash
-  no_log: true
-  changed_when: false
-
-- name: Set variables for OpenLDAP monitor password
+- name: Set variables for LTB monitor password
   ansible.builtin.set_fact:
-    ldaptoolbox_openldap_monitor_olcRootPW_hash: "{{ password_hash.stdout }}" # noqa var-naming
+    ldaptoolbox_openldap_monitor_olcRootPW_hash: "{{ hostvars['127.0.0.1']['openldap_monitor_root_password_hash'] }}" # noqa var-naming
   no_log: true

@@ -96,3 +96,8 @@ success_msg_monitor_root_password: "Monitor password valid"
 fail_msg_monitor_root_password: "Monitor password invalid"
 ldap_cert_path_fail_msg: "Failed, LDAP certificate path doesn't exist."
 ldap_cert_path_success_msg: "LDAP certificate path validated"
+fail_msg_ltb_dir: "Failed, LTB directory doesn't exist."
+
+# Usgae: generate_ldap_password_hashes.yml
+hashing_python_file: "{{ role_path }}/files/generate_hash.py"
+python_version: python3.9
