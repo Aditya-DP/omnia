@@ -69,7 +69,6 @@
         src: "{{ hostvars['127.0.0.1']['tls_ca_certificate'] }}"
         dest: "{{ tls_cert_path }}"
         mode: "{{ openldap_cert_permissions }}"
-      delegate_to: localhost
 
     - name: Set  tls certificate path for LTB playbook
       ansible.builtin.set_fact:
