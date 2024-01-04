@@ -45,7 +45,6 @@
         src: "{{ tls_certificates_directory_path }}/{{ rhel_cert_file }}"
         dest: "{{ tls_cert_path }}"
         flat: true
-      # delegate_to: localhost
 
     - name: Set default tls certificate path for LTB playbook
       ansible.builtin.set_fact:
