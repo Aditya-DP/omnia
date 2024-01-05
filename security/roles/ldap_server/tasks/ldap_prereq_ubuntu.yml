@@ -25,7 +25,7 @@
 - name: Create default Certificates
   when:
     - hostvars['127.0.0.1']['tls_ca_certificate'] == ''
-    - hostvars['127.0.0.1']['tls_Certificate'] == ''
+    - hostvars['127.0.0.1']['tls_certificate'] == ''
     - hostvars['127.0.0.1']['tls_certificate_key'] == ''
   block:
     - name: Set default certificates as true
@@ -61,7 +61,7 @@
         mode: "0644"
       with_items:
         - { file: "{{ hostvars['127.0.0.1']['tls_ca_certificate'] }}", directory: certs }
-        - { file: "{{ hostvars['127.0.0.1']['tls_Certificate'] }}", directory: certs }
+        - { file: "{{ hostvars['127.0.0.1']['tls_certificate'] }}", directory: certs }
         - { file: "{{ hostvars['127.0.0.1']['tls_certificate_key'] }}", directory: private }
 
     - name: Copy Certificate to contol plane for client setup
@@ -74,7 +74,7 @@
       ansible.builtin.set_fact:
         ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ tls_certificates_directory_path }}/{{ hostvars['127.0.0.1']['tls_ca_certificate']
          | basename }}" # noqa var-naming
-        ldaptoolbox_openldap_olcTLSCertificateFile: "{{ tls_certificates_directory_path }}/{{ hostvars['127.0.0.1']['tls_Certificate']
+        ldaptoolbox_openldap_olcTLSCertificateFile: "{{ tls_certificates_directory_path }}/{{ hostvars['127.0.0.1']['tls_certificate']
          | basename }}" # noqa var-naming
         ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ tls_certificates_directory_path }}/{{ hostvars['127.0.0.1']['tls_certificate_key']
          | basename }}" # noqa var-naming

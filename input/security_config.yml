@@ -72,7 +72,7 @@ ldap_connection_type: "TLS"
 # Certificate Authority(CA) issued certificate file path
 tls_ca_certificate: ""
 # LDAP Certificate file path
-tls_Certificate: ""
+tls_certificate: ""
 # LDAP Certificate key file path
 tls_certificate_key: ""
 
