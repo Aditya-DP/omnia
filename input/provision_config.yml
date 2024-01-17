@@ -227,11 +227,11 @@ rhel_repo_local_path:
 #### Optional, discovery_mechanism: mapping or switch_based or bmc or snmpwalk
 # User defined disk partition applied to remote servers
 # Unit: MB
-# Accepted mount_point: /home, /var, /tmp, /usr, swap
+# Accepted mount_point: /var, /tmp, /usr, swap
 # Default partition size provided for /boot: 1024MB, /boot/efi: 256MB and remaining space to / partition.
 # Example for disk_partition:
 # disk_partition:
-#   - { mount_point: "/home", desired_capacity: "102400" }
+#   - { mount_point: "/var", desired_capacity: "102400" }
 disk_partition:
   - { mount_point: "", desired_capacity: "" }
 

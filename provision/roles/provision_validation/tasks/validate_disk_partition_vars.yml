@@ -20,8 +20,7 @@
 - name: Assert mount_point of disk_partition variable
   ansible.builtin.assert:
     that:
-      - item.mount_point == '/home' or
-        item.mount_point == '/var' or
+      - item.mount_point == '/var' or
         item.mount_point == '/tmp' or
         item.mount_point == '/usr' or
         item.mount_point == 'swap'

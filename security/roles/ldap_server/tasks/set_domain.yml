@@ -1,4 +1,4 @@
-# Copyright 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+# Copyright 2024 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 
 - name: Adding the path in the bashrc files
   ansible.builtin.lineinfile:
-    path: /root/.bashrc
+    path: "{{ env_var_path }}"
     line: "export PATH=/usr/local/openldap/sbin:/usr/local/openldap/bin:$PATH"
     insertafter: EOF
     state: present

@@ -1,4 +1,4 @@
-# Copyright 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+# Copyright 2024 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
       - "dn.base=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth size=unlimited  time=unlimited"
     ldaptoolbox_openldap_syncrepl: []
     ldaptoolbox_openldap_suffix: "{{ (hostvars['127.0.0.1']['domain_name'].split('.') | map('regex_replace', '^', 'dc=') | list) | join(',') }}"
-    tls_certificates_directory_path: "/etc/pki/tls/certs"
+    tls_certificates_directory_path: "{{ tls_cert_source }}"
     default_certs: false
 
 - name: Create default Certificates
@@ -34,13 +34,13 @@
 
     - name: Generate TLS certificates
       ansible.builtin.command: |
-        openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj /C=/ST=/L=/O=/CN= -keyout
+        openssl req -new -newkey rsa:4096 -days {{ ssl_limit }} -nodes -x509 -subj /C=/ST=/L=/O=/CN= -keyout
         {{ tls_certificates_directory_path }}/{{ rhel_cert_key }}
         -out {{ tls_certificates_directory_path }}/{{ rhel_cert_file }}
       changed_when: false
       no_log: true
 
-    - name: Copy Certificate to contol plane for client setup
+    - name: Copy Certificate to control plane for client setup
       ansible.builtin.fetch:
         src: "{{ tls_certificates_directory_path }}/{{ rhel_cert_file }}"
         dest: "{{ tls_cert_path }}"
@@ -60,20 +60,20 @@
         src: "{{ item }}"
         dest: "{{ tls_certificates_directory_path }}"
         remote_src: false
-        mode: "0644"
+        mode: "{{ openldap_cert_permissions }}"
       with_items:
         - "{{ hostvars['127.0.0.1']['tls_ca_certificate'] }}"
         - "{{ hostvars['127.0.0.1']['tls_certificate'] }}"
         - "{{ hostvars['127.0.0.1']['tls_certificate_key'] }}"
 
-    - name: Copy Certificate to contol plane for client setup
+    - name: Copy Certificate to control plane for client setup
       ansible.builtin.copy:
         src: "{{ hostvars['127.0.0.1']['tls_ca_certificate'] }}"
         dest: "{{ tls_cert_path }}"
         mode: "{{ openldap_cert_permissions }}"
       delegate_to: localhost
 
-    - name: Set  tls certificate path for LTB playbook
+    - name: Set tls certificate path for LTB playbook
       ansible.builtin.set_fact:
         ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ tls_certificates_directory_path }}/{{ hostvars['127.0.0.1']['tls_ca_certificate']
          | basename }}" # noqa var-naming

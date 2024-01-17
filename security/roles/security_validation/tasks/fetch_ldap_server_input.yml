@@ -1,4 +1,4 @@
-# Copyright 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+# Copyright 2024 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 
 - name: Set variables for LTB role path
   ansible.builtin.set_fact:
-    ltb_repo_path: "/opt/omnia/ldap/ansible-role-ldaptoolbox-openldap"
+    ltb_repo_path: "{{ ltb_git_repo_path }}"
 
 - name: Check certificate files exist
   ansible.builtin.stat:

@@ -1,4 +1,4 @@
-# Copyright 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+# Copyright 2024 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -74,23 +74,18 @@
     - login_node
   tags: freeipa
 
-- name: Apply ldap server installation and config
-  hosts: auth_server
-  roles:
-    - ldap_server
-
-- name: Apply ldap server installation and config
-  remote_user: root
+- name: Install openldap server and apply configurations
   hosts: auth_server
   tasks:
-    - name: Include LTB role
+    - name: Include server prerequisite config
+      ansible.builtin.include_role:
+        name: ldap_server
+
+    - name: Include LTB role for server installation
       ansible.builtin.include_role:
         name: "{{ hostvars['127.0.0.1']['ltb_repo_path'] }}"
 
-- name: Setup LDAP server domain
-  hosts: auth_server
-  tasks:
-    - name: Include domain setup task
+    - name: Include domain setup task for server configuration
       ansible.builtin.include_role:
         name: ldap_server
         tasks_from: set_domain.yml
