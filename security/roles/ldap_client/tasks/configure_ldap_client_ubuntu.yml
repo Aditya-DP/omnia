@@ -12,6 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 ---
+
 - name: Install packages for LDAP Client
   ansible.builtin.package:
     name: "{{ ldap_client_packages }}"
@@ -33,16 +34,15 @@
   ansible.builtin.replace:
     path: "{{ ldap_conf_dest }}"
     regexp: "^#?URI.*"
-    replace: "URI ldap://{{ hostvars['127.0.0.1']['ldap_server_ip'] }}"
+    replace: "URI ldap://{{ hostvars[groups['auth_server'][0]]['ansible_env'].SSH_CONNECTION.split(' ')[2] }}"
   when: "'compute' in group_names"
   changed_when: true
 
-- name: Copy CA certificate to compute nodes
+- name: Copy the certificate to remote node
   ansible.builtin.copy:
-    src: "{{ ca_path }}"
+    src: "{{ tls_cert_path }}/{{ hostvars[groups['auth_server'][0]]['ldaptoolbox_openldap_olcTLSCACertificateFile'] | basename }}"
     dest: "{{ tls_cert_path }}"
     mode: "{{ file_mode }}"
-  when: "'compute' in group_names"
 
 - name: Update ldap.conf file
   ansible.builtin.replace:

@@ -81,18 +81,3 @@
          | basename }}" # noqa var-naming
         ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ tls_certificates_directory_path }}/{{ hostvars['127.0.0.1']['tls_certificate_key']
          | basename }}" # noqa var-naming
-
-- name: Set variables for LTB config password
-  ansible.builtin.set_fact:
-    ldaptoolbox_openldap_config_olcRootPW_hash: "{{ hostvars['127.0.0.1']['openldap_config_password_hash'] }}" # noqa var-naming
-  no_log: true
-
-- name: Set variables for LTB database password
-  ansible.builtin.set_fact:
-    ldaptoolbox_openldap_database_olcRootPW_hash: "{{ hostvars['127.0.0.1']['openldap_db_password_hash'] }}" # noqa var-naming
-  no_log: true
-
-- name: Set variables for LTB monitor password
-  ansible.builtin.set_fact:
-    ldaptoolbox_openldap_monitor_olcRootPW_hash: "{{ hostvars['127.0.0.1']['openldap_monitor_password_hash'] }}" # noqa var-naming
-  no_log: true

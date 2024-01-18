@@ -19,7 +19,7 @@
       - "dn.base=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth size=unlimited  time=unlimited"
     ldaptoolbox_openldap_syncrepl: []
     ldaptoolbox_openldap_suffix: "{{ (hostvars['127.0.0.1']['domain_name'].split('.') | map('regex_replace', '^', 'dc=') | list) | join(',') }}"
-    tls_certificates_directory_path: "/etc/ssl/"
+    tls_certificates_directory_path: "{{ tls_cert_source }}"
     default_certs: false
 
 - name: Create default Certificates
@@ -39,16 +39,15 @@
 
     - name: Copy Certificate to control plane for client setup
       ansible.builtin.fetch:
-        src: "{{ tls_certificates_directory_path }}/certs/{{ deb_ca_cert_file }}"
+        src: "{{ tls_certificates_directory_path }}/{{ deb_ca_cert_file }}"
         dest: "{{ tls_cert_path }}"
         flat: true
-      delegate_to: localhost
 
     - name: Set default tls certificate path for LTB playbook
       ansible.builtin.set_fact:
-        ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ tls_certificates_directory_path }}/certs/{{ deb_ca_cert_file }}" # noqa var-naming
-        ldaptoolbox_openldap_olcTLSCertificateFile: "{{ tls_certificates_directory_path }}/certs/{{ deb_cert_file }}" # noqa var-naming
-        ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ tls_certificates_directory_path }}/private/{{ deb_cert_key }}" # noqa var-naming
+        ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ tls_certificates_directory_path }}/{ deb_ca_cert_file }}" # noqa var-naming
+        ldaptoolbox_openldap_olcTLSCertificateFile: "{{ tls_certificates_directory_path }}/{{ deb_cert_file }}" # noqa var-naming
+        ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ tls_certificates_directory_path }}/{{ deb_cert_key }}" # noqa var-naming
 
 - name: Set tls certificate path for omnia playbook
   when: not default_certs
@@ -69,8 +68,9 @@
         src: "{{ hostvars['127.0.0.1']['tls_ca_certificate'] }}"
         dest: "{{ tls_cert_path }}"
         mode: "{{ openldap_cert_permissions }}"
+      delegate_to: localhost
 
-    - name: Set  tls certificate path for LTB playbook
+    - name: Set tls certificate path for LTB playbook
       ansible.builtin.set_fact:
         ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ tls_certificates_directory_path }}/{{ hostvars['127.0.0.1']['tls_ca_certificate']
          | basename }}" # noqa var-naming
@@ -78,18 +78,3 @@
          | basename }}" # noqa var-naming
         ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ tls_certificates_directory_path }}/{{ hostvars['127.0.0.1']['tls_certificate_key']
          | basename }}" # noqa var-naming
-
-- name: Set variables for LTB config password
-  ansible.builtin.set_fact:
-    ldaptoolbox_openldap_config_olcRootPW_hash: "{{ hostvars['127.0.0.1']['openldap_config_password_hash'] }}" # noqa var-naming
-  no_log: true
-
-- name: Set variables for LTB database password
-  ansible.builtin.set_fact:
-    ldaptoolbox_openldap_database_olcRootPW_hash: "{{ hostvars['127.0.0.1']['openldap_db_password_hash'] }}" # noqa var-naming
-  no_log: true
-
-- name: Set variables for LTB monitor password
-  ansible.builtin.set_fact:
-    ldaptoolbox_openldap_monitor_olcRootPW_hash: "{{ hostvars['127.0.0.1']['openldap_monitor_password_hash'] }}" # noqa var-naming
-  no_log: true

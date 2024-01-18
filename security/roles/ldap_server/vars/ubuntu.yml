@@ -13,11 +13,10 @@
 # limitations under the License.
 ---
 
-- name: Include vars for {{ ansible_distribution | lower }}
-  ansible.builtin.include_vars: "{{ role_path }}/vars/{{ ansible_distribution | lower }}.yml"
-
-- name: Prepare OpenLDAP certificates
-  ansible.builtin.include_tasks: ldap_prereq_{{ ansible_distribution | lower }}.yml
-
-- name: Prepare OpenLDAP variables
-  ansible.builtin.include_tasks: ldap_common.yml
+# Usage: ldap_prereq_Ubuntu.yml
+ubuntu_cert_pkg: "ssl-cert"
+deb_ca_cert_file: "certs/ca-certificates.crt"
+deb_cert_file: "certs/ssl-cert-snakeoil.pem"
+deb_cert_key: "private/ssl-cert-snakeoil.key"
+tls_cert_path: "/etc/ldap/"
+tls_cert_source: "/etc/ssl"

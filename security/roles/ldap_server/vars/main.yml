@@ -21,17 +21,6 @@ ldaptoolbox_olcPasswordHash: "{SHA}" # noqa var-naming
 openldap_configuration_mode: "0600"
 openldap_config_permissions: "0600"
 openldap_cert_permissions: "0644"
-tls_cert_path: "/etc/openldap/certs/"
-tls_cert_source: "/etc/pki/tls/certs"
-rhel_cert_file: "ldapserver.crt"
-rhel_cert_key: "ldapserver.key"
-ssl_limit: 365
-
-# Usage: ldap_prereq_Ubuntu.yml
-ubuntu_cert_pkg: "ssl-cert"
-deb_ca_cert_file: "ca-certificates.crt"
-deb_cert_file: "ssl-cert-snakeoil.pem"
-deb_cert_key: "ssl-cert-snakeoil.key"
 
 # Usage: set_domain.yml
 openldap_config_dest_dir: "/opt/ldap"
