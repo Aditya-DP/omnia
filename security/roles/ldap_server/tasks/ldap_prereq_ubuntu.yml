@@ -45,7 +45,7 @@
 
     - name: Set default tls certificate path for LTB playbook
       ansible.builtin.set_fact:
-        ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ tls_certificates_directory_path }}/{ deb_ca_cert_file }}" # noqa var-naming
+        ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ tls_certificates_directory_path }}/{{ deb_ca_cert_file }}" # noqa var-naming
         ldaptoolbox_openldap_olcTLSCertificateFile: "{{ tls_certificates_directory_path }}/{{ deb_cert_file }}" # noqa var-naming
         ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ tls_certificates_directory_path }}/{{ deb_cert_key }}" # noqa var-naming
 

@@ -24,7 +24,7 @@
   tags: freeipa, ldap
 
 - name: Gather facts from all the nodes
-  hosts: manager, compute, login
+  hosts: all
 
 - name: Validate repo file and subscription
   hosts: manager, login, compute
@@ -34,7 +34,7 @@
   tags: freeipa, ldap
 
 - name: Add hosts to compute and login nodes
-  hosts: manager, login, compute
+  hosts: all
   gather_facts: false
   any_errors_fatal: true
   roles:
@@ -42,7 +42,7 @@
   tags: freeipa
 
 - name: Validate hostname
-  hosts: manager, login, compute
+  hosts: all
   any_errors_fatal: true
   gather_facts: false
   tasks:
@@ -92,7 +92,7 @@
 
 - name: Apply ldap client installation and config
   hosts: all
-  gather_facts: true
+  gather_facts: false
   roles:
     - ldap_client
   tags: ldap
