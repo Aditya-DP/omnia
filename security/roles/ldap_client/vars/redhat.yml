@@ -13,12 +13,15 @@
 #  limitations under the License.
 ---
 
-# Common vars
-sssd_conf_dest: "/etc/sssd/sssd.conf"
-file_permission: "0600"
-sasl_nocanon_regxp: "SASL_NOCANON\ton"
-sasl_nacanon_replace1: "SASL_NOCANON\ton\nBASE\t{{ reqd_domain_name }}"
-sasl_nacanon_replace2: "SASL_NOCANON\ton\nURI\tldap://{{ hostvars[groups['auth_server'][0]]['ansible_env'].SSH_CONNECTION.split(' ')[2] }}"
-# sasl_nacanon_replace3: Defined in each compute os vars file
-sasl_nacanon_replace4: "SASL_NOCANON\ton\nURI\tldap://{{ hostvars[groups['auth_server'][0]]['ansible_env'].SSH_CONNECTION.split(' ')[2] }}:636"
-file_mode: "0644"
+# Usage: configre_ldap_client.yml
+ldap_client_packages:
+  - openldap-clients
+  - sssd
+  - sssd-ldap
+  - oddjob-mkhomedir
+  - openssl-perl
+
+tls_cert_path: "/etc/openldap/certs/"
+ldap_conf_dest: "/etc/openldap/ldap.conf"
+ca_path: "/etc/pki/tls/certs/ca-bundle.crt"
+sasl_nacanon_replace3: "SASL_NOCANON\ton\nTLS_CACERT\t{{ tls_cert_path }}"

@@ -92,7 +92,7 @@
 
 - name: Apply ldap client installation and config
   hosts: all
-  gather_facts: false
+  gather_facts: true
   roles:
     - ldap_client
   tags: ldap
