@@ -68,6 +68,7 @@
     - tls_ca_certificate != ''
     - tls_certificate != ''
     - tls_certificate_key != ''
+    - ( ansible_distribution | lower == "redhat" )
   block:
     - name: Check certificate files exist
       ansible.builtin.stat:
@@ -82,3 +83,12 @@
     - name: Certificate path invalid
       ansible.builtin.fail:
         msg: "{{ ldap_cert_path_fail_msg }}"
+
+- name: Validate if certificates provided for ubuntu
+  when:
+    - tls_ca_certificate != ''
+    - tls_certificate != ''
+    - tls_certificate_key != ''
+    - ( ansible_distribution | lower == 'ubuntu' )
+  ansible.builtin.fail:
+    msg: "{{ ldap_cert_fail_msg }}"
