@@ -23,10 +23,10 @@
     default_certs: false
 
 - name: Create default Certificates
-  # when:
-  #   - hostvars['127.0.0.1']['tls_ca_certificate'] == ''
-  #   - hostvars['127.0.0.1']['tls_certificate'] == ''
-  #   - hostvars['127.0.0.1']['tls_certificate_key'] == ''
+  when:
+    - hostvars['127.0.0.1']['tls_ca_certificate'] == ''
+    - hostvars['127.0.0.1']['tls_certificate'] == ''
+    - hostvars['127.0.0.1']['tls_certificate_key'] == ''
   block:
     - name: Set default certificates as true
       ansible.builtin.set_fact:
@@ -49,33 +49,33 @@
         ldaptoolbox_openldap_olcTLSCertificateFile: "{{ tls_certificates_directory_path }}/{{ deb_cert_file }}" # noqa var-naming
         ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ tls_certificates_directory_path }}/{{ deb_cert_key }}" # noqa var-naming
 
-# - name: Set tls certificate path for omnia playbook
-#   when: not default_certs
-#   block:
-#     - name: Copy the certificate to remote node
-#       ansible.builtin.copy:
-#         src: "{{ item.file }}"
-#         dest: "{{ tls_certificates_directory_path }}/{{ item.directory }}"
-#         remote_src: false
-#         mode: "{{ openldap_cert_permissions }}"
-#       with_items:
-#         - { file: "{{ hostvars['127.0.0.1']['tls_ca_certificate'] }}", directory: certs }
-#         - { file: "{{ hostvars['127.0.0.1']['tls_certificate'] }}", directory: certs }
-#         - { file: "{{ hostvars['127.0.0.1']['tls_certificate_key'] }}", directory: private }
+- name: Set tls certificate path for omnia playbook
+  when: not default_certs
+  block:
+    - name: Copy the certificate to remote node
+      ansible.builtin.copy:
+        src: "{{ item.file }}"
+        dest: "{{ tls_certificates_directory_path }}/{{ item.directory }}"
+        remote_src: false
+        mode: "{{ openldap_cert_permissions }}"
+      with_items:
+        - { file: "{{ hostvars['127.0.0.1']['tls_ca_certificate'] }}", directory: certs }
+        - { file: "{{ hostvars['127.0.0.1']['tls_certificate'] }}", directory: certs }
+        - { file: "{{ hostvars['127.0.0.1']['tls_certificate_key'] }}", directory: private }
 
-#     - name: Copy Certificate to control plane for client setup
-#       ansible.builtin.copy:
-#         src: "{{ hostvars['127.0.0.1']['tls_ca_certificate'] }}"
-#         dest: "{{ tls_cert_path }}"
-#         mode: "{{ openldap_cert_permissions }}"
-#       delegate_to: localhost
+    - name: Copy Certificate to control plane for client setup
+      ansible.builtin.copy:
+        src: "{{ hostvars['127.0.0.1']['tls_ca_certificate'] }}"
+        dest: "{{ tls_cert_path }}"
+        mode: "{{ openldap_cert_permissions }}"
+      delegate_to: localhost
 
-#     - name: Set tls certificate path for LTB playbook
-#       ansible.builtin.set_fact:
-#         ldaptoolbox_openldap_sslgroup: "root"
-#         ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ tls_certificates_directory_path }}/certs/{{ hostvars['127.0.0.1']['tls_ca_certificate']
-#          | basename }}" # noqa var-naming
-#         ldaptoolbox_openldap_olcTLSCertificateFile: "{{ tls_certificates_directory_path }}/certs/{{ hostvars['127.0.0.1']['tls_certificate']
-#          | basename }}" # noqa var-naming
-#         ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ tls_certificates_directory_path }}/private/{{ hostvars['127.0.0.1']['tls_certificate_key']
-#          | basename }}" # noqa var-naming
+    - name: Set tls certificate path for LTB playbook
+      ansible.builtin.set_fact:
+        ldaptoolbox_openldap_sslgroup: "root"
+        ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ tls_certificates_directory_path }}/certs/{{ hostvars['127.0.0.1']['tls_ca_certificate']
+         | basename }}" # noqa var-naming
+        ldaptoolbox_openldap_olcTLSCertificateFile: "{{ tls_certificates_directory_path }}/certs/{{ hostvars['127.0.0.1']['tls_certificate']
+         | basename }}" # noqa var-naming
+        ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ tls_certificates_directory_path }}/private/{{ hostvars['127.0.0.1']['tls_certificate_key']
+         | basename }}" # noqa var-naming
