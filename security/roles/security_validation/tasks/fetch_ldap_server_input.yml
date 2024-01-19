@@ -90,5 +90,6 @@
     - tls_certificate != ''
     - tls_certificate_key != ''
     - ( ansible_distribution | lower == 'ubuntu' )
-  ansible.builtin.fail:
-    msg: "{{ ldap_cert_fail_msg }}"
+  ansible.builtin.pause:
+    seconds: "{{ warning_wait_time }}"
+    prompt: "{{ ldap_cert_warning_msg }}"

@@ -96,7 +96,8 @@ success_msg_monitor_root_password: "Openldap Monitor password valid"
 fail_msg_monitor_root_password: "Failed, Incorrect format provided for Openldap Monitor password in input/security_config.yml for openldap configuration."
 ldap_cert_path_fail_msg: "Failed, LDAP certificate path doesn't exist."
 ldap_cert_path_success_msg: "LDAP certificate path validated"
-ldap_cert_fail_msg: "Failed, Ubuntu OS does not accept user provided certificates. TLS certificate inputs should be empty for Ubuntu."
+ldap_cert_warning_msg: "[Warning] LDAP server setup makes use of system generated Certificates. User provided certificates will not be used."
+warning_wait_time: 5
 fail_msg_ltb_dir: "Failed, LTB directory doesn't exist."
 ltb_git_repo_path: "/opt/omnia/ldap/ansible-role-ldaptoolbox-openldap"
 
