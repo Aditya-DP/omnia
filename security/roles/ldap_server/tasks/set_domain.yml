@@ -26,7 +26,7 @@
   changed_when: false
   ignore_errors: true
   register: schema_output
-  # no_log: true
+  no_log: true
 
 - name: Verify and add domain config
   when: schema_output is not search(schema_search_string)
