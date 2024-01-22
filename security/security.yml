@@ -76,8 +76,6 @@
 
 - name: Install openldap server and apply configurations
   hosts: auth_server
-  become: yes
-  become_user: root
   tasks:
     - name: Include server prerequisite config
       ansible.builtin.include_role:
