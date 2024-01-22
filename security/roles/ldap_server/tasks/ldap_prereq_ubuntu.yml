@@ -59,7 +59,7 @@
         remote_src: false
         mode: "{{ openldap_cert_permissions }}"
       with_items:
-        - { file: "{{ hostvars['127.0.0.1']['tls_ca_certificate'] }}", directory: certs }
+        # - { file: "{{ hostvars['127.0.0.1']['tls_ca_certificate'] }}", directory: certs }
         - { file: "{{ hostvars['127.0.0.1']['tls_certificate'] }}", directory: certs }
         - { file: "{{ hostvars['127.0.0.1']['tls_certificate_key'] }}", directory: private }
 
