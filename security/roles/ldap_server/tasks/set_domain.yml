@@ -20,10 +20,6 @@
     insertafter: EOF
     state: present
 
-- name: Source
-  ansible.builtin.shell: source "{{ env_var_path }}"
-  changed_when: false
-
 - name: Search schema
   ansible.builtin.shell: /usr/local/openldap/bin/ldapsearch -Y EXTERNAL -H "{{ ldap_host_string }}" -b "{{ ldaptoolbox_openldap_suffix }}"
   changed_when: false

@@ -73,8 +73,7 @@
     - name: Set tls certificate path for LTB playbook
       ansible.builtin.set_fact:
         ldaptoolbox_openldap_sslgroup: "ldap"
-        ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ tls_certificates_directory_path }}/certs/{{ hostvars['127.0.0.1']['tls_ca_certificate']
-         | basename }}" # noqa var-naming
+        ldaptoolbox_openldap_olcTLSCACertificateFile: "{{ tls_certificates_directory_path }}/{{ deb_ca_cert_file }}" # noqa var-naming
         ldaptoolbox_openldap_olcTLSCertificateFile: "{{ tls_certificates_directory_path }}/certs/{{ hostvars['127.0.0.1']['tls_certificate']
          | basename }}" # noqa var-naming
         ldaptoolbox_openldap_olcTLSCertificateKeyFile: "{{ tls_certificates_directory_path }}/private/{{ hostvars['127.0.0.1']['tls_certificate_key']
