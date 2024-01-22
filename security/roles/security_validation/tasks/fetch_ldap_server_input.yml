@@ -86,7 +86,6 @@
 
 - name: Validate if certificates provided for ubuntu
   when:
-    - tls_ca_certificate != ''
     - tls_certificate != ''
     - tls_certificate_key != ''
     - ( ansible_distribution | lower == 'ubuntu' )
