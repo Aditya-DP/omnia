@@ -22,7 +22,7 @@
 
 - name: Search schema
   ansible.builtin.shell: |
-    sudo ldapsearch -Y EXTERNAL -H "{{ ldap_host_string }}" -b "{{ ldaptoolbox_openldap_suffix }}"
+    ldapsearch -Y EXTERNAL -H "{{ ldap_host_string }}" -b "{{ ldaptoolbox_openldap_suffix }}"
   changed_when: false
   ignore_errors: true
   register: schema_output
@@ -45,5 +45,5 @@
 
     - name: Execute domain config file
       ansible.builtin.shell: |
-        sudo ldapadd -Y EXTERNAL -H "{{ ldap_host_string }}" -f "{{ openldap_config_dest_dir }}"/add_domain.ldif
+        ldapadd -Y EXTERNAL -H "{{ ldap_host_string }}" -f "{{ openldap_config_dest_dir }}"/add_domain.ldif
       changed_when: false
