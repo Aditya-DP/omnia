@@ -27,7 +27,6 @@
     path: "{{ ldap_conf_dest }}"
     regexp: "^#?BASE.*"
     replace: "BASE {{ reqd_domain_name }}"
-  when: "'compute' in group_names"
   changed_when: true
 
 - name: Update ldap.conf file with URI for compute nodes
@@ -35,7 +34,6 @@
     path: "{{ ldap_conf_dest }}"
     regexp: "^#?URI.*"
     replace: "URI ldap://{{ hostvars[groups['auth_server'][0]]['ansible_env'].SSH_CONNECTION.split(' ')[2] }}"
-  when: "'compute' in group_names"
   changed_when: true
 
 - name: Copy the certificate to remote node
