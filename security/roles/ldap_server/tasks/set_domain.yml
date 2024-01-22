@@ -47,5 +47,5 @@
     - name: Execute domain config file
       ansible.builtin.shell: |
         set -o pipefail
-        ldapadd -Y EXTERNAL -H {{ ldap_host_string }} -f {{ openldap_config_dest_dir }}/add_domain.ldif"
+        ldapadd -Y EXTERNAL -H "{{ ldap_host_string }}" -f "{{ openldap_config_dest_dir }}"/add_domain.ldif
       changed_when: false
