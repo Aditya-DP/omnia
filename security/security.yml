@@ -76,9 +76,6 @@
 
 - name: Install openldap server and apply configurations
   hosts: auth_server
-  remote_user: root
-  sudo: yes
-  gather_facts: no
   tasks:
     - name: Include server prerequisite config
       ansible.builtin.include_role:
