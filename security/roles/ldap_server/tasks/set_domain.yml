@@ -21,8 +21,7 @@
     state: present
 
 - name: Search schema
-  ansible.builtin.shell: |
-    set -o pipefail 
+  ansible.builtin.command: |
     ldapsearch -Y EXTERNAL -H "{{ ldap_host_string }}" -b "{{ ldaptoolbox_openldap_suffix }}"
   changed_when: false
   ignore_errors: true
@@ -45,7 +44,6 @@
         mode: "{{ openldap_configuration_mode }}"
 
     - name: Execute domain config file
-      ansible.builtin.shell: |
-        set -o pipefail
+      ansible.builtin.command: |
         ldapadd -Y EXTERNAL -H "{{ ldap_host_string }}" -f "{{ openldap_config_dest_dir }}"/add_domain.ldif
       changed_when: false
