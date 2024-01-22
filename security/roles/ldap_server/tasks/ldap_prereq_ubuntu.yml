@@ -52,16 +52,16 @@
 - name: Set tls certificate path for omnia playbook
   when: not default_certs
   block:
-    - name: Copy the certificate to remote node
-      ansible.builtin.copy:
-        src: "{{ item.file }}"
-        dest: "{{ tls_certificates_directory_path }}/{{ item.directory }}"
-        remote_src: false
-        mode: "{{ openldap_cert_permissions }}"
-      with_items:
-        # - { file: "{{ hostvars['127.0.0.1']['tls_ca_certificate'] }}", directory: certs }
-        - { file: "{{ hostvars['127.0.0.1']['tls_certificate'] }}", directory: certs }
-        - { file: "{{ hostvars['127.0.0.1']['tls_certificate_key'] }}", directory: private }
+    # - name: Copy the certificate to remote node
+    #   ansible.builtin.copy:
+    #     src: "{{ item.file }}"
+    #     dest: "{{ tls_certificates_directory_path }}/{{ item.directory }}"
+    #     remote_src: false
+    #     mode: "{{ openldap_cert_permissions }}"
+    #   with_items:
+    #     # - { file: "{{ hostvars['127.0.0.1']['tls_ca_certificate'] }}", directory: certs }
+    #     - { file: "{{ hostvars['127.0.0.1']['tls_certificate'] }}", directory: certs }
+    #     - { file: "{{ hostvars['127.0.0.1']['tls_certificate_key'] }}", directory: private }
 
     # - name: Copy Certificate to control plane for client setup
     #   ansible.builtin.copy:
