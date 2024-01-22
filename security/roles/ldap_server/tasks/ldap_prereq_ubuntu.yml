@@ -70,7 +70,7 @@
         mode: "{{ openldap_cert_permissions }}"
       delegate_to: localhost
 
-    - name: Generate TLS certificates
+    - name: Install ssl certificate packages
       ansible.builtin.apt:
         pkg:
           - "{{ ubuntu_cert_pkg }}"
