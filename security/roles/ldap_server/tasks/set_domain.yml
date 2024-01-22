@@ -21,7 +21,7 @@
     state: present
 
 - name: Source
-  ansible.builtin.command: source "{{ env_var_path }}"
+  ansible.builtin.shell: source "{{ env_var_path }}"
   changed_when: false
 
 - name: Search schema
