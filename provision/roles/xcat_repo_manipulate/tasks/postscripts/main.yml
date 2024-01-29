@@ -39,3 +39,6 @@
 - name: Configure CUDA postscripts
   ansible.builtin.include_tasks: configure_cuda.yml
   when: cuda_config_status
+
+- name: Configure ROCm postscripts
+  ansible.builtin.include_tasks: configure_rocm.yml
