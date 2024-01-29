@@ -30,17 +30,17 @@
     - name: Include vars for {{ control_plane_os }}
       ansible.builtin.include_vars: "{{ role_path }}/vars/{{ control_plane_os }}.yml"
 
-    - name: Check xcat_repo_manipulate role pre-requisites
-      ansible.builtin.include_tasks: pre_requisites.yml
+    # - name: Check xcat_repo_manipulate role pre-requisites
+    #   ansible.builtin.include_tasks: pre_requisites.yml
 
-    - name: Create xcat osimage
-      ansible.builtin.include_tasks: create_osimage.yml
+    # - name: Create xcat osimage
+    #   ansible.builtin.include_tasks: create_osimage.yml
 
-    - name: Fetch osimage name
-      ansible.builtin.include_tasks: fetch_osimage.yml
+    # - name: Fetch osimage name
+    #   ansible.builtin.include_tasks: fetch_osimage.yml
 
-    - name: Configure xCAT on {{ control_plane_os }}
-      ansible.builtin.include_tasks: "{{ control_plane_os }}/main.yml"
+    # - name: Configure xCAT on {{ control_plane_os }}
+    #   ansible.builtin.include_tasks: "{{ control_plane_os }}/main.yml"
 
     - name: Configure postscripts
       ansible.builtin.include_tasks: postscripts/main.yml
