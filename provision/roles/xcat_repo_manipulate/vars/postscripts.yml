@@ -42,6 +42,6 @@ cuda_postscripts_path:
 download_retries_count: 10
 
 # Usage: configure_rocm.yml
-rocm_pkgs_path: ""
+rocm_pkgs_path: "/install/rocm/x86_64/rocm5.5"
 rocm_postscripts_path:
   - { src: "{{ role_path }}/files/postscripts/omnia_rocm", dest: "/install/postscripts/omnia_rocm", mode: "755" }
