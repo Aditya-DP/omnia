@@ -95,8 +95,8 @@ def get_kubectl_get_nodes():
                 #Iterate over each entries in json. Each entry/item corresponds to individual nodes of the command output : kubectl get nodes
                 total_nodes=len(nodes_json["items"])
                 if total_nodes>0:
-                    scheduling_disabled = "False"
                     for index in range(total_nodes):
+                        scheduling_disabled = "False"
                         if "unschedulable" in nodes_json["items"][index]["spec"].keys():
                             scheduling_disabled = nodes_json["items"][index]["spec"]["unschedulable"]
                         #Get the status and check if it is "Ready" or not
