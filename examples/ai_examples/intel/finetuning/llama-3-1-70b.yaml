@@ -1,0 +1,155 @@
+# Copyright 2025 Intel Corporation. All Rights Reserved.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+# This script facilitates the fine-tuning of the Llama 3.1 70B model
+# across one, two, or multiple nodes by adjusting the number of MPI worker replicas.
+# It utilizes the optimum-habana code and DeepSpeed no-SSH implementation.
+
+---
+apiVersion: kubeflow.org/v2beta1
+kind: MPIJob
+metadata:
+  name: gaudi-llm-ds-ft-multi-70b-no-ssh
+  namespace: workloads
+spec:
+  slotsPerWorker: 8
+  runPolicy:
+    cleanPodPolicy: Running
+  launcherCreationPolicy: WaitForWorkersReady
+  mpiReplicaSpecs:
+    Launcher:
+      replicas: 1
+      template:
+        spec:
+          containers:
+            - image: vault.habana.ai/gaudi-docker/1.19.2/ubuntu24.04/habanalabs/pytorch-installer-2.5.1:latest
+              name: gaudi-llm-ds-ft-multi-70b-no-ssh-launcher
+              env:
+                - name: HF_HOME
+                  value: /root/.cache/huggingface
+                - name: NUM_HPU
+                  value: "8"
+                - name: NUM_EPOCHS
+                  value: "2"
+                - name: LLM_MODEL
+                  value: meta-llama/Llama-3.1-70B-Instruct
+                - name: HUGGING_FACE_HUB_TOKEN
+                  value: ""
+                - name: http_proxy
+                  value: ""
+                - name: https_proxy
+                  value: ""
+                - name: no_proxy
+                  value: ""
+              command: ["/bin/bash", "-c"]
+              args:
+                - >-
+                  /usr/bin/ssh-keygen -A;
+                  echo "    KexAlgorithms curve25519-sha256,sntrup761x25519-sha512@openssh.com" |  tee -a /etc/ssh/ssh_config;
+                  /usr/sbin/sshd;
+
+                  HOSTSFILE=$OMPI_MCA_orte_default_hostfile;
+                  MASTER_ADDR="$(head -n 1 $HOSTSFILE | sed -n s/[[:space:]]slots.*//p)";
+                  SETUP_CMD="git clone  https://github.com/huggingface/optimum-habana /optimum-habana";
+                  export no_proxy=$no_proxy,$KUBERNETES_SERVICE_HOST;
+                  NUM_NODES=$(wc -l < $HOSTSFILE);
+                  N_CARDS=$((NUM_NODES*NUM_HPU));
+
+                  JOBHOSTFILE=/root/.cache/hostfile_$(date +"%Y%m%d_%H%M%S");
+                  tee "$JOBHOSTFILE" < "$HOSTSFILE";
+
+                  mpirun --npernode 1 \
+                    --tag-output \
+                    --allow-run-as-root \
+                    --prefix $MPI_ROOT \
+                    -x PMIX_RANK \
+                    -x RDMAV_FORK_SAFE=1 \
+                    -x FI_EFA_USE_DEVICE_RDMA=1 \
+                    --bind-to socket \
+                    --report-bindings \
+                    --merge-stderr-to-stdout  \
+                    -x LLM_MODEL=$LLM_MODEL \
+                    -x NUM_EPOCHS=$NUM_EPOCHS \
+                    -x JOBHOSTFILE=$JOBHOSTFILE \
+                    -x master_addr=$MASTER_ADDR \
+                    -x PT_HPU_MAX_COMPOUND_OP_SIZE=10 \
+                    -x PT_HPU_MAX_COMPOUND_OP_SYNC=1 \
+                    -x DEEPSPEED_HPU_ZERO3_SYNC_MARK_STEP_REQUIRED=1 \
+                    -x HF_HOME=$HF_HOME \
+                    -x NUM_HPU=$NUM_HPU \
+                    -x http_proxy=$http_proxy \
+                    -x https_proxy=$https_proxy \
+                    -x no_proxy=$no_proxy \
+                    -x HUGGING_FACE_HUB_TOKEN=$HUGGING_FACE_HUB_TOKEN \
+                    bash -i -c '
+
+                    git clone  https://github.com/huggingface/optimum-habana /optimum-habana
+                    cd /optimum-habana
+                    git checkout v1.15.0
+
+                    pip install .
+                    pip install -r examples/language-modeling/requirements.txt
+                    pip install git+https://github.com/HabanaAI/DeepSpeed.git@1.20.0
+                    
+                    cd examples/language-modeling/
+
+                    unset OMPI_COMM_WORLD_LOCAL_RANK
+                    echo $OMPI_COMM_WORLD_LOCAL_RANK
+
+                    echo "starting the command"
+                    /usr/bin/python3 /usr/local/bin/deepspeed --hostfile=$JOBHOSTFILE  --no_local_rank  --master_addr=$master_addr --no_ssh --master_port=29500 --node_rank=$PMIX_RANK run_lora_clm.py --model_name_or_path $LLM_MODEL   --deepspeed llama2_ds_zero3_config.json   --dataset_name tatsu-lab/alpaca      --bf16 True   --output_dir ./lora_out_70b  --num_train_epochs $NUM_EPOCHS  --max_seq_len 512        --per_device_train_batch_size 4 --gradient_accumulation_steps 2  --evaluation_strategy no  --save_strategy no   --learning_rate 3e-4  --warmup_ratio 0.03  --lr_scheduler_type "constant"  --max_grad_norm 1.0  --logging_steps 1 --logging_strategy steps  --do_train   --use_habana --use_lazy_mode   --pipelining_fwd_bwd  --throughput_warmup_steps 2  --lora_rank 4  --lora_target_modules "q_proj" "v_proj" "k_proj" "o_proj"  --use_flash_attention True  --flash_attention_causal_mask True
+                    
+                    ';
+                    cat $JOBHOSTFILE;
+                    rm $JOBHOSTFILE;
+                    echo "Host file removed successfully";
+              volumeMounts:
+                - name: datasets
+                  mountPath: /root/.cache
+          volumes:
+            - name: datasets
+              persistentVolumeClaim:
+                claimName: shared-model
+                readOnly: false
+    Worker:
+      replicas: 2
+      template:
+        spec:
+          hostIPC: true
+          containers:
+            - image: vault.habana.ai/gaudi-docker/1.19.2/ubuntu24.04/habanalabs/pytorch-installer-2.5.1:latest
+              name: gaudi-llm-ds-ft-multi-70b-no-ssh-multi-worker
+              command: ["/bin/bash", "-c"]
+              args:
+                - >-
+                  /usr/bin/ssh-keygen -A;
+                  /usr/sbin/sshd;
+                  sleep 365d;
+              resources:
+                limits:
+                  habana.ai/gaudi: 8
+                  memory: 250Gi
+                  hugepages-2Mi: 9800Mi
+                requests:
+                  habana.ai/gaudi: 8
+                  memory: 250Gi
+                  hugepages-2Mi: 9800Mi
+              volumeMounts:
+                - name: datasets
+                  mountPath: /root/.cache
+          volumes:
+            - name: datasets
+              persistentVolumeClaim:
+                claimName: shared-model
+                readOnly: false

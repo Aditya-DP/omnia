@@ -21,12 +21,12 @@
     state: present
 
 - name: Install  jq packages
-  ansible.builtin.yum:
+  ansible.builtin.dnf:
     name: "{{ jq_package }}"
     state: present
 
 - name: Install packages
-  ansible.builtin.yum:
+  ansible.builtin.dnf:
     name: "{{ item }}"
     state: present
   with_items: "{{ repo_pkgs }}"

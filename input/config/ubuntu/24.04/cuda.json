@@ -1,0 +1,21 @@
+{
+    "cuda": {
+      "cluster": [
+        { "package": "cuda",
+          "type": "iso",
+          "url": "https://developer.download.nvidia.com/compute/cuda/12.8.0/local_installers/cuda-repo-ubuntu2404-12-8-local_12.8.0-570.86.10-1_amd64.deb",
+          "path": ""
+        },
+        { "package": "libnccl",
+          "type": "iso",
+          "url": "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/libnccl2_2.25.1-1+cuda12.8_amd64.deb",
+          "path": ""
+        },
+        { "package": "libnccl",
+          "type": "iso",
+          "url": "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/libnccl-dev_2.25.1-1+cuda12.8_amd64.deb",
+          "path": ""
+        }
+      ]
+    }
+}

@@ -8,7 +8,7 @@ The accelerator role allows users to set up the `Intel Gaudi Software Stack and 
 * The Intel Gaudi local repositories must be configured using the `local_repo.yml <../CreateLocalRepo/index.html>`_ script.
 * The ``input/software_config.json`` must contain valid ``intelgaudi`` version. See `input parameters <../CreateLocalRepo/InputParameters.html>`_ for more information.
 
-.. note:: Intel Gaudi platform is only supported on Ubuntu 22.04 clusters containing Intel Gaudi accelerators.
+.. note:: Intel Gaudi platform is only supported on Ubuntu 22.04 or 24.04 clusters containing Intel Gaudi accelerators.
 
 **Playbook configurations**
 
@@ -16,6 +16,8 @@ The following configurations takes place while running the ``accelerator.yml`` p
 
 	i. Servers with Intel Gaudi accelerators are identified and the latest drivers and software stack are downloaded and installed.
 	ii. Servers with no accelerator are skipped.
+
+.. note:: If the ``input/software_config.json`` file contains both intelgaudi and bcm_roce softwares, only the Intel Gaudi software and drivers are installed. The BCM RoCE drivers will not be installed on the nodes.
 
 **Executing the playbook**
 

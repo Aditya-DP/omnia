@@ -99,6 +99,38 @@
         group: "{{ group_value }}"
         mode: "{{ permission_644 }}"
 
+    # check if powerscale is pininging by reading endpoint value from secrets.yaml file
+    - name: Load values.yaml file
+      ansible.builtin.include_vars:
+        file: "{{ hostvars['localhost']['csi_powerscale_driver_values_file_path'] }}"
+        name: csi_powerscale_values_file
+
+    - name: Load secret file for input validation
+      ansible.builtin.include_vars:
+        file: "{{ hostvars['localhost']['csi_powerscale_driver_secret_file_path'] }}"
+        name: clusters
+      no_log: true
+
+    - name: Extract PowerScale endpoint IP or Host from loaded secret data
+      ansible.builtin.set_fact:
+        powerscale_host: "{{ clusters.isilonClusters[0].endpoint | regex_replace('https?://', '') | regex_replace('/.*', '') }}"
+
+    - name: Check if the extracted PowerScale IP or Host is reachable
+      ansible.builtin.command:
+        cmd: "ping -c 1 {{ powerscale_host }}"  # Replace {{ power_scale_host }} with your actual host variable
+      register: ping_result
+      ignore_errors: true  # Continue even if the ping fail
+      changed_when: false
+
+    - name: Print ping result or error if ping fails
+      ansible.builtin.debug:
+        msg: >
+          {% if ping_result.rc == 0 %}
+            Powerscale Host reachable! Output: {{ ping_result.stdout }}
+          {% else %}
+            Powerscale Host not reachable. Error: {{ ping_result.stderr }}
+          {% endif %}
+
     - name: Encrypt secret file
       ansible.builtin.command: >-
         ansible-vault encrypt {{ hostvars['localhost']['csi_powerscale_driver_secret_file_path'] }}

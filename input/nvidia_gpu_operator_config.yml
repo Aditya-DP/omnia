@@ -1,0 +1,43 @@
+# GPU Operator Configuration File
+driver:
+  enabled: true
+  version: 570.124.06
+  rdma:
+    enabled: false
+  env: # Mandatory - Refer /opt/omnia/offline/local_repo_access.yml for http_proxy and https_proxy values
+    - name: http_proxy
+      value: "<Enter http_proxy value here>"
+    - name: https_proxy
+      value: "<Enter https_proxy value here>"
+
+mig:
+  strategy: mixed  # MIG (Multi-Instance GPU) strategy; "mixed" allows different configurations on different GPUs.
+
+migManager:
+  enabled: true  # Enables the MIG Manager to configure and manage GPU instances.
+
+gdrcopy:
+  enabled: false
+
+toolkit:
+  enabled: true  # Enables the NVIDIA Container Toolkit, required for running GPU-enabled containers.
+  #version: v1.17.5-ubuntu20.04
+
+dcgm:
+  enabled: true  # Enables NVIDIA Data Center GPU Manager (DCGM) for GPU monitoring and health checks.
+
+
+devicePlugin:
+  enabled: true  # Enables the NVIDIA Device Plugin to manage GPU allocation for containers.
+  #version: v0.17.1
+
+gpuFeatureDiscovery:
+  enabled: true  # Enables GPU Feature Discovery to expose GPU capabilities as node labels.
+
+operator:
+  defaultRuntime: containerd  # Specifies the default container runtime (containerd, docker, etc.).
+  runtimeClass: nvidia
+
+validator:
+  enabled: true  # Enables the GPU Operator validator to check if the setup is correct.
+

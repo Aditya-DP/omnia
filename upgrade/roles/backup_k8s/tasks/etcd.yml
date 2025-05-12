@@ -1,4 +1,4 @@
-#  Copyright 2024 Dell Inc. or its subsidiaries. All Rights Reserved.
+#  Copyright 2025 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -90,11 +90,45 @@
     msg: "Backup of etcd snapshot status failed: {{ snapshot_status.stderr }}"
   when: snapshot_status.rc != 0
 
+- name: Scale down TimescaleDB pod to 0 replicas before backup
+  kubernetes.core.k8s:
+    kind: StatefulSet
+    name: "{{ timescaledb_k8s_name }}"
+    namespace: "{{ telemetry_namespace }}"
+    resource_definition:
+      spec:
+        replicas: 0
+
+- name: Waiting 30 seconds for TimescaleDB pod to scale down
+  ansible.builtin.pause:
+    seconds: 30
+
 - name: Copy mount location data to k8s_backup_location folder
   ansible.builtin.copy:
     src: "{{ mount_location.rstrip('/') }}"
     dest: "{{ k8s_backup_location }}"
     mode: "{{ directory_mode }}"
+
+- name: Scale up TimescaleDB pod to 1 replica after backup
+  kubernetes.core.k8s:
+    kind: StatefulSet
+    name: "{{ timescaledb_k8s_name }}"
+    namespace: "{{ telemetry_namespace }}"
+    resource_definition:
+      spec:
+        replicas: 1
+
+- name: Wait for TimescaleDB pod to be running
+  kubernetes.core.k8s_info:
+    kind: Pod
+    namespace: "{{ telemetry_namespace }}"
+    name: "{{ timescale_db_pod_name | trim }}"
+  register: pod_status
+  until:
+    - pod_status.resources | length > 0
+    - pod_status.resources[0].status.phase == "Running"
+  retries: "{{ retry_count }}"
+  delay: "{{ delay_pod }}"
 
 - name: Create manifests directory
   ansible.builtin.file:
@@ -106,7 +140,7 @@
   ansible.builtin.copy:
     src: "{{ backup_file_source }}"
     dest: "{{ shell_script_file }}"
-    mode: "{{ file_mode }}"
+    mode: "{{ directory_mode }}"
 
 - name: Taking backup of manifest files
   ansible.builtin.command: "{{ shell_script_file }}"

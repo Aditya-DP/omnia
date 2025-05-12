@@ -130,13 +130,34 @@
   ansible.builtin.set_fact:
     node_list: "{{ node_list[:-2] }}"
 
+- name: Check SSH reachability for valid nodes
+  ansible.builtin.wait_for:
+    host: "{{ item.value.admin_ip }}"
+    port: "{{ ssh_port }}"
+    timeout: "{{ ssh_timeout }}"
+  delegate_to: localhost
+  ignore_errors: true
+  register: ssh_check_results
+  loop: "{{ query('ansible.builtin.dict', valid_nodes) }}"
+  loop_control:
+    label: "{{ item.value.admin_ip }}"
+
+- name: Set SSH-reachable valid nodes
+  ansible.builtin.set_fact:
+    ssh_valid_nodes: >-
+      {{ query('ansible.builtin.dict', valid_nodes)
+        | selectattr('value.admin_ip', 'in', ssh_check_results.results
+          | selectattr('failed', 'equalto', false)
+          | map(attribute='item.value.admin_ip'))
+        | items2dict }}
+
 - name: Update reachable nodes
   ansible.builtin.include_tasks: update_reachable_nodes.yml
   when:
     - reachable_nodes | length > 0
     - item.value.status == 'booted'
     - item.value.admin_ip in reachable_nodes
-  loop: "{{ query('ansible.builtin.dict', valid_nodes) }}"
+  loop: "{{ query('ansible.builtin.dict', ssh_valid_nodes) }}"
   loop_control:
     label: "{{ item.key }}"
 

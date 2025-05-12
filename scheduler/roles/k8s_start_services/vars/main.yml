@@ -42,5 +42,17 @@ node_label_for_habana_device_plugin: "intel.com/gaudi.present"
 nfs_dir_mode: "0777"
 pod_wait_time: 300
 nfs_subdir_external_provisioner_repo: "{{ hostvars['localhost']['offline_tarball_path'] }}/nfs-subdir-external-provisioner-4.0.18.tar.gz"
-helm_install_fail_msg: "Failed to fetch helm path. Please verify helm installation and ensure the environment variable PATH is correctly set in the node.
-Re-run the playbook after verification."
+helm_install_fail_msg: "Failed to fetch helm path. Please verify helm installation and ensure the environment variable PATH is correctly set in the node. Re-run the playbook after verification." # noqa: yaml[line-length]
+
+# Usage: install_nvidia_gpu_operator.yml
+nvidia_gpu_operator_path: "/opt/omnia/nvidia-gpu-operator-v{{ hostvars['localhost']['nvidia_gpu_operator_version'] }}"
+nvidia_gpu_operator_config_file_path: "{{ nvidia_gpu_operator_path }}/gpu_operator_config.yml"
+nvidia_gpu_operator_helm_chart: "nvidia-gpu-operator-v{{ hostvars['localhost']['nvidia_gpu_operator_version'] }}.tar.gz"
+nvidia_gpu_operator_helm_chart_path: "/tmp/{{ nvidia_gpu_operator_helm_chart }}"
+fail_msg_nvidia_gpu_operator_helm_chart_download: "Failed to get nvidia gpu operator helm chart from local repo location: {{ offline_tarball_path }}"
+permission_644: "0644"
+owner_value: "root"
+group_value: "root"
+gpu_operators_namespace: "gpu-operator"
+timeout_min_sec: 600s
+directory_permissions: "0755"

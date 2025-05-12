@@ -22,14 +22,24 @@ intel_gaudi_kernel_module_to_load:
 
 # TODO: move to a central config file
 intel_habana_packages:
-  - "habanalabs-dkms={{ intelgaudi_version }}"
-  - "habanalabs-firmware={{ intelgaudi_version }}"
-  - "habanalabs-firmware-tools={{ intelgaudi_version }}"
-  - "habanalabs-graph={{ intelgaudi_version }}"
-  - "habanalabs-qual={{ intelgaudi_version }}"
-  - "habanalabs-rdma-core={{ intelgaudi_version }}"
-  - "habanalabs-thunk={{ intelgaudi_version }}"
-  - "habanatools={{ intelgaudi_version }}"
+  ubuntu22:
+    - "habanalabs-dkms={{ intelgaudi_version }}"
+    - "habanalabs-firmware={{ intelgaudi_version }}"
+    - "habanalabs-firmware-tools={{ intelgaudi_version }}"
+    - "habanalabs-graph={{ intelgaudi_version }}"
+    - "habanalabs-qual={{ intelgaudi_version }}"
+    - "habanalabs-rdma-core={{ intelgaudi_version }}"
+    - "habanalabs-thunk={{ intelgaudi_version }}"
+    - "habanatools={{ intelgaudi_version }}"
+  ubuntu24:
+    - "habanalabs-dkms={{ intelgaudi_version }}"
+    - "habanalabs-firmware={{ intelgaudi_version }}"
+    - "habanalabs-firmware-tools={{ intelgaudi_version }}"
+    - "habanalabs-graph={{ intelgaudi_version }}"
+    - "habanalabs-qual={{ intelgaudi_version }}"
+    - "habanalabs-rdma-core={{ intelgaudi_version }}"
+    - "habanalabs-thunk={{ intelgaudi_version }}"
+    - "habanalabs-tools={{ intelgaudi_version }}"
 
 # TODO: move to a central config file
 intel_apt_base_packages:
@@ -52,7 +62,11 @@ intel_apt_base_packages:
   - unzip
   - wget
   - libopenmpi3
+  - lldpad
 
-intel_bring_up_ports_script_path: "/opt/omnia/cronjobs/bring_up_ports.sh"
+intel_scale_up_ports_script_path: "/opt/omnia/systemd-service/gaudi-network.sh"
+intel_scale_up_ports_service_dir: "/usr/local/lib/systemd/system"
+intel_scale_up_ports_service_name: "gaudi-network.service"
 file_permissions: "0755"
+svc_file_permissions: "0644"
 gaudi3_pci_vendor_device_class: "1da3:1060:1200"

@@ -23,6 +23,7 @@ os_ubuntu: "ubuntu"
 # Used: amd_rhel.yml
 rocm_packages:
   - "rocm"
+  - "rocm-validation-suite"
 warning_time: 10
 rocm_warning_msg: "Unable to install ROCM on {{ ansible_host }} node. ROCm repository not configured on the node.
 Run local_repo.yml with rocm software stack in software_config or ROCm repo in user_repo_url."

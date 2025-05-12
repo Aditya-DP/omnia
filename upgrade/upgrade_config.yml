@@ -16,7 +16,7 @@
 # Mandatory
 # Full path to the currently installed Omnia source code directory
 # Example:
-# installed_omnia_path: /root/omnia_16/omnia
+# installed_omnia_path: /root/omnia_17/omnia
 installed_omnia_path: ""
 
 # Full path to the directory where temporary backups will be taken by the upgrade playbook.

@@ -26,4 +26,4 @@
 #   - { ip: 172.96.28.12, delete_ports: '1-48,49:3,50' }
 #   - { ip: 172.96.28.14, delete_ports: '1,2,3,5' }
 switch_based_details:
-  - { ip: ,delete_ports: '' }
+  - { ip: , delete_ports: '' }

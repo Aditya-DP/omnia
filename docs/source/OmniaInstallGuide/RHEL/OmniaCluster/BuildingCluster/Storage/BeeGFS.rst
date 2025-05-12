@@ -29,15 +29,15 @@ BeeGFS is a hardware-independent POSIX parallel file system (a.k.a. Software-def
         | 8006 | Helper service (beegfs-helperd)   |
         +------+-----------------------------------+
 
- To open the ports required, use the following steps:
+ If you have ``firewalld`` set up on your RHEL/Rocky Linux cluster, then use the below set of commands to open up the required TCP and UDP ports:
 
-    1. ``firewall-cmd --permanent --zone=public --add-port=<port number>/tcp``
+    1. Command 1: ``firewall-cmd --permanent --zone=public --add-port=<port number>/tcp``
 
-    2. ``firewall-cmd --permanent --zone=public --add-port=<port number>/udp``
+    2. Command 2: ``firewall-cmd --permanent --zone=public --add-port=<port number>/udp``
 
-    3. ``firewall-cmd --reload``
+    3. Command 3: ``firewall-cmd --reload``
 
-    4. ``systemctl status firewalld``
+    4. Command 4: ``systemctl status firewalld``
 
 .. note:: BeeGFS services over RDMA is only supported on RHEL 8.3 and above due to limitations on BeeGFS. When setting up your cluster with RDMA support, check the BeeGFS documentation to provide appropriate values in ``input/storage_config.yml``.
 

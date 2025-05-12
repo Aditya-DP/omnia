@@ -43,7 +43,7 @@
         "sortOrder": "Descending",
         "wrapLogMessage": false
       },
-      "pluginVersion": "8.3.2",
+      "pluginVersion": "11.4.1",
       "targets": [
         {
           "datasource": {

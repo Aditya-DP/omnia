@@ -53,7 +53,9 @@
 
 - name: Update Repositories/Registries on nodes
   ansible.builtin.import_playbook: utils/update_user_repo.yml
-  when: not ( update_user_repo_executed | default(false) | bool )
+  when:
+    - not ( update_user_repo_executed | default(false) | bool )
+    - hostvars['127.0.0.1']['omnia_config']['k8s_offline_install']
 
 - name: Set flag
   hosts: localhost

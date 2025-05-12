@@ -1,0 +1,155 @@
+# Copyright 2025 Intel Corporation. All Rights Reserved.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+# This script enables the deployment of the Llama 3.1 70B model 
+# using a single node with 8 cards within a Kubernetes cluster.
+
+---
+apiVersion: kubeflow.org/v2beta1
+kind: MPIJob
+metadata:
+  name: gaudi-llm-ds
+  namespace: workloads
+spec:
+  slotsPerWorker: 8
+  runPolicy:
+    cleanPodPolicy: Running
+  launcherCreationPolicy: WaitForWorkersReady
+  mpiReplicaSpecs:
+    Launcher:
+      replicas: 1
+      template:
+        spec:
+          containers:
+            - image: vault.habana.ai/gaudi-docker/1.19.2/ubuntu24.04/habanalabs/pytorch-installer-2.5.1:latest
+              name: gaudi-llm-ds-launcher
+              env:
+                - name: HF_HOME
+                  value: /root/.cache
+                - name: no_proxy
+                  value: "127.0.0.1,localhost"
+                - name: LLM_MODEL
+                  value: meta-llama/Meta-Llama-3.1-70B-Instruct
+                - name: NUM_HPU
+                  value: "8"
+                - name: http_proxy
+                  value: ""
+                - name: https_proxy
+                  value: ""
+                - name: no_proxy
+                  value: ""
+                - name: HUGGING_FACE_HUB_TOKEN
+                  value: ""
+
+              command: ["/bin/bash", "-c"]
+              args:
+                - >-
+                  /usr/bin/ssh-keygen -A;
+                  echo "    KexAlgorithms curve25519-sha256,sntrup761x25519-sha512@openssh.com" |  tee -a /etc/ssh/ssh_config;
+                  /usr/sbin/sshd;
+
+                  HOSTSFILE=$OMPI_MCA_orte_default_hostfile;
+                  export no_proxy=$no_proxy,$KUBERNETES_SERVICE_HOST;
+                  NUM_NODES=$(wc -l < $HOSTSFILE);
+                  N_CARDS=$((NUM_NODES*NUM_HPU));
+
+                  git clone  https://github.com/huggingface/optimum-habana /optimum-habana;
+                  cd /optimum-habana;
+                  git checkout v1.15.0;
+                  sed -i '194s|deepspeed|deepspeed --force_multi|' optimum/habana/distributed/distributed_runner.py;
+                  pip install .;
+                  pip install -r examples/text-generation/requirements.txt;
+                  pip install git+https://github.com/HabanaAI/DeepSpeed.git@1.19.0;
+                  mpirun --npernode 1 \
+                    --tag-output \
+                    --allow-run-as-root \
+                    --prefix $MPI_ROOT \
+                    -x LLM_MODEL=$LLM_MODEL \
+                    -x N_CARDS=$N_CARDS \
+                    -x HF_HOME=$HF_HOME \
+                    -x NUM_HPU=$NUM_HPU \
+                    -x http_proxy=$http_proxy \
+                    -x https_proxy=$https_proxy \
+                    -x no_proxy=$no_proxy \
+                    -x HUGGING_FACE_HUB_TOKEN=$HUGGING_FACE_HUB_TOKEN \
+                    bash -i -c '
+                    git clone  https://github.com/huggingface/optimum-habana /optimum-habana
+                    cd /optimum-habana
+                    git checkout v1.15.0
+
+                    pip install .
+                    pip install -r examples/text-generation/requirements.txt
+                    pip install git+https://github.com/HabanaAI/DeepSpeed.git@1.19.0
+                    ';
+
+                    cd /optimum-habana/examples/text-generation/;
+                    export batch_size=$((($NUM_HPU)*32));
+
+                    unset LD_PRELOAD;
+
+                    python3 ../gaudi_spawn.py --hostfile=$HOSTSFILE --use_deepspeed --world_size $N_CARDS ./run_generation.py --model_name_or_path $LLM_MODEL \
+                    --use_hpu_graphs \
+                    --use_kv_cache \
+                    --limit_hpu_graphs \
+                    --batch_size 1 \
+                    --max_new_tokens 1932 \
+                    --max_input_tokens 128 \
+                    --trim_logits \
+                    --attn_softmax_bf16 \
+                    --use_flash_attention \
+                    --flash_attention_recompute \
+                    --bucket_size 128 \
+                    --bucket_internal \
+                    --bf16  --n_iterations 1  --warmup 2 ;
+
+              volumeMounts:
+                - name: datasets
+                  mountPath: /root/.cache
+          volumes:
+            - name: datasets
+              persistentVolumeClaim:
+                claimName: shared-model
+                readOnly: false
+
+    Worker:
+      replicas: 1
+      template:
+        spec:
+          hostIPC: true
+          containers:
+            - image: vault.habana.ai/gaudi-docker/1.19.2/ubuntu24.04/habanalabs/pytorch-installer-2.5.1:latest
+              name: gaudi-llm-ds-worker
+              resources:
+                limits:
+                  habana.ai/gaudi: 8
+                  memory: 250Gi
+                  hugepages-2Mi: 95000Mi
+                requests:
+                  habana.ai/gaudi: 8
+                  memory: 250Gi
+                  hugepages-2Mi: 95000Mi
+              volumeMounts:
+                - name: datasets
+                  mountPath: /root/.cache
+              command: ["/bin/bash", "-c"]
+              args:
+                - >-
+                  /usr/bin/ssh-keygen -A;
+                  /usr/sbin/sshd;
+                  sleep 365d;
+          volumes:
+            - name: datasets
+              persistentVolumeClaim:
+                claimName: shared-model
+                readOnly: false

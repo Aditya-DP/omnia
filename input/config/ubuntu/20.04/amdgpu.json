@@ -8,7 +8,8 @@
   },
   "rocm": {
     "cluster": [
-      {"package": "rocm", "type": "deb", "repo_name": "rocm"}
+      {"package": "rocm", "type": "deb", "repo_name": "rocm"},
+      {"package": "rocm-validation-suite", "type": "deb", "repo_name": "rocm"}
     ]
   }
 }

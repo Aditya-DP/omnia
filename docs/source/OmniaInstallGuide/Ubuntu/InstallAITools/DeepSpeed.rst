@@ -108,3 +108,5 @@ Once DeepSpeed deployment is complete (~ after approx 30 minutes), the following
 
     NAME                             READY  STATUS      RESTARTS  AGE
     gaudi-llm-ds-ft-launcher-zfnls   0/1    Completed   0         10h
+
+.. note:: Sample workloads for pretraining, finetuning, and inference are available in the ``examples/ai_examples/intel/`` directory for your reference.

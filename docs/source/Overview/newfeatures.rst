@@ -1,58 +1,40 @@
 New Features
 ============
 
-* Omnia now executes exclusively within a virtual environment created by the ``prereq.sh`` script
-
-* Python version upgraded to 3.11 (Previously 3.9)
-
-* Ansible version upgraded to 9.5.1 (Previously 7.7.0)
-
-* Kubernetes version upgraded to 1.29.5 (Previously 1.26.12)
-
-* Pre-enablement for Intel Gaudi 3 accelerators:
-
-    * Software stack installation (See the `support matrix <SupportMatrix/omniainstalledsoftware.html>`_ for the supported Intel firmware version)
-
-    * Accelerator status verification using `HCCL <https://docs.habana.ai/en/latest/API_Reference_Guides/HCCL_APIs/index.html>`_ and `hl_qual <https://docs.habana.ai/en/latest/Management_and_Monitoring/Qualification_Library/index.html>`_
-
-    * Inventory tagging for the Gaudi accelerators (``compute_gpu_intel``)
-
-    * Monitoring for the Gaudi accelerators via:
-
-        * Omnia telemetry
-        * iDRAC telemetry
-        * Kubernetes telemetry via Prometheus exporter
-
-    * Visualization of the Kubernetes telemetry and Intel Gaudi accelerator metrics using Grafana
-
-    * AI tools enablement:
-
-        * DeepSpeed
-        * Kubeflow
-        * vLLM
-
-* Sample playbook for a pre-trained Generative AI model - Llama 3.1
-
-* CSI drivers for Kubernetes to access PowerScale storage with an option to enable the SmartConnect feature (without SSL certificates)
-
-* Added support for NVIDIA container toolkit for NVIDIA accelerators in a Kubernetes cluster
-
-* Added support for corporate proxy on RHEL, Rocky Linux, and Ubuntu clusters
-
-* Set OS Kernel command-line parameters and/or configure additional NICs on the nodes using a single playbook
-
-* The internal OpenLDAP server can now be configured as a proxy server
+* Enablement of AMD 17G servers - R6725, R7725, R6715, R7715
+* Enablement of Intel Gaudi 3 accelerator
+* Enablement of NVIDIA accelerators - L40s, H100 NVL, H200 SXM
+* Support for Ubuntu 24.04 OS
+* Support for upgrading Omnia version on the OIM, from 1.7 to 1.7.1
+* Support for NVIDIA GPU operator (25.3.0) on nodes running Ubuntu 24.04 OS
+* Support for adding external nodes (with pre-loaded OS and internet connectivity) to a Kubernetes cluster
+* Support for configuring additional NICs and updating kernel parameters during the provisioning of the cluster nodes
+* Support for NVIDIA Collective Communications Library (NCCL) 2.25.1 on nodes with NVIDIA accelerators running Ubuntu 24.04 OS
+* Support for ROCm Communication Collectives Library (RCCL) 2.21.5 on nodes with AMD accelerators
+* Support for Multus-CNI plugin (4.1.4) and Whereabouts plugin (0.8.0) for Kubernetes (K8s)
+* Support for RoCE configuration with Calico network plugin
+* Updated software packages for Omnia 1.7.1 (compared to 1.7):
 
 
-
-
-
-
-
-
-
-
-
-
-
+    +--------------------------+-----------------------------------+-------------------------------+
+    | Software package         | Current Version (1.7.1)           | Previous Version (1.7)        |
+    +==========================+===================================+===============================+
+    | Kubernetes               | 1.31.4                            | 1.29.5                        |
+    +--------------------------+-----------------------------------+-------------------------------+
+    | Kubespray                | 2.27                              | 2.25                          |
+    +--------------------------+-----------------------------------+-------------------------------+
+    | Intel Gaudi driver       | 1.19.2                            | 1.19.1                        |
+    +--------------------------+-----------------------------------+-------------------------------+
+    | CSI PowerScale driver    | 2.13.0                            | 2.11.0                        |
+    +--------------------------+-----------------------------------+-------------------------------+
+    | NVIDIA CUDA              | 12.8                              | 2.13.2                        |
+    +--------------------------+-----------------------------------+-------------------------------+
+    | NVIDIA vLLM              | 0.7.2                             | 0.4.0                         |
+    +--------------------------+-----------------------------------+-------------------------------+
+    | AMD ROCm                 | 6.3.1                             | 6.2.2                         |
+    +--------------------------+-----------------------------------+-------------------------------+
+    | Grafana                  | 11.4.1                            | 8.3.2                         |
+    +--------------------------+-----------------------------------+-------------------------------+
+    | BCM RoCE                 | 232.1.133.2                       | 230.2.54.0                    |
+    +--------------------------+-----------------------------------+-------------------------------+
 

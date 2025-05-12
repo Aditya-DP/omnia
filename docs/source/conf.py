@@ -30,9 +30,9 @@ sys.path.insert(0, os.path.abspath("../"))
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = []
+extensions = ["sphinx_design",]
 
-html_css_files = ["theme.css"]
+html_css_files = ["theme.css", "custom.css"]
 html_js_files = [
     'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js',
     '_static/flyout.js'

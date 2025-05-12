@@ -42,9 +42,9 @@ mysqldb_local_backup_file: "mysqldb_dump.sql"
 timescale_telemetry_backup_file: "telemetry_tsdb_dump.sql"
 
 # Usage: validate_venv.yml
-venv_fail_msg: "The venv_path is incorrect! Expected /opt/omnia/omnia161_venv but got {{ venv_path }}.
-Please deactivate existing venv  using command: deactivate  and activate venv using command: source /opt/omnia/omnia161_venv/bin/activate and rerun playbook"
-venv_active_fail_msg: "It seems the Python virtual environment for Omnia isn’t active. Please activate it using the following command: source /opt/omnia/omnia161_venv/bin/activate and rerun playbook." # noqa: yaml[line-length]
+venv_fail_msg: "The venv_path is incorrect! Expected /opt/omnia/omnia17_venv but got {{ venv_path }}.
+Please deactivate existing venv  using command: deactivate  and activate venv using command: source /opt/omnia/omnia17_venv/bin/activate and rerun playbook"
+venv_active_fail_msg: "It seems the Python virtual environment for Omnia isn’t active. Please activate it using the following command: source /opt/omnia/omnia17_venv/bin/activate and rerun playbook." # noqa: yaml[line-length]
 
 # validate_upgrade_config.yml
 valid_installed_path_msg: "Please provide a valid path for 'installed_omnia_path' in the upgrade_config.yml file
@@ -120,7 +120,7 @@ max_delay: 10
 timescaledb_file_fail_msg: "Backup file {{ k8s_backup_location }}/{{ timescale_telemetry_backup_file }} does not exist!"
 timescaledb_restore_success_msg: "Timescaledb restored successfully"
 python_version: "{{ ansible_python_interpreter }}"
-db_schema_utility: "{{ installed_omnia_path }}/telemetry/roles/omnia_telemetry_prepare_cp/files/omnia_telemetry_schema_creation.py"
+db_schema_utility: "{{ installed_omnia_path }}/telemetry/roles/omnia_telemetry_prepare_oim/files/omnia_telemetry_schema_creation.py"
 
 # Usage: main.yml
 omnia_inv_path: /opt/omnia/omnia_inventory/
@@ -134,8 +134,8 @@ file_permission: "0644"
 nerdctl:
   folder_dest: "{{ nerdctl_directory }}/nerdctl"
   folder_permission: "+x"
-  url: "https://github.com/containerd/nerdctl/releases/download/v1.5.0/nerdctl-1.5.0-linux-amd64.tar.gz"
-  archive_dest: "{{ nerdctl_directory }}/nerdctl-1.5.0-linux-amd64.tar.gz"
+  url: "https://github.com/containerd/nerdctl/releases/download/v1.7.4/nerdctl-1.7.4-linux-amd64.tar.gz"
+  archive_dest: "{{ nerdctl_directory }}/nerdctl-1.7.4-linux-amd64.tar.gz"
   binary_files_path:
     - "/usr/local/bin/nerdctl"
     - "/usr/bin/nerdctl"

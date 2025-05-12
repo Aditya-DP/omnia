@@ -1,4 +1,4 @@
-# Copyright 2024 Dell Inc. or its subsidiaries. All Rights Reserved.
+# Copyright 2025 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,14 +31,16 @@
 
 - name: Update Repositories/Registries on nodes
   ansible.builtin.import_playbook: ../utils/update_user_repo.yml
-  when: not ( hostvars['127.0.0.1']['update_user_repo_executed'] | default(false) | bool )
+  when:
+    - not ( hostvars['127.0.0.1']['update_user_repo_executed'] | default(false) | bool )
+    - hostvars['127.0.0.1']['omnia_config']['k8s_offline_install']
 
-- name: Apply common installation and config
+- name: Apply common Slurm installation and config
   hosts: slurm_control_node, slurm_node, login
   gather_facts: false
   any_errors_fatal: true
   roles:
-    - common
+    - slurm_common
 
 - name: Prepare kube control plane for kubernetes installations
   hosts: kube_control_plane
@@ -88,6 +90,7 @@
   gather_facts: false
   roles:
     - k8s_start_services
+    - multus_and_whereabouts
 
 - name: CSI powerscale image pulling
   hosts: kube_node, kube_control_plane
@@ -96,19 +99,15 @@
       ansible.builtin.include_role:
         name: k8s_csi_powerscale_plugin
         tasks_from: csi_powerscale_image_pull.yml
-      when: hostvars['127.0.0.1']['csi_driver_powerscale_precheck_pass'] | default(false) | bool
+      when:
+        - hostvars['127.0.0.1']['csi_driver_powerscale_precheck_pass'] | default(false) | bool
+        - hostvars['127.0.0.1']['omnia_config']['k8s_offline_install']
 
 - name: Install CSI powerscale plugin on kube control nodes
   hosts: kube_control_plane
   gather_facts: false
   roles:
     - k8s_csi_powerscale_plugin
-
-- name: Apply common Slurm installation and config
-  hosts: slurm_control_node, slurm_node, login
-  gather_facts: false
-  roles:
-    - slurm_common
 
 - name: Apply slurm control node config
   hosts: slurm_control_node
@@ -134,8 +133,14 @@
   roles:
     - slurm_workers_service
 
+- name: Setup slurm pam authentication
+  hosts: slurm_control_node, slurm_node, login
+  gather_facts: true
+  roles:
+    - slurm_pam
+
 - name: Compile and install the ucx and openmpi on the nfs share of compute nodes
-  hosts: slurm_control_node, kube_control_plane
+  hosts: slurm_control_node, kube_control_plane, slurm_node, kube_node, login, etcd
   gather_facts: true
   roles:
     - install_benchmarks_tools

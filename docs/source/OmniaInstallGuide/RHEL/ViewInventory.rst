@@ -43,7 +43,8 @@ When ``discovery_provision.yml``, ``prepare_oim.yml``, or ``utils/inventory_tagg
 
                 * Node status must be "booted" in DB.
                 * Node's hostname information is present in DB.
-    * To regenerate all the inventory files, use the playbook ``utils/inventory_tagging.yml``.
+    * To regenerate all the inventory files, use the playbook ``utils/inventory_tagging.yml``.    
+    * After the nodes have successfully PXE booted, it may take up to three minutes for their details to appear in the generated inventory files.
 
 
 

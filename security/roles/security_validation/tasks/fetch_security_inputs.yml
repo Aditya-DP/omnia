@@ -116,7 +116,7 @@
     seconds: "{{ warning_wait_time_warning }}"
     prompt: "{{ root_user_absence }}"
   when:
-    - "user_list is defined and user_list | length > 1"
+    - "user_list is defined and user_list | length >= 1"
     - "'root' not in user_list"
     - "allow_deny == 'allow'"
 

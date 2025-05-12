@@ -1,4 +1,4 @@
-#  Copyright 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+#  Copyright 2025 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,18 +17,27 @@
   ansible.builtin.set_fact:
     provision_password_status: false
 
+- name: Assert given root password
+  block:
+    - name: Assert given root password
+      ansible.builtin.assert:
+        that:
+          - provision_password | length >= min_length
+          - provision_password | length <= max_length
+          - '"-" not in provision_password '
+          - '"\\" not in provision_password '
+          - '"\"" not in provision_password '
+          - " \"'\" not in provision_password "
+      no_log: true
+  rescue:
+    - name: Root password validation check
+      ansible.builtin.fail:
+        msg: "{{ provision_password_fail_msg }}"
+
 - name: Set provision_password_status to true
   ansible.builtin.set_fact:
     provision_password_status: true
     provision_password: "{{ hostvars['127.0.0.1']['provision_password'] }}"
-  when:
-    - hostvars['127.0.0.1']['provision_password'] is defined
-    - hostvars['127.0.0.1']['provision_password'] | length > min_length | int - 1
-
-- name: Skipping cluster_preparation role
-  ansible.builtin.debug:
-    msg: "{{ skip_cluster_preparation_msg }}"
-  when: not provision_password_status
 
 - name: Set passwordless SSH
   when: provision_password_status
@@ -40,17 +49,19 @@
 
     - name: Disable host key checking
       ansible.builtin.replace:
-        path: /etc/ssh/ssh_config
+        path: "{{ ssh_config_path }}"
         regexp: '#   StrictHostKeyChecking ask'
         replace: 'StrictHostKeyChecking no'
       register: disable_host_key_checking
+      connection: local
 
     - name: Disable strict mode checking
       ansible.builtin.replace:
-        path: /etc/ssh/ssh_config
+        path: "{{ ssh_config_path }}"
         regexp: '^StrictModes\ '
         replace: 'StrictModes no'
       register: disable_strict_mode_checking
+      connection: local
 
     - name: Restart sshd
       ansible.builtin.service:
@@ -60,13 +71,16 @@
       when:
         - disable_strict_mode_checking.changed or
           disable_host_key_checking.changed
+      connection: local
 
     - name: Install sshpass
       ansible.builtin.package:
         name: sshpass
         state: present
+      connection: local
 
     - name: Verify and set passwordless ssh from manager to compute nodes
+      connection: local
       block:
         - name: Execute on individual hosts
           ansible.builtin.include_tasks: check_passwordless_ssh.yml

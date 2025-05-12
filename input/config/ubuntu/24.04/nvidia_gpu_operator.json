@@ -1,0 +1,10 @@
+{
+    "nvidia_gpu_operator": {
+      "cluster": [
+      {
+        "package": "nvidia-gpu-operator-v{{ nvidia_gpu_operator_version}}",
+        "type": "tarball",
+        "url": "https://helm.ngc.nvidia.com/nvidia/charts/gpu-operator-v{{ nvidia_gpu_operator_version}}.tgz"
+      }]
+    }
+}

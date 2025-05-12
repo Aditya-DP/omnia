@@ -1,4 +1,4 @@
-#  Copyright 2024 Dell Inc. or its subsidiaries. All Rights Reserved.
+#  Copyright 2025 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -13,25 +13,26 @@
 #  limitations under the License.
 ---
 
-- name: Fetch facts for nodes including new nodes
+- name: Fetch facts for nodes including new nodes in offline mode
   when:
     - hostvars['127.0.0.1']['k8s_support']
     - hostvars[groups['kube_control_plane'][0]]['k8s_installation_status']
     - hostvars[groups['kube_control_plane'][0]]['k8s_new_nodes'] != ''
+    - hostvars['localhost']['omnia_config']['k8s_offline_install']
   ansible.builtin.import_playbook: kubernetes_sigs.kubespray.facts
   vars:
     kube_version: "v{{ hostvars['localhost']['k8s_version'] }}"
     container_manager: "containerd"
     dashboard_enabled: true
     helm_enabled: true
-    kube_network_plugin: "{{ hostvars['localhost']['k8s_cni'] }}"
-    kube_service_addresses: "{{ hostvars['localhost']['k8s_service_addresses'] }}"
-    kube_pods_subnet: "{{ hostvars['localhost']['k8s_pod_network_cidr'] }}"
+    kube_network_plugin: "{{ hostvars['localhost']['omnia_config']['k8s_cni'] }}"
+    kube_service_addresses: "{{ hostvars['localhost']['omnia_config']['k8s_service_addresses'] }}"
+    kube_pods_subnet: "{{ hostvars['localhost']['omnia_config']['k8s_pod_network_cidr'] }}"
     kube_proxy_strict_arp: true
     kube_proxy_mode: 'iptables'
-    kubelet_custom_flags: "{% if hostvars['localhost']['topology_manager_policy'] != 'none' %}
-      --topology-manager-policy={{ hostvars['localhost']['topology_manager_policy'] }}
-      --topology-manager-scope={{ hostvars['localhost']['topology_manager_scope'] }}
+    kubelet_custom_flags: "{% if hostvars['localhost']['omnia_config']['topology_manager_policy'] != 'none' %}
+      --topology-manager-policy={{ hostvars['localhost']['omnia_config']['topology_manager_policy'] }}
+      --topology-manager-scope={{ hostvars['localhost']['omnia_config']['topology_manager_scope'] }}
                           {% endif %}"
     metallb_enabled: true
     metallb_speaker_enabled: true
@@ -40,7 +41,7 @@
       address_pools:
         primary:
           ip_range:
-            - "{{ hostvars['localhost']['pod_external_ip_range'] }}"
+            - "{{ hostvars['localhost']['omnia_config']['pod_external_ip_range'] }}"
           auto_assign: true
       layer2:
         - primary
@@ -75,26 +76,77 @@
     helm_download_url: "{{ hostvars['localhost']['offline_tarball_path'] }}/{{ hostvars['localhost']['helm_package'] }}.tar.gz"
     http_proxy: "{{ hostvars['localhost']['http_proxy'] }}"
     https_proxy: "{{ hostvars['localhost']['https_proxy'] }}"
-    no_proxy: "localhost,127.0.0.1,{{ hostvars['localhost']['admin_nic_ip'] }},{{ hostvars['localhost']['k8s_service_addresses'] }},{{ hostvars['localhost']['k8s_pod_network_cidr'] }},{{ hostvars['localhost']['k8s_cni'] }},{{ hostvars['localhost']['oim_hostname'] }},{{ hostvars['localhost']['domain_name'] }}"   # noqa: yaml[line-length]
+    no_proxy: "localhost,127.0.0.1,{{ hostvars['localhost']['admin_nic_ip'] }},{{ hostvars['localhost']['omnia_config']['k8s_service_addresses'] }},{{ hostvars['localhost']['omnia_config']['k8s_pod_network_cidr'] }},{{ hostvars['localhost']['omnia_config']['k8s_cni'] }},{{ hostvars['localhost']['oim_hostname'] }},{{ hostvars['localhost']['domain_name'] }}"   # noqa: yaml[line-length]
     additional_no_proxy: "{{ hostvars['localhost']['user_no_proxy'] if hostvars['localhost']['no_proxy_input_status'] else '' }}"   # noqa: yaml[line-length]
 
-- name: Initiate add node
+- name: Fetch facts for nodes including new nodes in online mode
   when:
     - hostvars['127.0.0.1']['k8s_support']
     - hostvars[groups['kube_control_plane'][0]]['k8s_installation_status']
     - hostvars[groups['kube_control_plane'][0]]['k8s_new_nodes'] != ''
+    - not hostvars['localhost']['omnia_config']['k8s_offline_install']
+  ansible.builtin.import_playbook: kubernetes_sigs.kubespray.facts
+  vars:
+    kube_version: "v{{ hostvars['localhost']['k8s_version'] }}"
+    container_manager: "containerd"
+    dashboard_enabled: true
+    helm_enabled: true
+    kube_network_plugin: "{{ hostvars['localhost']['omnia_config']['k8s_cni'] }}"
+    kube_service_addresses: "{{ hostvars['localhost']['omnia_config']['k8s_service_addresses'] }}"
+    kube_pods_subnet: "{{ hostvars['localhost']['omnia_config']['k8s_pod_network_cidr'] }}"
+    kube_proxy_strict_arp: true
+    kube_proxy_mode: 'iptables'
+    kubelet_custom_flags: "{% if hostvars['localhost']['omnia_config']['topology_manager_policy'] != 'none' %}
+      --topology-manager-policy={{ hostvars['localhost']['omnia_config']['topology_manager_policy'] }}
+      --topology-manager-scope={{ hostvars['localhost']['omnia_config']['topology_manager_scope'] }}
+                          {% endif %}"
+    metallb_enabled: true
+    metallb_speaker_enabled: true
+    metallb_namespace: "metallb-system"
+    metallb_config:
+      address_pools:
+        primary:
+          ip_range:
+            - "{{ hostvars['localhost']['omnia_config']['pod_external_ip_range'] }}"
+          auto_assign: true
+      layer2:
+        - primary
+    override_system_hostname: false
+    populate_inventory_to_hosts_file: false
+    enable_nodelocaldns: false
+    unsafe_show_logs: true
+    kube_image_repo: "registry.k8s.io"
+    docker_image_repo: "docker.io"
+    quay_image_repo: "quay.io"
+    containerd_registries_mirrors:
+      - prefix: xyz.io
+        mirrors:
+          - host: https://mirror.gcr.io
+            capabilities: ["pull", "resolve"]
+            skip_verify: false
+    docker_rh_repo_base_url: ""
+    docker_rh_repo_gpgkey: ""
+    no_proxy: "localhost,127.0.0.1,{{ hostvars['localhost']['admin_nic_ip'] }},{{ hostvars['localhost']['omnia_config']['k8s_service_addresses'] }},{{ hostvars['localhost']['omnia_config']['k8s_pod_network_cidr'] }},{{ hostvars['localhost']['omnia_config']['k8s_cni'] }},{{ hostvars['localhost']['oim_hostname'] }},{{ hostvars['localhost']['domain_name'] }}"   # noqa: yaml[line-length]
+    additional_no_proxy: "{{ hostvars['localhost']['user_no_proxy'] if hostvars['localhost']['no_proxy_input_status'] else '' }}"   # noqa: yaml[line-length]
+
+- name: Initiate add node offline mode
+  when:
+    - hostvars['127.0.0.1']['k8s_support']
+    - hostvars[groups['kube_control_plane'][0]]['k8s_installation_status']
+    - hostvars[groups['kube_control_plane'][0]]['k8s_new_nodes'] != ''
+    - hostvars['localhost']['omnia_config']['k8s_offline_install']
   ansible.builtin.import_playbook: kubernetes_sigs.kubespray.scale --limit="{{ hostvars[groups['kube_control_plane'][0]]['k8s_new_nodes'] }}"
   vars:
     kube_version: "v{{ hostvars['localhost']['k8s_version'] }}"
     container_manager: "containerd"
     dashboard_enabled: true
     helm_enabled: true
-    kube_network_plugin: "{{ hostvars['localhost']['k8s_cni'] }}"
-    kube_service_addresses: "{{ hostvars['localhost']['k8s_service_addresses'] }}"
-    kube_pods_subnet: "{{ hostvars['localhost']['k8s_pod_network_cidr'] }}"
-    kubelet_custom_flags: "{% if hostvars['localhost']['topology_manager_policy'] != 'none' %}
-      --topology-manager-policy={{ hostvars['localhost']['topology_manager_policy'] }}
-      --topology-manager-scope={{ hostvars['localhost']['topology_manager_scope'] }}
+    kube_network_plugin: "{{ hostvars['localhost']['omnia_config']['k8s_cni'] }}"
+    kube_service_addresses: "{{ hostvars['localhost']['omnia_config']['k8s_service_addresses'] }}"
+    kube_pods_subnet: "{{ hostvars['localhost']['omnia_config']['k8s_pod_network_cidr'] }}"
+    kubelet_custom_flags: "{% if hostvars['localhost']['omnia_config']['topology_manager_policy'] != 'none' %}
+      --topology-manager-policy={{ hostvars['localhost']['omnia_config']['topology_manager_policy'] }}
+      --topology-manager-scope={{ hostvars['localhost']['omnia_config']['topology_manager_scope'] }}
                           {% endif %}"
     kube_proxy_strict_arp: true
     metallb_enabled: true
@@ -104,7 +156,7 @@
       address_pools:
         primary:
           ip_range:
-            - "{{ hostvars['localhost']['pod_external_ip_range'] }}"
+            - "{{ hostvars['localhost']['omnia_config']['pod_external_ip_range'] }}"
           auto_assign: true
       layer2:
         - primary
@@ -139,5 +191,54 @@
     helm_download_url: "{{ hostvars['localhost']['offline_tarball_path'] }}/{{ hostvars['localhost']['helm_package'] }}.tar.gz"
     http_proxy: "{{ hostvars['localhost']['http_proxy'] }}"
     https_proxy: "{{ hostvars['localhost']['https_proxy'] }}"
-    no_proxy: "localhost,127.0.0.1,{{ hostvars['localhost']['admin_nic_ip'] }},{{ hostvars['localhost']['k8s_service_addresses'] }},{{ hostvars['localhost']['k8s_pod_network_cidr'] }},{{ hostvars['localhost']['oim_hostname'] }},{{ hostvars['localhost']['domain_name'] }}"   # noqa: yaml[line-length]
+    no_proxy: "localhost,127.0.0.1,{{ hostvars['localhost']['admin_nic_ip'] }},{{ hostvars['localhost']['omnia_config']['k8s_service_addresses'] }},{{ hostvars['localhost']['omnia_config']['k8s_pod_network_cidr'] }},{{ hostvars['localhost']['oim_hostname'] }},{{ hostvars['localhost']['domain_name'] }}"   # noqa: yaml[line-length]
+    additional_no_proxy: "{{ hostvars['localhost']['user_no_proxy'] if hostvars['localhost']['no_proxy_input_status'] else '' }}"   # noqa: yaml[line-length]
+
+- name: Initiate add node in online mode
+  when:
+    - hostvars['127.0.0.1']['k8s_support']
+    - hostvars[groups['kube_control_plane'][0]]['k8s_installation_status']
+    - hostvars[groups['kube_control_plane'][0]]['k8s_new_nodes'] != ''
+    - not hostvars['localhost']['omnia_config']['k8s_offline_install']
+  ansible.builtin.import_playbook: kubernetes_sigs.kubespray.scale --limit="{{ hostvars[groups['kube_control_plane'][0]]['k8s_new_nodes'] }}"
+  vars:
+    kube_version: "v{{ hostvars['localhost']['k8s_version'] }}"
+    container_manager: "containerd"
+    dashboard_enabled: true
+    helm_enabled: true
+    kube_network_plugin: "{{ hostvars['localhost']['omnia_config']['k8s_cni'] }}"
+    kube_service_addresses: "{{ hostvars['localhost']['omnia_config']['k8s_service_addresses'] }}"
+    kube_pods_subnet: "{{ hostvars['localhost']['omnia_config']['k8s_pod_network_cidr'] }}"
+    kubelet_custom_flags: "{% if hostvars['localhost']['omnia_config']['topology_manager_policy'] != 'none' %}
+      --topology-manager-policy={{ hostvars['localhost']['omnia_config']['topology_manager_policy'] }}
+      --topology-manager-scope={{ hostvars['localhost']['omnia_config']['topology_manager_scope'] }}
+                          {% endif %}"
+    kube_proxy_strict_arp: true
+    metallb_enabled: true
+    metallb_speaker_enabled: true
+    metallb_namespace: "metallb-system"
+    metallb_config:
+      address_pools:
+        primary:
+          ip_range:
+            - "{{ hostvars['localhost']['omnia_config']['pod_external_ip_range'] }}"
+          auto_assign: true
+      layer2:
+        - primary
+    override_system_hostname: false
+    populate_inventory_to_hosts_file: false
+    enable_nodelocaldns: false
+    unsafe_show_logs: true
+    kube_image_repo: "registry.k8s.io"
+    docker_image_repo: "docker.io"
+    quay_image_repo: "quay.io"
+    containerd_registries_mirrors:
+      - prefix: xyz.io
+        mirrors:
+          - host: https://mirror.gcr.io
+            capabilities: ["pull", "resolve"]
+            skip_verify: false
+    docker_rh_repo_base_url: ""
+    docker_rh_repo_gpgkey: ""
+    no_proxy: "localhost,127.0.0.1,{{ hostvars['localhost']['admin_nic_ip'] }},{{ hostvars['localhost']['omnia_config']['k8s_service_addresses'] }},{{ hostvars['localhost']['omnia_config']['k8s_pod_network_cidr'] }},{{ hostvars['localhost']['oim_hostname'] }},{{ hostvars['localhost']['domain_name'] }}"   # noqa: yaml[line-length]
     additional_no_proxy: "{{ hostvars['localhost']['user_no_proxy'] if hostvars['localhost']['no_proxy_input_status'] else '' }}"   # noqa: yaml[line-length]

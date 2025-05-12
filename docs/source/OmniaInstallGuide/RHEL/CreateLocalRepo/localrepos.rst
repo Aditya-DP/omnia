@@ -9,14 +9,14 @@ Configuring specific local repositories
 
             ::
 
-                {"name": "amdgpu", "version": "6.2.2"},
+                {"name": "amdgpu", "version": "6.3.1"},
 
         * Add the following line below the ``softwares`` section:
 
             ::
 
                 "amdgpu": [
-                                {"name": "rocm", "version": "6.2.2" }
+                                {"name": "rocm", "version": "6.3.1" }
                           ]
 
         * A sample format is available `here. <InputParameters.html>`_
@@ -27,7 +27,7 @@ Configuring specific local repositories
 
     To install CUDA, include the following line under ``softwares`` in ``input/software_config.json``: ::
 
-            {"name": "cuda", "version": "12.3.2"},
+            {"name": "cuda", "version": "12.8.0"},
 
 
     For a list of repositories (and their types) configured for CUDA, view the ``input/config/<cluster_os_type>/<cluster_os_version>/cuda.json`` file. To customize your CUDA installation, update the file. URLs for different versions can be found `here <https://developer.nvidia.com/cuda-downloads>`_:
@@ -39,7 +39,7 @@ Configuring specific local repositories
                 "cluster": [
                   { "package": "cuda",
                     "type": "iso",
-                    "url": "https://developer.download.nvidia.com/compute/cuda/12.3.2/local_installers/cuda-repo-rhel8-12-3-local-12.3.2_545.23.08-1.x86_64.rpm",
+                    "url": "https://developer.download.nvidia.com/compute/cuda/12.8.0/local_installers/cuda-repo-rhel8-12-8-local-12.8.0_570.86.10-1.x86_64.rpm",
                     "path": ""
                   },
                   { "package": "dkms",
@@ -63,7 +63,7 @@ Configuring specific local repositories
             {"name": "ofed", "version": "24.01-0.3.3.1"},
 
 
-    For a list of repositories (and their types) configured for OFED, view the ``input/config/<cluster_os_type>/<cluster_os_version>/ofed.json`` file. To customize your OFED installation, update the file.:
+    For a list of repositories (and their types) configured for OFED, view the ``input/config/<cluster_os_type>/<cluster_os_version>/ofed.json`` file. To customize your OFED installation, update the file.
 
     For RHEL or Rocky Linux: ::
 
@@ -72,7 +72,7 @@ Configuring specific local repositories
                 "cluster": [
                   { "package": "ofed",
                     "type": "iso",
-                    "url": "https://content.mellanox.com/ofed/MLNX_OFED-24.01-0.3.3.1/MLNX_OFED_LINUX-24.01-0.3.3.1-rhel8.7-x86_64.iso",
+                    "url": "https://content.mellanox.com/ofed/MLNX_OFED-24.01-0.3.3.1/MLNX_OFED_LINUX-24.01-0.3.3.1-rhel8.8-x86_64.iso"",
                     "path": ""
                   }
                 ]
@@ -85,9 +85,12 @@ Configuring specific local repositories
 
     To install BeeGFS, include the following line under ``softwares`` in ``input/software_config.json``: ::
 
-            {"name": "beegfs", "version": "7.4.2"},
+            {"name": "beegfs", "version": "7.4.5"},
+    
+    .. note:: Omnia supports version ``7.4.5`` for BeeGFS. Earlier versions might not work with Omnia.
 
     For information on deploying BeeGFS after setting up the cluster, `click here <../OmniaCluster/BuildingCluster/Storage/BeeGFS.html>`_.
+  
 
 **NFS**
 
@@ -101,7 +104,7 @@ Configuring specific local repositories
 
     To install Kubernetes, include the following line under ``softwares`` in ``input/software_config.json``: ::
 
-            {"name": "k8s", "version":"1.29.5"},
+            {"name": "k8s", "version":"1.31.4"},
 
     For more information about installing Kubernetes, `click here <../OmniaCluster/BuildingCluster/install_kubernetes.html>`_.
 
@@ -156,7 +159,7 @@ Configuring specific local repositories
 
     To install PowerScale CSI driver, include the following line under ``softwares`` in ``input/software_config.json``: ::
 
-            {"name": "csi_driver_powerscale", "version":"v2.11.0"},
+            {"name": "csi_driver_powerscale", "version":"v2.13.0"},
 
     For information on PowerScale CSI driver, `click here <../AdvancedConfigurationsRHEL/PowerScale_CSI.html>`_.
 

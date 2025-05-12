@@ -12,9 +12,11 @@ Required","* The operating system running on the cluster.
 
 Required","* The OS Version that will be provisoned on compute nodes.
 
-* For Ubuntu, the accepted values is 22.04.
+* For Ubuntu, the accepted values are ``22.04`` and ``24.04``.
 
-* **Default value**: 22.04"
+.. note:: Specify only the major version for the ``cluster_os_version`` parameter (for example, 22.04), and do not specify minor versions such as 22.04.5.
+
+**Default value:** ``22.04``"
 "**repo_config**
 
 ``string``

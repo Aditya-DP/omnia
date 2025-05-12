@@ -1,4 +1,4 @@
-#  Copyright 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+#  Copyright 2025 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -49,34 +49,29 @@
       with_items:
         - "{{ omnia_share_path }}/{{ compiler_dir_openmpi }}"
         - "{{ omnia_share_path }}/{{ benchmarks_dir_openmpi }}"
-      run_once: true
 
     - name: Copy the openmpi.tar.gz file into nfs share
       ansible.builtin.get_url:
         url: "{{ offline_tarball_path }}/{{ openmpi_dir }}.tar.gz"
         dest: "{{ omnia_share_path }}/{{ compiler_dir_openmpi }}/"
         mode: "{{ copy_mode }}"
-      run_once: true
 
     - name: Extract openmpi.tar.gz into nfs_share/openmpi/openmpi-4.1.6
       ansible.builtin.unarchive:
         src: "{{ omnia_share_path }}/{{ compiler_dir_openmpi }}/{{ openmpi_dir }}.tar.gz"
         dest: "{{ omnia_share_path }}/{{ compiler_dir_openmpi }}/"
         remote_src: true
-      run_once: true
 
     - name: Check ucx directory on the nfs share exist
       ansible.builtin.stat:
         path: "{{ omnia_share_path }}/{{ benchmarks_dir_ucx }}"
       register: ucx_dir_data
-      run_once: true
 
     - name: Run the ucx_info command
       when: ucx_dir_data.stat.exists
       ansible.builtin.command: "{{ omnia_share_path }}/{{ benchmarks_dir_ucx }}/{{ bin_folder }}/{{ ucx_info_cmd }} -v"
       register: ucx_cmd
       changed_when: false
-      run_once: true
 
     - name: Set the ucx installed variable to true if ucx command executed
       ansible.builtin.set_fact:
@@ -98,14 +93,12 @@
         path: "{{ omnia_share_path }}/{{ compiler_dir_openmpi }}/{{ openmpi_dir }}-{{ openmpi_software_version }}/build"
         state: directory
         mode: "{{ dir_mode }}"
-      run_once: true
 
     - name: Run command ../Configure --prefix=/install path
       ansible.builtin.shell: "{{ openmpi_compile_cmd }}" # noqa: command-instead-of-shell
       args:
         chdir: "{{ omnia_share_path }}/{{ compiler_dir_openmpi }}/{{ openmpi_dir }}-{{ openmpi_software_version }}/build"
       changed_when: false
-      run_once: true
       failed_when: false
 
     - name: Run command "run 'make -j 8' and make install"
@@ -115,7 +108,6 @@
       args:
         chdir: "{{ omnia_share_path }}/{{ compiler_dir_openmpi }}/{{ openmpi_dir }}-{{ openmpi_software_version }}/build"
       changed_when: false
-      run_once: true
       failed_when: false
 
     - name: Display the openmpi_info command

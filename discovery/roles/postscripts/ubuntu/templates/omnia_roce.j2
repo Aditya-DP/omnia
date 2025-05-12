@@ -5,12 +5,39 @@
 #
 #################################################################################################################
 echo "---------------------------"
+LOG_FILE="/var/log/xcat/xcat.log"
 
-echo "Checking for Broadcom NetXtreme-E cards" >> /var/log/xcat/xcat.log
+install_deb_files() {
+    local file=$1
+
+    if [[ -f "$file" ]]; then
+        echo "Installing $file" >> "$LOG_FILE"
+        sudo apt install -y "$file" >> "$LOG_FILE" 2>&1
+        if [[ $? -eq 0 ]]; then
+            echo "Successfully installed $file" >> "$LOG_FILE"
+        else
+            echo "Failed to install $file" >> "$LOG_FILE"
+        fi
+    else
+        echo "File $file not found" >> "$LOG_FILE"
+    fi
+}
+
+echo "Checking for Intel Gaudi cards" >> $LOG_FILE
+gaudi_check_processing_xlr8r=`lspci | grep "Processing accelerators: Habana Labs Ltd"`
+echo "Checking for Broadcom NetXtreme-E cards" >> $LOG_FILE
 thor_check=$(lspci -vvv 2>/dev/null | grep -i -E "BCM5750|BCM5760")
-if [[ -n $thor_check ]]
-then
-    echo "starting RoCE Installation" >> /var/log/xcat/xcat.log
+echo "Checking for NVIDIA cards" >> "$LOG_FILE"
+nvidia_check=$(lspci | grep -i nvidia)
+if [[ -n $thor_check ]] then
+    if [[ $gaudi_check_processing_xlr8r == *"Habana Labs Ltd"* ]]
+    then
+        echo "****************************************************" >> $LOG_FILE
+        echo "Intel Gaudi cards found. Skipping RoCE installation." >> $LOG_FILE
+        echo "****************************************************" >> $LOG_FILE
+        exit 0
+    fi
+    echo "starting RoCE Installation" >> $LOG_FILE
     # Download the roce_src tar file
     wget --quiet --show-progress "http://{{ admin_nic_ip }}:80/install{{ repo_store_path }}/cluster/tarball/{{ roce_package_name }}"
     # Extract the contents of the tar file
@@ -19,17 +46,19 @@ then
 
     OS_VERSION=$(lsb_release -ds | cut -d ' ' -f 2)
     OS_VERSION_MAJOR=$(lsb_release -rs)
-    echo "OS VERSION: '$OS_VERSION'" >> /var/log/xcat/xcat.log
+    echo "OS VERSION: '$OS_VERSION'" >> $LOG_FILE
 
     ROCE_VERSION=$(echo "$extracted_driver_name" | grep -oP '\d+' | head -n 1)
-    echo "RoCE Major Version: $ROCE_VERSION" >> /var/log/xcat/xcat.log
+    echo "RoCE Major Version: $ROCE_VERSION" >> $LOG_FILE
 
-    # install the L2, RoCE, and Peer Memory Direct (GPU direct) drivers
-    echo "starting RoCE netxtreme-peer-mem-dkms Installation" >> /var/log/xcat/xcat.log
+    # Installing bnxt_re_conf and niccli
+    echo "Searching for bnxt_re_conf with RoCE version $ROCE_VERSION" >> "$LOG_FILE"
+    BNXT_RE_CONF_FILES=$(find "./$extracted_driver_name/" -type f -name "bnxt_re_conf_${ROCE_VERSION}*.deb" | head -n 1)
+    install_deb_files "$BNXT_RE_CONF_FILES"
 
-    # Search for .deb files using full OS version
-    echo "Searching for files matching OS version: $OS_VERSION" >> /var/log/xcat/xcat.log
-    FILES=$(find ./$extracted_driver_name/ -wholename ".*$OS_VERSION*/netxtreme-peer-mem-dkms*.deb")
+    echo "Searching for niccli with RoCE version $ROCE_VERSION" >> "$LOG_FILE"
+    NICCLI_FILES=$(find "./$extracted_driver_name/" -type f -name "niccli_${ROCE_VERSION}*.deb" | head -n 1)
+    install_deb_files "$NICCLI_FILES"
 
     # If files are found for the full OS version, move to RoCE version check
     if [[ -n $FILES ]]; then
@@ -61,44 +90,31 @@ then
 
         # If a matching file is found, install it
         if [[ -n $MATCHED_FILE ]]; then
-            echo "Installing RoCE - $ROCE_VERSION match : $MATCHED_FILE" >> /var/log/xcat/xcat.log
-            sudo apt install -y "$MATCHED_FILE"
+            echo "Installing RoCE - $ROCE_VERSION match : $MATCHED_FILE" >> $LOG_FILE
+            install_deb_files "$MATCHED_FILE"
             echo "Completed Installation Process."
         else
-            echo "No netxtreme-peer-mem-dkms debian file found matching ROCE version $ROCE_VERSION ." >> /var/log/xcat/xcat.log
-            echo "Installing all : $FILES" >> /var/log/xcat/xcat.log
+            echo "No netxtreme-peer-mem-dkms debian file found matching ROCE version $ROCE_VERSION ." >> $LOG_FILE
+            echo "Installing all : $FILES" >> $LOG_FILE
             for file in $FILES; do
-                sudo apt install -y "$file"
+                install_deb_files "$file"
             done
         fi
-        echo "Completed RoCE netxtreme-peer-mem-dkms Installation" >> /var/log/xcat/xcat.log
+        echo "Completed RoCE netxtreme-peer-mem-dkms Installation" >> $LOG_FILE
     else
-        echo -e "RoCE installation failed. \n Exiting as no debian files found for netxtreme-peer-mem-dkms criteria." >> /var/log/xcat/xcat.log
+        echo -e "RoCE installation failed. \n Exiting as no debian files found for netxtreme-peer-mem-dkms criteria." >> $LOG_FILE
         exit 1
     fi
 
+    echo "RoCE required packages Installation starting" >> $LOG_FILE
 
-    # Download the roce_Drivers tar file
     sudo apt install -y linux-headers-"$(uname -r)"
     sudo apt install -y libelf-dev gcc make libtool autoconf librdmacm-dev rdmacm-utils infiniband-diags ibverbs-utils perftest ethtool libibverbs-dev rdma-core strace
     if [ "{{ roce_src_package_name }}" != "omnia_default" ]; then
         wget --quiet --show-progress "http://{{ admin_nic_ip }}:80/install{{ repo_store_path }}/cluster/tarball/{{ roce_src_package_name }}"
         extracted_source_name=$(tar -tzf "{{ roce_src_package_name }}" | head -n 1)
         tar -xvzf "{{ roce_src_package_name }}"
-        find ./$extracted_source_name/ -name "*netxtreme-bnxt_en*.tar.*" -exec sh -c '
-            # Extract the tar file
-            tar -xvzf "$0" -C "$(dirname "$0")"
-            # Navigate to the extracted directory and run make
-            extracted_dir="$(dirname "$0")/$(basename "$0" | sed 's/\.tar\..*$//')"
-            if [ -d "$extracted_dir" ]; then
-                cd "$extracted_dir" || exit 1
-                make
-            else
-                echo "Extracted directory $extracted_dir does not exist"
-            fi
-        ' {} \;
-        # compile and install the RoCE library
-        echo "Installing RoCE library" >> /var/log/xcat/xcat.log
+        echo "Installing RoCE library" >> $LOG_FILE
 
         find ./$extracted_source_name/ -name "*libbnxt_re*.tar.*" -exec sh -c '
             # Extract the tar file
@@ -118,9 +134,39 @@ then
             fi
         ' {} \;
         find /usr/lib64/ /usr/lib -name "libbnxt_re-rdmav*.so" -exec mv {} {}.inbox \;
+        sudo sh -c "echo bnxt_en >> /etc/initramfs-tools/modules"
+        sudo sh -c "echo bnxt_re >> /etc/initramfs-tools/modules"
+        if [[ $nvidia_check == *"NVIDIA"* ]]; then
+	        sudo sh -c "echo nvidia_peermem >> /etc/initramfs-tools/modules"
+        fi
+        sudo sh -c "echo ib_peer_mem >> /etc/initramfs-tools/modules"
+        sudo sh -c "echo br_netfilter >> /etc/initramfs-tools/modules"
+        sudo sh -c "echo ib_umad >> /etc/initramfs-tools/modules"
+        echo "Executing dkms autoinstall for all in /lib/modules"
+        ls /lib/modules | xargs -n1 dkms autoinstall -k
+        echo "Executing depmod -a"
+        sudo depmod -a
+        echo "Executing update-initramfs"
+        sudo update-initramfs -u 
+
+        echo -e "\n\n=================== Checking and updating /etc/security/limit.conf file=================== \n\n"
+
+        if [[ $(grep '^* soft memlock unlimited$' /etc/security/limits.conf) ]]; then
+            echo "Soft MemLock ok"
+        else
+            echo "Adding soft memlock unlimited to  /etc/security/limits.conf"
+            sudo sh -c "echo '* soft memlock unlimited' >> /etc/security/limits.conf"
+        fi
+
+        if [[ $(grep '^* hard memlock unlimited$' /etc/security/limits.conf) ]]; then
+            echo "Hard MemLock ok"
+        else
+            echo "Adding hard memlock unlimited to  /etc/security/limits.conf"
+            sudo sh -c "echo '* hard memlock unlimited' >> /etc/security/limits.conf"
+        fi
     fi
-    echo "RoCE Installation completed" >> /var/log/xcat/xcat.log
+    echo "RoCE Installation completed" >> $LOG_FILE
 else
-    echo "Broadcom NetXtreme-E cards not found" >> /var/log/xcat/xcat.log
+    echo "Broadcom NetXtreme-E cards not found" >> $LOG_FILE
 fi
 echo "-----------------------------"

@@ -1,4 +1,4 @@
-# Copyright 2024 Dell Inc. or its subsidiaries. All Rights Reserved.
+# Copyright 2025 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -39,6 +39,11 @@
   ansible.builtin.set_fact:
     os_no_match: true
   when: cluster_os_version != oim_os_version
+
+- name: Set distro to noble (Ubuntu 24 OS)
+  ansible.builtin.set_fact:
+    distro: "noble"
+  when: cluster_os_type == 'ubuntu' and cluster_os_version == '24.04'
 
 - name: Set distro to jammy (Ubuntu 22 OS)
   ansible.builtin.set_fact:

@@ -57,6 +57,36 @@
     cuda_gpg_key: "{{ cuda_gpg_file.files[0].path.split('/')[-1] }}"
     cuda_debs_folder: "{{ cuda_gpg_file.files[0].path.split('/')[-2] }}"
 
+- name: Set CUDA version
+  ansible.builtin.set_fact:
+    cuda_version: "{{ hostvars[inventory_hostname]['cuda_version'] | default('unknown') }}"
+
+- name: Handle CUDA JSON and libnccl packages for Ubuntu 24.04
+  when: provision_os == libnccl_supported_os and provision_os_version == libnccl_supported_os_version
+  block:
+    - name: Load CUDA JSON file
+      ansible.builtin.slurp:
+        src: "{{ cuda_json_file }}"
+      register: cuda_json_raw
+
+    - name: Decode JSON content
+      ansible.builtin.set_fact:
+        cuda_json: "{{ cuda_json_raw.content | b64decode | from_json }}"
+
+    - name: Extract libnccl package names
+      ansible.builtin.set_fact:
+        libnccl2_package_name: "{{ (cuda_json.cuda.cluster | selectattr('url', 'search', 'libnccl2') | map(attribute='url') | first | basename) | default('') }}" # noqa: yaml[line-length]
+        libnccl_dev_package_name: "{{ (cuda_json.cuda.cluster | selectattr('url', 'search', 'libnccl-dev') | map(attribute='url') | first | basename) | default('') }}" # noqa: yaml[line-length]
+
+    - name: Copy libnccl packages to CUDA debs folder
+      ansible.builtin.copy:
+        src: "{{ libnccl_path }}/{{ item }}"
+        dest: "{{ cuda_core_path }}/var/{{ cuda_debs_folder }}/"
+        mode: "{{ file_permission }}"
+      with_items:
+        - "{{ libnccl2_package_name }}"
+        - "{{ libnccl_dev_package_name }}"
+
 - name: Copy CUDA script to postscripts
   ansible.builtin.template:
     src: "{{ item.src }}"

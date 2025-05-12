@@ -3,6 +3,8 @@ BeeGFS bolt on
 
 BeeGFS is a hardware-independent POSIX parallel file system (a.k.a. Software-defined Parallel Storage) developed with a strong focus on performance and designed for ease of use, simple installation, and management.
 
+.. note:: For clusters running on Ubuntu 24.04 OS, the supported BeeGFS version is ``7.4.5``.
+
 .. image:: ../../../../../images/BeeGFS_Structure.jpg
 
 
@@ -30,21 +32,21 @@ BeeGFS is a hardware-independent POSIX parallel file system (a.k.a. Software-def
         +------+-----------------------------------+
 
 
+ To install and start ``firewalld`` on your Ubuntu clusters, use the following commands:
 
-To open the ports required, use the following steps:
+    1. Command 1: ``apt install firewalld -y``
 
-    1. ``firewall-cmd --permanent --zone=public --add-port=<port number>/tcp``
+    2. Command 2: ``systemctl start firewalld``
 
-    2. ``firewall-cmd --permanent --zone=public --add-port=<port number>/udp``
+ Once ``firewalld`` is up and running, use the below set of commands to open up the required TCP and UDP ports:
 
-    3. ``firewall-cmd --reload``
+    1. Command 1: ``firewall-cmd --permanent --zone=public --add-port=<port number>/tcp``
 
-    4. ``systemctl status firewalld``
+    2. Command 2: ``firewall-cmd --permanent --zone=public --add-port=<port number>/udp``
 
+    3. Command 3: ``firewall-cmd --reload``
 
-
-
-.. note:: BeeGFS services over RDMA is only supported on RHEL 8.3 and above due to limitations on BeeGFS. When setting up your cluster with RDMA support, check the BeeGFS documentation to provide appropriate values in ``input/storage_config.yml``.
+    4. Command 4: ``systemctl status firewalld``
 
 
 **Installing the BeeGFS client via Omnia**

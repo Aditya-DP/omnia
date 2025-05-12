@@ -65,7 +65,7 @@ Instructions to pull images from the user registries in the form of a digest:
 
                 name=Red Hat AppStream repo
 
-                baseurl=http://xx.yy.zz/pub/Distros/RedHat/RHEL8/8.6/AppStream/x86_64/os/
+                baseurl=http://xx.yy.zz/pub/Distros/RedHat/RHEL8/8.8/AppStream/x86_64/os/
 
                 enabled=1
 
@@ -75,7 +75,7 @@ Instructions to pull images from the user registries in the form of a digest:
 
                 name=Red Hat BaseOS repo
 
-                baseurl=http://xx.yy.zz/pub/Distros/RedHat/RHEL8/8.6/BaseOS/x86_64/os/
+                baseurl=http://xx.yy.zz/pub/Distros/RedHat/RHEL8/8.8/BaseOS/x86_64/os/
 
                 enabled=1
 
@@ -90,7 +90,7 @@ Instructions to pull images from the user registries in the form of a digest:
             Unable to read consumer identity
             This system is not registered with an entitlement server. You can use subscription-manager to register.
                 repo id                                                           repo name
-                RHEL-8-appstream-partners                                         Red Hat Enterprise Linux 8.6.0 Partners (AppStream)
-                RHEL-8-baseos-partners                                            Red Hat Enterprise Linux 8.6.0 Partners (BaseOS)
+                RHEL-8-appstream-partners                                         Red Hat Enterprise Linux 8.8.0 Partners (AppStream)
+                RHEL-8-baseos-partners                                            Red Hat Enterprise Linux 8.8.0 Partners (BaseOS)
 
 

@@ -17,7 +17,7 @@ Install the plugin
 
 **Prerequisites**
 
-* Ensure Kubernetes is set up on the cluster with ``flannel`` as the input for the ``k8s_cni`` parameter. For the complete list of parameters, `click here <../OmniaCluster/schedulerinputparams.html#id12>`_.
+* Ensure Kubernetes is set up on the cluster with ``flannel`` or ``calico`` as the input for the ``k8s_cni`` parameter present in ``input/omnia_config.yml``. For the complete list of parameters, `click here <../OmniaCluster/schedulerinputparams.html#id12>`_.
 * Ensure that the Broadcom RoCE drivers are installed on the nodes.
 * Ensure that additional NICs have been configured using the ``server_spec_update.yml`` playbook. For more information on how to configure additional NICs, `click here <../../../Utils/AdditionalNIC.html>`_.
 * Ensure that the ``{"name": "roce_plugin"}`` entry is present in the ``software_config.json`` and the same config has been used while executing the ``local_repo.yml`` playbook.
@@ -81,40 +81,57 @@ Here is an example of the ``input/roce_plugin_config.yml``: ::
               gateway:
               route:
 
-**To run the playbook**
+**To install the plugin, run the** ``deploy_roce_plugin.yml`` **playbook**
 
-Run the playbook using the following commands: ::
+Run the playbook using the following command: ::
 
     cd omnia/scheduler
     ansible-playbook deploy_roce_plugin.yml -i inventory
 
 Where the inventory should be the same as the one used to setup Kubernetes on the cluster.
 
-.. note:: A config file named ``roce_plugin.json`` is located in ``omnia\input\config\ubuntu\22.04\``. This config file contains all the details about the Kubernetes plugin for the RoCE NIC. Here is an example of the config file: ::
+.. note:: A config file named ``roce_plugin.json`` is located in ``omnia\input\config\ubuntu\<os version>\``. This config file contains all the details about the Kubernetes plugin for the RoCE NIC. Here is an example of the config file:
+    ::
 
-       {
-         "package": "whereabouts",
-         "url": "https://github.com/k8snetworkplumbingwg/whereabouts.git",
-         "type": "git",
-         "version": "master",
-         "commit": "638d58"
-       },
-       {
-         "package": "k8s-rdma-shared-dev-plugin",
-         "url": "https://github.com/Mellanox/k8s-rdma-shared-dev-plugin.git",
-         "type": "git",
-         "version": "master",
-         "commit": "c94b2cef"
-       },
+        {
+            "roce_plugin": {
+              "cluster": [
+              {
+                "package": "k8s-rdma-shared-dev-plugin",
+                "url": "https://github.com/Mellanox/k8s-rdma-shared-dev-plugin.git",
+                "type": "git",
+                "version": "v1.5.2"
+              },
+              {
+                "package": "ghcr.io/k8snetworkplumbingwg/multus-cni",
+                "tag": "v4.1.4-thick",
+                "type": "image"
+              },
+              {
+                "package": "ghcr.io/k8snetworkplumbingwg/whereabouts",
+                "tag": "v0.8.0",
+                "type": "image"
+              },
+              {
+                "package": "ghcr.io/mellanox/k8s-rdma-shared-dev-plugin",
+                "tag": "v1.5.2",
+                "type": "image"
+              },
+              {
+                "package": "docker.io/roman8rcm/roce-test",
+                "tag": "229.2.32.0",
+                "type": "image"
+              }
+              ]
+            }
+        }
 
-    * The ``version`` and the ``commit`` attributes mentioned here are set to the default values verified by Omnia. If you want to update these attributes, you may do so at your own responsibility.
+.. caution:: After running the ``deploy_roce_plugin.yml`` playbook, the RDMA pods will be in ``CrashLoopBackOff`` state and the RoCE pods will be in ``pending`` state. This is a known issue and the resolution can be found `here <../../../Troubleshooting/KnownIssues/Ubuntu/Kubernetes.html>`_.
 
 Delete the plugin
 ------------------
 
-**To run the playbook**
-
-Run the playbook using the following commands: ::
+To delete the plugin, run the ``delete_roce_plugin.yml`` playbook using the following command: ::
 
     cd omnia/scheduler
     ansible-playbook delete_roce_plugin.yml -i inventory

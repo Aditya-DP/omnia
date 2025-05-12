@@ -1,3 +1,17 @@
+# Copyright 2025 Dell Inc. or its subsidiaries. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Module to handle download processes for rpm and debian packages
 """
@@ -63,7 +77,9 @@ def process_rpm_package(package, repo_store_path, status_file_path, cluster_os_t
                 subprocess.run(['dnf', 'download', package_name, '--arch=x86_64,noarch',
                         f'--destdir={rpm_directory}'], check=True)
                 # Step 2: Query dependencies of the main package
-                dependencies_cmd = ['repoquery', '--requires', '--resolve', '--recursive',
+                dependencies_cmd = ['repoquery', '--requires', '--resolve', '--recursive', '--arch=x86_64,noarch', package_name]
+                if package_name =='rocm':
+                    dependencies_cmd = ['repoquery', '--disablerepo=*', '--enablerepo=omnia_repo_rocm', '--enablerepo=omnia_repo_amdgpu', '--requires', '--resolve', '--recursive',
                             '--arch=x86_64,noarch', package_name]
                 dependencies = subprocess.check_output(dependencies_cmd, text=True).splitlines()
                 dependencies = [dep for dep in dependencies if any(arch in dep for arch in ['x86_64', 'noarch'])]
@@ -107,6 +123,8 @@ def process_rpm_package(package, repo_store_path, status_file_path, cluster_os_t
 
                 # Step 2: Query dependencies of the main package
                 dependencies_cmd = ['repoquery', '--requires', '--resolve', '--recursive', '--arch=x86_64,noarch', package_name]
+                if package_name =='rocm':
+                    dependencies_cmd = ['repoquery', '--disablerepo=*', '--enablerepo=omnia_repo_rocm', '--enablerepo=omnia_repo_amdgpu', '--requires', '--resolve', '--recursive', '--arch=x86_64,noarch', package_name]
                 dependencies = subprocess.check_output(dependencies_cmd, text=True).splitlines()
                 dependencies = [dep for dep in dependencies if any(arch in dep for arch in ['x86_64', 'noarch'])]
 

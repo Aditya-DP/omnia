@@ -20,6 +20,7 @@
     set_intel_config_status: false
     set_intel_input_status: false
     set_intelgaudi_input_status: false
+    nvidia_gpu_operator_support: false
 
 - name: Load software_config.json
   ansible.builtin.include_vars:
@@ -35,17 +36,14 @@
   ansible.builtin.set_fact:
     slurm_support: "{{ software_config.softwares | selectattr('name', 'equalto', 'slurm') | list | length > 0 }}"
 
+- name: Check if nvidia gpu operator support is true
+  ansible.builtin.set_fact:
+    nvidia_gpu_operator_support: "{{ software_config.softwares | selectattr('name', 'equalto', 'nvidia_gpu_operator') | list | length > 0 }}"
+
 - name: Set facts for cluster
   ansible.builtin.set_fact:
     cluster_os_type: "{{ software_config.cluster_os_type }}"
     cluster_os_version: "{{ software_config.cluster_os_version }}"
-
-- name: Check if slurm support is required
-  ansible.builtin.fail:
-    msg: "{{ ubuntu_slurm_support_fail_msg }}"
-  when:
-    - slurm_support is true
-    - cluster_os_type == compute_os_ubuntu
 
 - name: Check if csi powerscale driver installation is required
   ansible.builtin.set_fact:
@@ -104,6 +102,31 @@
         success_msg: "{{ success_msg_openmpi_version }}"
         fail_msg: "{{ fail_msg_openmpi_version }}"
 
+- name: Validate nvidia gpu operator version when nvidia gpu operator is required
+  when: nvidia_gpu_operator_support is true
+  block:
+    - name: Get nvidia gpu operator version
+      ansible.builtin.set_fact:
+        nvidia_gpu_operator_version: "{{ item.version }}"
+      loop: "{{ software_config.softwares | default([]) }}"
+      when:
+        - "'nvidia_gpu_operator' in item.name"
+        - item.version is defined
+      loop_control:
+        loop_var: item
+
+    - name: Assert nvidia gpu operator version
+      ansible.builtin.assert:
+        that:
+          - nvidia_gpu_operator_version | default("", true) | length > 1
+        success_msg: "{{ success_msg_nvidia_gpu_operator_version }}"
+        fail_msg: "{{ fail_msg_nvidia_gpu_operator_version }}"
+
+    - name: Fail when nvidia_gpu_operator_support is true and k8s_support is false
+      ansible.builtin.fail:
+        msg: "{{ fail_msg_k8s_support_false }}"
+      when: not k8s_support
+
 - name: Prepare kubernetes installation variables
   when: k8s_support is true
   block:
@@ -118,9 +141,9 @@
 
     - name: Extract and set facts for tarball URLs
       ansible.builtin.set_fact:
-        kubeadm_package: "kubeadm"
-        kubectl_package: "kubectl"
-        kubelet_package: "kubelet"
+        kubeadm_package: "kubeadm-{{ hostvars['localhost']['k8s_version'] }}"
+        kubectl_package: "kubectl-{{ hostvars['localhost']['k8s_version'] }}"
+        kubelet_package: "kubelet-{{ hostvars['localhost']['k8s_version'] }}"
         crictl_package: "{{ k8s_packages_json['k8s']['cluster'] | selectattr('type', 'equalto', 'tarball') | selectattr('package', 'search', 'cri') | map(attribute='package') | join }}" # noqa: yaml[line-length]
         calicoctl_package: "{{ k8s_packages_json['k8s']['cluster'] | selectattr('type', 'equalto', 'tarball') | selectattr('package', 'search', 'calicoctl') | map(attribute='package') | join }}" # noqa: yaml[line-length]
         calico_crds_package: "{{ k8s_packages_json['k8s']['cluster'] | selectattr('type', 'equalto', 'tarball') | selectattr('package', 'search', 'calicocrds') | map(attribute='package') | join }}" # noqa: yaml[line-length]
@@ -131,13 +154,6 @@
         containerd_package: "{{ k8s_packages_json['k8s']['cluster'] | selectattr('type', 'equalto', 'tarball') | selectattr('package', 'search', 'containerd') | map(attribute='package') | join }}" # noqa: yaml[line-length]
         helm_package: "{{ k8s_packages_json['k8s']['cluster'] | selectattr('type', 'equalto', 'tarball') | selectattr('package', 'search', 'helm') | map(attribute='package') | join }}" # noqa: yaml[line-length]
         mpi_operator: "{{ k8s_packages_json['k8s']['cluster'] | selectattr('type', 'equalto', 'manifest') | selectattr('package', 'search', 'mpi') | map(attribute='package') | join }}" # noqa: yaml[line-length]
-
-    - name: Conditional logic for kubeadm, kubectl, and kubelet packages # noqa: no-jinja-when
-      ansible.builtin.set_fact:
-        kubeadm_package: "kubeadm-{{ hostvars['localhost']['k8s_version'] }}"
-        kubectl_package: "kubectl-{{ hostvars['localhost']['k8s_version'] }}"
-        kubelet_package: "kubelet-{{ hostvars['localhost']['k8s_version'] }}"
-      when: k8s_version != '{{ omnia161_k8s_version }}'
 
   rescue:
     - name: Unable to fetch k8s version

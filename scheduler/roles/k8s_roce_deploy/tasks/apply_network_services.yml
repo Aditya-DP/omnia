@@ -15,54 +15,7 @@
 
 - name: Set variables
   ansible.builtin.set_fact:
-    whereabouts_plugin_commit: false
     rdma_plugin_commit: false
-
-# -------------------------MULTUS PLUGIN--------------------------
-- name: Apply multus pod network
-  ansible.builtin.command: "kubectl apply -f {{ multus_pod_network_url }}"
-  changed_when: true
-
-# -------------------------WHEREABOUTS PLUGIN----------------------------
-- name: Get whereabouts plugin git folder
-  ansible.builtin.get_url:
-    url: "{{ whereabouts_git_url }}"
-    dest: "{{ whereabouts_dest_folder }}"
-    mode: "{{ git_permissions }}"
-
-- name: Unarchive whereabouts git folder
-  ansible.builtin.unarchive:
-    src: "{{ whereabouts_dest_folder }}"
-    dest: "{{ tmp_folder }}"
-    mode: "{{ git_permissions }}"
-    remote_src: true
-
-- name: Check if commit id is mentioned for whereabouts plugin
-  ansible.builtin.set_fact:
-    whereabouts_plugin_commit: true
-    whereabouts_commit_id: "{{ item.commit }}"
-  loop: "{{ hostvars['localhost']['roce_plugin_packages_json']['roce_plugin']['cluster'] }}"
-  when:
-    - item.type == 'git'
-    - "'whereabouts' in item.package"
-    - "item.commit is defined"
-
-- name: Checkout specific commit for whereabouts plugin
-  ansible.builtin.command: "git checkout -f {{ whereabouts_commit_id }}"  # noqa: command-instead-of-module
-  when: whereabouts_plugin_commit
-  changed_when: false
-  args:
-    chdir: "{{ whereabouts_folder }}"
-
-- name: Apply whereabouts crds
-  ansible.builtin.command: "kubectl apply -f {{ wherabout_crds_folder }}"
-  changed_when: true
-
-- name: Update imagePullPolicy
-  ansible.builtin.command: >
-    kubectl patch daemonset whereabouts -n kube-system --type='json'
-    -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/imagePullPolicy", "value":"IfNotPresent"}]'
-  changed_when: false
 
 # ------------------NETWORK ATTACHMENT DEFINITIONS------------------------
 
@@ -83,23 +36,6 @@
     dest: "{{ tmp_folder }}"
     mode: "{{ git_permissions }}"
     remote_src: true
-
-- name: Check if commit id is mentioned for rdma plugin
-  ansible.builtin.set_fact:
-    rdma_plugin_commit: true
-    rdma_commit_id: "{{ item.commit }}"
-  loop: "{{ hostvars['localhost']['roce_plugin_packages_json']['roce_plugin']['cluster'] }}"
-  when:
-    - item.type == 'git'
-    - "'rdma-shared-dev-plugin' in item.package"
-    - "item.commit is defined"
-
-- name: Checkout specific commit for rdma plugin
-  ansible.builtin.command: "git checkout -f {{ rdma_commit_id }}"  # noqa: command-instead-of-module
-  changed_when: false
-  when: rdma_plugin_commit
-  args:
-    chdir: "{{ rdma_plugin_folder }}"
 
 - name: Apply rdma-plugin.patch
   ansible.posix.patch:

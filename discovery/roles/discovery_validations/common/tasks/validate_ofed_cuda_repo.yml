@@ -111,7 +111,7 @@
 
         - name: Set cuda_toolkit_path
           ansible.builtin.set_fact:
-            cuda_toolkit_path: "{{ find_cuda_file.files[0].path }}"
+            cuda_toolkit_path: "{{ (find_cuda_file.files | sort(attribute='path'))[0].path }}"
 
         - name: Check cuda_toolkit_path exists or not
           ansible.builtin.stat:

@@ -1,4 +1,4 @@
-# Copyright 2024 Dell Inc. or its subsidiaries. All Rights Reserved.
+# Copyright 2025 Dell Inc. or its subsidiaries. All Rights Reserved.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -12,24 +12,24 @@
 # limitations under the License.
 
 """
-This script allows you to deploy, infer, or delete a Dell authentic 
+This script allows you to deploy, infer, or delete a Dell authentic
 pretrained model in a Kubernetes cluster for Nvidia Platforms.
 
 Prerequisites:
 - Kubernetes (k8s) must be installed and configured on your cluster.
 - Nvidia GPU should present in kube node and cuda must be installed.
-- Verify PRETRAINED_MODEL_CONFIG section for any changes and 
+- Verify PRETRAINED_MODEL_CONFIG section for any changes and
   update user_HF_token if required by model.
-- The Kube control plane needs an active Internet connection. If there is no active Internet 
+- The Kube control plane needs an active Internet connection. If there is no active Internet
   connection, you need to set the proxy environment variables to have access to the Internet.
-    The proxy environment variables should be set to the IP address of the Omnia Infrastructure Manager. 
-    For example: 
-    export http_proxy=http://<oim_ip>:3128 
-    export https_proxy=http://<oim_ip>:3128 
+    The proxy environment variables should be set to the IP address of the Omnia Infrastructure Manager.
+    For example:
+    export http_proxy=http://<oim_ip>:3128
+    export https_proxy=http://<oim_ip>:3128
 
 Usage:
     1. Deploy the model and service:
-        python3 dell_pretrained_model_nvidia.py --deploy 
+        python3 dell_pretrained_model_nvidia.py --deploy
 
     2. Run an inference using a query, within compute cluster:
         python3 dell_pretrained_model_nvidia.py --infer "<Your_query_here>"
@@ -38,7 +38,7 @@ Usage:
         python3 dell_pretrained_model_nvidia.py --infer
 
     3. Run an inference using a specific service IP, from outside computer cluster:
-        python3 dell_pretrained_model_nvidia.py --infer "<Your_query_here>" 
+        python3 dell_pretrained_model_nvidia.py --infer "<Your_query_here>"
         --service-ip <pretrained-model-service-ip>
 
         Note: check service ip on kube control plane using kubectl get svc pretrained-model-service
@@ -169,25 +169,33 @@ def check_kubectl_availability():
         )
         sys.exit(1)
 
+
 def check_nvidia_device_plugin_availability():
     """
-    Check if the Nvidia device plugin is present in the output of the 'kubectl get pods' command.
-    Returns:
-        None
+    Check if the Nvidia device plugin is running in either 'gpu-operator' or 'nvidia-device-plugin' namespace.
+    Exits if not found.
     """
     try:
-        result = run_command("""kubectl get pods -n nvidia-device-plugin |
-         grep -v -e 'gpu-feature-discovery' -e 'node-feature-discovery'""")
-        if "nvidia-device-plugin" not in result:
-            logging.warning(
-            "Nvidia device plugin is not present, Run omnia.yml to setup Nvidia device pluin."
-        )
-            sys.exit(1)
-        logging.info("Prerequisites- Nvidia device plugin present")
-    except RuntimeError as e:
-        logging.warning("An error occurred while checking Nvidia device plugin: %s",
-        e
-        )
+        command = """
+        kubectl get pods -n gpu-operator -o custom-columns='NAMESPACE:.metadata.namespace,NAME:.metadata.name' --no-headers 2>/dev/null;
+        kubectl get pods -n nvidia-device-plugin -o custom-columns='NAMESPACE:.metadata.namespace,NAME:.metadata.name' --no-headers 2>/dev/null
+        """
+        output = run_command(command)
+
+        for line in output.splitlines():
+            if "nvidia-device-plugin" in line and \
+               "gpu-feature-discovery" not in line and \
+               "node-feature-discovery" not in line:
+                namespace, pod_name = line.strip().split()[:2]
+                logging.info(f"Nvidia device plugin found in namespace '{namespace}' (pod: {pod_name})")
+                return  # Success
+
+        # If we reach here, plugin was not found
+        logging.warning("Nvidia device plugin not found in expected namespaces.")
+        sys.exit(1)
+
+    except subprocess.CalledProcessError as e:
+        logging.error("An error occurred while checking for Nvidia device plugin:\n%s", e.stderr.strip())
         sys.exit(1)
 
 def is_valid_ip(ip):
@@ -260,7 +268,7 @@ def delete_pretrained_model_resources():
     except RuntimeError as e:
         if "NotFound" in str(e):
             logging.warning(
-                "Pretrained model deployment or service not found." 
+                "Pretrained model deployment or service not found."
                 "They may have already been deleted."
             )
         elif K8S_EXCEPTION in str(e):
@@ -358,8 +366,8 @@ def run_inferencing(service_ip, query):
 
 def main():
     """
-    Main function to handle argument parsing and orchestrate the deployment, 
-    inferencing, and deletion. This function processes command-line arguments 
+    Main function to handle argument parsing and orchestrate the deployment,
+    inferencing, and deletion. This function processes command-line arguments
     for deploying the model, running inferencing, or deleting the Kubernetes resources.
     """
     parser = argparse.ArgumentParser(
@@ -367,12 +375,12 @@ def main():
       Prerequisites:
         - Kubernetes (k8s) must be installed and configured on your cluster.
         - Nvidia GPU should present in kube node and cuda must be installed.
-        - Verify PRETRAINED_MODEL_CONFIG section for any changes and update user_HF_token if required by model. 
-        - The Kube control plane needs an active Internet connection. If there is no active Internet connection, 
-          you need to set the proxy environment variables to have access to the Internet. The proxy environment variables 
-          should be set to the IP address of the Omnia Infrastructure Manager.  For example: 
-          export http_proxy=http://<oim_ip>:3128 
-          export https_proxy=http://<oim_ip>:3128 
+        - Verify PRETRAINED_MODEL_CONFIG section for any changes and update user_HF_token if required by model.
+        - The Kube control plane needs an active Internet connection. If there is no active Internet connection,
+          you need to set the proxy environment variables to have access to the Internet. The proxy environment variables
+          should be set to the IP address of the Omnia Infrastructure Manager.  For example:
+          export http_proxy=http://<oim_ip>:3128
+          export https_proxy=http://<oim_ip>:3128
         """,
         formatter_class=argparse.RawTextHelpFormatter
       )
@@ -420,3 +428,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

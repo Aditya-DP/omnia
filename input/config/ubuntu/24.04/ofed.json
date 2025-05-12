@@ -1,0 +1,11 @@
+{
+    "ofed": {
+      "cluster": [
+        { "package": "ofed",
+          "type": "iso",
+          "url": "https://content.mellanox.com/ofed/MLNX_OFED-{{ ofed_version }}/MLNX_OFED_LINUX-{{ ofed_version }}-ubuntu24.04-x86_64.iso",
+          "path": ""
+        }
+      ]
+    }
+}

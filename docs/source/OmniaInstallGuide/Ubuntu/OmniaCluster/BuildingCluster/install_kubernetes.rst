@@ -7,7 +7,7 @@ Set up Kubernetes
     ::
 
         "softwares": [
-                        {"name": "k8s", "version":"1.29.5"},
+                        {"name": "k8s", "version":"1.31.4"},
                      ]
 
 * Ensure to run ``local_repo.yml`` with the ``k8s`` entry present in ``software_config.json``, to download all required Kubernetes packages and images.
@@ -103,7 +103,15 @@ Omnia installs the following packages on top of the Kubernetes stack:
 
     Click `here <https://github.com/NVIDIA/k8s-device-plugin>`_ for more information.
 
-6.  *gaudi-device-plugin*
+6. *nvidia-gpu-operator*
+
+    The NVIDIA GPU Operator uses the operator framework within Kubernetes to automate the management of all software components needed to provision NVIDIA GPUs.
+    These components include the NVIDIA drivers (to enable CUDA), Kubernetes device plugin for GPUs, the NVIDIA Container Toolkit, automatic node labelling using GFD, DCGM based monitoring and others.
+    Omnia installs the NVIDIA GPU operator as part of ``omnia.yml`` playbook execution.
+
+    For more information on how to configure the NVIDIA GPU operator with Omnia, `click here <nvidia_gpu_operator.html>`_.
+
+7.  *gaudi-device-plugin*
 
     The Gaudi device plugin is a Kubernetes device plugin implementation that enables the registration of Intel Gaudi AI accelerators in a container cluster. This plugin enables the efficient utilization of Gaudi accelerators for compute workloads within the cluster.
     For the gaudi-device-plugin to function seamlessly, Omnia installs the “habanalabs-container-runtime” as part of the ``omnia.yml`` or ``scheduler.yml`` playbook execution.
@@ -115,6 +123,21 @@ Omnia installs the following packages on top of the Kubernetes stack:
         iii. Run jobs on the Intel Gaudi accelerators.
 
     Click `here <https://docs.habana.ai/en/latest/Orchestration/Gaudi_Kubernetes/Device_Plugin_for_Kubernetes.html>`_ for more information.
+
+8. *whereabouts-cni-plugin*
+
+    Whereabouts is an IP address management (IPAM) CNI plugin that assigns dynamic IP addresses cluster-wide in Kubernetes, ensuring no IP address collisions across nodes.
+    It uses a range of IPs and tracks assignments with backends like etcd or Kubernetes Custom Resources.
+    Omnia installs the whereabouts plugin as part of ``omnia.yml`` or ``scheduler.yml`` execution. The details of the plugin is present in the ``omnia/input/config/<cluster os>/<os version>/k8s.json`` file.
+
+    Click `here <https://github.com/k8snetworkplumbingwg/whereabouts>`_ for more information.
+
+9. *multus-cni-plugin*
+
+    Multus is a Kubernetes CNI (Container Network Interface) plugin that enables pods to have multiple network interfaces. It acts as a meta-plugin, allowing the use of multiple CNI plugins (for example, Flannel, Calico, Macvlan) within the same cluster.
+    Omnia installs the multus plugin as part of ``omnia.yml`` or ``scheduler.yml`` execution. The details of the plugin is present in the ``omnia/input/config/<cluster os>/<os version>/k8s.json`` file.
+
+    Click `here <https://github.com/k8snetworkplumbingwg/multus-cni>`_ for more information.
 
 **Optional installation**
 

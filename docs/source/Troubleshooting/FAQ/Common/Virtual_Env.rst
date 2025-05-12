@@ -12,14 +12,11 @@ Virtual environment
 
 * Executing ``./prereq.sh`` installs all the packages and sets up the virtual environment - but doesn't activate it. You can activate the Python virtual environment using the following command: ::
 
-    source /opt/omnia/omnia17_venv/bin/activate
-
- .. image:: ../../../images/virtual_env_2.png
-
+    source /opt/omnia/omnia171_venv/bin/activate
 
 * To verify that the virtual environment is active, check if the following prompt is displayed: ::
 
-    (omnia) [root@<oim_name> omnia]#
+    (omnia171) [root@<oim_name> omnia]#
 
 
 ⦾ **While executing any Omnia playbook, why do I encounter a "Command not found" or "Command 'ansible-playbook' not found" error?**

@@ -1,4 +1,4 @@
-#  Copyright 2024 Dell Inc. or its subsidiaries. All Rights Reserved.
+#  Copyright 2025 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -16,8 +16,14 @@
 - name: Perform nerdctl login
   when: hostvars['127.0.0.1']['k8s_support']
   block:
+    - name: Add ports to firewall
+      ansible.builtin.include_tasks: add_firewall_ports.yml
+
     - name: Copy docker login file
       ansible.builtin.include_tasks: docker_login.yml
 
     - name: Prepare hosts file
       ansible.builtin.include_tasks: prepare_hosts_file.yml
+
+    - name: Validate share_path is NFS
+      ansible.builtin.include_tasks: validate_share_path.yml

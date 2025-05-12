@@ -37,6 +37,10 @@
       ansible.builtin.fail:
         msg: "{{ telemetry_config_syntax_fail_msg }} Error: {{ include_telemetry_config.message }}"
 
+- name: Set fact for telemetry_config.yml variable as telemetry_config
+  ansible.builtin.set_fact:
+    telemetry_config: "{{ include_telemetry_config.ansible_facts }}"
+
 # Encrypt telemetry_config.yml
 - name: Create ansible vault key
   ansible.builtin.set_fact:

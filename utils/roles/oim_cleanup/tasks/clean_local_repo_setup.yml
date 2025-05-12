@@ -61,7 +61,7 @@
   failed_when: false
 
 - name: Remove containerd.io package - RHEL/Rocky
-  ansible.builtin.yum:
+  ansible.builtin.dnf:
     name: containerd.io
     state: absent
     disable_gpg_check: true

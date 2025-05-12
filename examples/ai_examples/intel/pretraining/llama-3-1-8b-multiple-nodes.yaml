@@ -1,0 +1,234 @@
+# Copyright 2025 Intel Corporation. All Rights Reserved.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+# This script facilitates the pre training of the Llama 3.1 8B model
+# on two or multiple nodes by adjusting the number of MPI worker replicas.
+# It utilizes the Megatron-Deepspeed and DeepSpeed no-SSH implementation.
+
+---
+apiVersion: kubeflow.org/v2beta1
+kind: MPIJob
+metadata:
+  name: gaudi-llm-ds-ubuntu-multi-120
+  namespace: workloads
+spec:
+  slotsPerWorker: 8
+  runPolicy:
+    cleanPodPolicy: Running
+  mpiReplicaSpecs:
+    Launcher:
+      replicas: 1
+      template:
+        spec:
+          hostIPC: true
+          containers:
+            - image: vault.habana.ai/gaudi-docker/1.19.2/ubuntu24.04/habanalabs/pytorch-installer-2.5.1:latest
+              name: gaudi-llm-ds-ubuntu-launcher
+              env:
+                - name: HF_HOME
+                  value: /root/.cache/huggingface
+                - name: HUGGING_FACE_HUB_TOKEN
+                  value: ""
+                - name: LLAMA_VERSION
+                  value: "3.1"
+                - name: LLAMA_MODEL_SIZE
+                  value: "8"
+                - name: http_proxy
+                  value: ""
+                - name: https_proxy
+                  value: ""
+                - name: no_proxy
+                  value: ""
+              args:
+                - /bin/bash
+                - -c
+                - |
+                  echo "setup ssh..."
+                  /usr/bin/ssh-keygen -A;
+                  echo "    KexAlgorithms curve25519-sha256,sntrup761x25519-sha512@openssh.com" |  tee -a /etc/ssh/ssh_config;
+                  echo "    Ciphers aes256-gcm@openssh.com" |  tee -a /etc/ssh/ssh_config;
+                  /usr/sbin/sshd;
+
+                  echo "Download deps"
+
+                  HOSTSFILE=$OMPI_MCA_orte_default_hostfile
+                  NUM_NODES=$(wc -l < $HOSTSFILE)
+                  export no_proxy=$no_proxy,$KUBERNETES_SERVICE_HOST
+
+                  rm -rf /root/.cache/code_2nodes
+                  mkdir /root/.cache/code_2nodes
+                  cd /root/.cache/code_2nodes/
+
+                  JOBHOSTFILE=/root/.cache/hostfile_2nodes
+                  rm $JOBHOSTFILE
+                  cp $HOSTSFILE $JOBHOSTFILE
+
+                  git clone https://github.com/HabanaAI/Megatron-DeepSpeed
+                  cd Megatron-DeepSpeed
+                  git checkout 1.19.0
+                  sed -i 's/LR_WARMUP_ITERS=[0-9]\+/LR_WARMUP_ITERS=2/g' scripts/run_llama.sh
+                  sed -i 's/--hostfile=\$HOSTSFILE/--hostfile=\$JOBHOSTFILE --force_multi  --no_ssh --master_port=29500 --node_rank=\$PMIX_RANK /g' scripts/run_llama.sh
+                  sed -i 's/deepspeed --num_nodes ${NUM_NODES} /deepspeed /' scripts/run_llama.sh
+                  sed -i '/--num_gpus ${DEVICES_PER_NODE}/d' scripts/run_llama.sh
+                  cd ..
+
+                  git clone https://github.com/meta-llama/llama3
+                  cd llama3
+                  sed -i 's/tiktoken==0.4.0/tiktoken==0.5.2/g' requirements.txt
+                  cd ..
+
+                  MODEL_DIR=/root/.cache/huggingface/hub/models--meta-llama--Llama-3.1-8B-Instruct
+                  if [ ! -d "$MODEL_DIR" ]; then
+                      huggingface-cli download meta-llama/Llama-3.1-8B-Instruct
+                  else
+                      echo "Model already exists at $MODEL_DIR"
+                  fi
+
+                  echo "processing data if needed"
+                  if [ ! -d /root/.cache/bigscience ]; then
+                      cd /root/.cache/code_2nodes/Megatron-DeepSpeed
+                      pip install pybind11 torch regex einops datasets==2.21.0 sentencepiece
+                      pip install transformers nltk
+                      #pip install git+https://github.com/EleutherAI/lm-evaluation-harness.git@master
+                      #pip install git+https://github.com/HabanaAI/DeepSpeed.git@1.20.0
+                      pip install transformers datasets nltk
+                      echo "preprocessing..."
+                      cd /root/.cache
+                      git clone https://github.com/bigscience-workshop/bigscience.git
+                      cd bigscience/data/oscar
+                      sed -i "s/unshuffled_deduplicated_en/unshuffled_deduplicated_zh/g" oscar-to-jsonl.py
+                      sed -i "s/keep_in_memory=False/trust_remote_code=True, keep_in_memory=False/g" oscar-to-jsonl.py
+                      python3 oscar-to-jsonl.py --subset
+                      mkdir -p zh
+                      mv oscar*.jsonl zh
+                      cd zh
+                      cat oscar-[0-4].jsonl > oscar-zh.jsonl
+                      export HL_DATA_DIR_ROOT=$(pwd)
+                      python3 /root/.cache/code_2nodes/Megatron-DeepSpeed/tools/preprocess_data.py \
+                        --input $HL_DATA_DIR_ROOT/oscar-zh.jsonl \
+                        --output-prefix $HL_DATA_DIR_ROOT/tokenized \
+                        --tokenizer-model meta-llama/Llama-3.1-8B-Instruct \
+                        --append-eod \
+                        --tokenizer-type HFTokenizer \
+                        --seq-length 131072 \
+                        --workers 4
+                  fi
+
+                  echo "Data ready"
+
+                  echo "Running mpi job"
+
+                  # Run MPI command
+                  mpirun --npernode 1 \
+                    --tag-output \
+                    --allow-run-as-root \
+                    --prefix $MPI_ROOT \
+                    --bind-to socket \
+                    --report-bindings \
+                    --merge-stderr-to-stdout  \
+                    -x PMIX_RANK \
+                    -x NUM_NODES=$NUM_NODES \
+                    -x JOBHOSTFILE=$JOBHOSTFILE \
+                    -x LLAMA_VERSION=$LLAMA_VERSION \
+                    -x LLAMA_MODEL=$LLAMA_MODEL \
+                    -x DEEPSPEED_HPU_ZERO3_SYNC_MARK_STEP_REQUIRED=1 \
+                    -x http_proxy=$http_proxy \
+                    -x https_proxy=$https_proxy \
+                    -x no_proxy=$no_proxy \
+                    bash -i -c '
+                      NODE_RANK=$PMIX_RANK
+                      echo "node_rank: $NODE_RANK -----------------------> hostfile:"
+                      cat $JOBHOSTFILE
+                      echo "running pip install "
+                      cd /root/.cache/code_2nodes/Megatron-DeepSpeed
+                      
+                      echo Running MPI command...
+                      pip install pybind11 torch regex einops datasets==2.21.0 sentencepiece
+                      pip install transformers nltk
+                      pip install git+https://github.com/EleutherAI/lm-evaluation-harness.git@master
+                      pip install git+https://github.com/HabanaAI/DeepSpeed.git@1.20.0
+                      pip install transformers datasets nltk
+
+                      cd ..
+                      cd llama3
+                      pip install -e .
+
+                      pip install numpy==1.26.4
+
+                      cd ../Megatron-DeepSpeed
+                      echo Running llama  version $LLAMA_VERSION with size $LLAMA_MODEL_SIZE with rank todo
+
+                      unset OMPI_COMM_WORLD_LOCAL_RANK
+                      echo $OMPI_COMM_WORLD_LOCAL_RANK
+                      
+                      HL_RESULTS_DIR_PREFIX=/root/.cache/log/megatron-deepspeed \
+                      HL_SAVE=0 \
+                      PMIX_RANK=$PMIX_RANK \
+                      HL_HOSTSFILE=$JOBHOSTFILE \
+                      HL_NUM_NODES=$NUM_NODES \
+                      HL_PP=2 \
+                      HL_TP=8 HL_CKP_ACT=2 HL_ZERO_STAGE=1 \
+                      HL_DP=$(($NUM_NODES * 8 / 2 / 8)) \
+                      HL_TOKENIZER_TYPE=Llama3Tokenizer \
+                      HL_TOKENIZER_MODEL=$(ls -td /root/.cache/huggingface/hub/models--meta-llama--Llama-3.1-8B-Instruct/snapshots/* | head -n 1)/original/tokenizer.model \
+                      HL_DATA_DIR_ROOT=/root/.cache/bigscience/data/oscar/zh \
+                      HL_DATA_FILE_PREFIX=tokenized_text_document \
+                      HL_TRAIN_ITERS=4 \
+                      HL_EVAL_ITERS=2 \
+                      HL_EVAL_INTERVAL=1 \
+                      HL_LLAMA_VER=$LLAMA_VERSION \
+                      HL_LLAMA_MODEL_SIZE=$LLAMA_MODEL_SIZE \
+                      scripts/run_llama.sh
+                  '
+
+              volumeMounts:
+                - name: datasets
+                  mountPath: /root/.cache
+          volumes:
+            - name: datasets
+              persistentVolumeClaim:
+                claimName: shared-model
+                readOnly: false
+    Worker:
+      replicas: 2
+      template:
+        spec:
+          hostIPC: true
+          containers:
+            - image: vault.habana.ai/gaudi-docker/1.19.2/ubuntu24.04/habanalabs/pytorch-installer-2.5.1:latest
+              name: gaudi-llm-ds-ubuntu-worker2
+              command: ["/bin/bash", "-c"]
+              args:
+                - >-
+                  /usr/bin/ssh-keygen -A;
+                  echo -e "\nClientAliveInterval 300\nClientAliveCountMax 100\nLogLevel DEBUG3" | tee -a /etc/ssh/sshd_config;
+                  /usr/sbin/sshd -E /tmp/ssh_logs  -f /etc/ssh/sshd_config;
+                  sleep 365d;
+              resources:
+                limits:
+                  habana.ai/gaudi: 8
+                  memory: 400Gi
+                  hugepages-2Mi: 95000Mi
+                requests:
+                  habana.ai/gaudi: 8
+                  memory: 400Gi
+                  hugepages-2Mi: 95000Mi
+              volumeMounts:
+                - name: datasets
+                  mountPath: /root/.cache
+          volumes:
+            - name: datasets
+              persistentVolumeClaim:
+                claimName: shared-model
+                readOnly: false

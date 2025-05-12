@@ -14,11 +14,11 @@ spec:
       template:
         spec:
           containers:
-            - image: vault.habana.ai/gaudi-docker/1.18.0/ubuntu22.04/habanalabs/pytorch-installer-2.4.0:latest
+            - image: vault.habana.ai/gaudi-docker/1.19.2/ubuntu24.04/habanalabs/pytorch-installer-2.5.1:latest
               name: gaudi-llm-ds-ft-launcher
               env:
                 - name: HF_HOME
-                  value: /storage/huggingface
+                  value: "/storage/huggingface"
                 - name: http_proxy
                   value: ""
                 - name: https_proxy
@@ -36,6 +36,27 @@ spec:
               command: ["/bin/bash", "-c"]
               args:
                 - >-
+                  /usr/bin/ssh-keygen -A;
+                  echo "    KexAlgorithms curve25519-sha256,sntrup761x25519-sha512@openssh.com" |  tee -a /etc/ssh/ssh_config;
+                  /usr/sbin/sshd;
+
+                  retry_until_success() {
+                       local command='$@';
+                       local attempt=1;
+
+                       while true; do
+                           echo "Attempt $attempt";
+                           eval $command;
+                           if [ $? -eq 0 ]; then
+                               echo "Command succeeded on attempt $attempt.";
+                               break;
+                           else
+                               echo "Command failed on attempt $attempt. Retrying...";
+                               attempt=$((attempt + 1));
+                               sleep 1;  # Optional: Add a delay between retries
+                           fi;
+                       done;
+                  };
                   HOSTSFILE=$OMPI_MCA_orte_default_hostfile;
                   MASTER_ADDR="$(head -n 1 $HOSTSFILE | sed -n s/[[:space:]]slots.*//p)";
                   SETUP_CMD="git clone  https://github.com/huggingface/optimum-habana /optimum-habana";
@@ -45,27 +66,49 @@ spec:
 
                   git clone  https://github.com/huggingface/optimum-habana /optimum-habana;
                   cd /optimum-habana;
-                  git checkout v1.14.1;
+                  git checkout v1.15.0;
                   sed -i '194s|deepspeed|deepspeed --force_multi|' optimum/habana/distributed/distributed_runner.py;
-                  pip install .;
-                  pip install -r examples/language-modeling/requirements.txt;
-                  pip install git+https://github.com/HabanaAI/DeepSpeed.git@1.18.0;
+                  retry_until_success pip install .;
+                  retry_until_success pip install -r examples/language-modeling/requirements.txt;
+                  retry_until_success pip install git+https://github.com/HabanaAI/DeepSpeed.git@1.19.0;
 
                   mpirun --npernode 1 \
                     --tag-output \
                     --allow-run-as-root \
                     --prefix $MPI_ROOT \
+                    -x no_proxy=$no_proxy \
                     -x http_proxy=$http_proxy \
                     -x https_proxy=$https_proxy \
-                    -x no_proxy=$no_proxy \
                     -x LLM_MODEL=$LLM_MODEL \
                     -x HF_HOME=$HF_HOME \
                     -x NUM_HPU=$NUM_HPU \
                     -x HUGGING_FACE_HUB_TOKEN=$HUGGING_FACE_HUB_TOKEN \
                     bash -i -c '
+
+                    # Define the retry function
+                    retry_until_success() {
+                        local cmd="$@"
+                        local max_retries=5  # Number of retries
+                        local delay=5        # Delay between retries in seconds
+
+                        for ((i=1; i<=max_retries; i++)); do
+                            echo "Attempt $i: $cmd"
+                            if $cmd; then
+                                echo "Success!"
+                                return 0
+                            else
+                                echo "Command failed. Retrying in $delay seconds..."
+                                sleep $delay
+                            fi
+                        done
+
+                        echo "Command failed after $max_retries attempts."
+                        return 1
+                    }
+
                     git clone  https://github.com/huggingface/optimum-habana /optimum-habana
                     cd /optimum-habana
-                    git checkout v1.14.1
+                    git checkout v1.15.0
                     hf_home_var="os.environ[\"HF_HOME\"] = \"${HF_HOME}\""
                     token_var="os.environ[\"HUGGING_FACE_HUB_TOKEN\"] = \"${HUGGING_FACE_HUB_TOKEN}\""
                     https_var="os.environ[\"https_proxy\"] = \"${https_proxy}\""
@@ -76,14 +119,16 @@ spec:
                     sed -i "58i\\${hf_home_var}" examples/language-modeling/run_lora_clm.py
                     sed -i "59i\\${token_var}" examples/language-modeling/run_lora_clm.py
                     sed -i "60i\\${no_proxy_var}" examples/language-modeling/run_lora_clm.py
-
-                    pip install .
-                    pip install -r examples/language-modeling/requirements.txt
-                    pip install git+https://github.com/HabanaAI/DeepSpeed.git@1.18.0
+                    retry_until_success pip install .
+                    retry_until_success pip install -r examples/language-modeling/requirements.txt
+                    retry_until_success pip install git+https://github.com/HabanaAI/DeepSpeed.git@1.19.0
                     ';
 
+                    eval $(ssh-agent);
+                    ssh-add;
+
                     cd /optimum-habana/examples/language-modeling/;
-                    python ../gaudi_spawn.py --hostfile=$HOSTSFILE --use_deepspeed --world_size $N_CARDS  run_lora_clm.py --model_name_or_path $LLM_MODEL \
+                    python3 ../gaudi_spawn.py --hostfile=$HOSTSFILE --use_deepspeed --world_size $N_CARDS  run_lora_clm.py --model_name_or_path $LLM_MODEL \
                     --dataset_name tatsu-lab/alpaca \
                     --bf16 True \
                     --output_dir ./model_lora_llama_ddp \
@@ -127,8 +172,14 @@ spec:
         spec:
           hostIPC: true
           containers:
-            - image: vault.habana.ai/gaudi-docker/1.18.0/ubuntu22.04/habanalabs/pytorch-installer-2.4.0:latest
+            - image: vault.habana.ai/gaudi-docker/1.19.2/ubuntu24.04/habanalabs/pytorch-installer-2.5.1:latest
               name: gaudi-llm-ds-ft-worker
+              command: ["/bin/bash", "-c"]
+              args:
+                - >-
+                  /usr/bin/ssh-keygen -A;
+                  /usr/sbin/sshd;
+                  sleep 365d;
               resources:
                 limits:
                   habana.ai/gaudi: 8

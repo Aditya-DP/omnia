@@ -1,4 +1,4 @@
-# Copyright 2024 Dell Inc. or its subsidiaries. All Rights Reserved.
+# Copyright 2025 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,3 +35,6 @@
 
     - name: Remove old SSH key
       ansible.builtin.include_tasks: remove_old_ssh_key.yml
+
+    - name: Set kernel commandline parameters
+      ansible.builtin.include_tasks: configure_addkcmdline.yml

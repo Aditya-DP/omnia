@@ -34,4 +34,3 @@ jobs:
         uses: ansible/ansible-lint@main
         with:
           args: --config=.config/ansible-lint.yml
-

@@ -2,7 +2,18 @@
 
   "vllm": { 
 
-    "cluster": []
+    "cluster": [
+      {
+        "package": "docker-ce-cli=5:24.0.4-1~ubuntu.22.04~jammy",
+        "type": "deb",
+        "repo_name": "docker-ce-repo"
+      },
+      {
+        "package": "docker-ce=5:24.0.4-1~ubuntu.22.04~jammy",
+        "type": "deb",
+        "repo_name": "docker-ce-repo"
+      }
+    ]
 
   },
   "vllm_amd": { 
@@ -25,12 +36,12 @@
         "repo_name": "deadsnake-ppa"
       
       }, 
-      { 
-        "package": "https://download.pytorch.org/whl/cu121/torch-2.1.2%2Bcu121-cp311-cp311-linux_x86_64.whl", 
+      {
+        "package": "https://download.pytorch.org/whl/cu121/torch-2.5.1%2Bcu121-cp311-cp311-linux_x86_64.whl",
         "type": "pip_module"
       },
-      { 
-        "package": "https://github.com/vllm-project/vllm/releases/download/v0.4.0/vllm-0.4.0-cp311-cp311-manylinux1_x86_64.whl", 
+      {
+        "package": "https://github.com/vllm-project/vllm/releases/download/v0.7.2/vllm-0.7.2-cp38-abi3-manylinux1_x86_64.whl",
         "type": "pip_module"
       },
       {

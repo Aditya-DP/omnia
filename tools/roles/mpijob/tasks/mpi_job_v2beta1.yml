@@ -47,10 +47,10 @@
         url: "{{ offline_manifest_path }}/{{ hostvars['localhost']['mpi_operator'] }}.yaml"
         dest: "{{ kubeflow_dir_path }}/kubeflow/mpi-operator.yaml"
         mode: "{{ file_permission }}"
+        force: true
 
     - name: Install MPI Operator
       ansible.builtin.command: kubectl apply -f "{{ kubeflow_dir_path }}/kubeflow/mpi-operator.yaml" --server-side --force-conflicts
-      failed_when: false
       changed_when: false
 
     - name: Warning - Please wait, This task will take few seconds

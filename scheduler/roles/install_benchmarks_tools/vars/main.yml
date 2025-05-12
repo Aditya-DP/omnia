@@ -1,4 +1,4 @@
-#  Copyright 2024 Dell Inc. or its subsidiaries. All Rights Reserved.
+#  Copyright 2025 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -36,3 +36,6 @@ installation_warning: "OpenMPI and UCX are not installed since share path is not
 redhat_os: "redhat"
 rocky_os: "rocky"
 ubuntu_os: "ubuntu"
+supported_os_type: ["ubuntu", "redhat", "rocky"]
+supported_os_version: ["20.04", "24.04", "8.8"]
+openmpi_ldconf_path: "/etc/ld.so.conf.d/30-openmpi.conf"

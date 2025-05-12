@@ -30,7 +30,7 @@ grafana_volume_memory: 1Gi
 # Usage: deployment.yml
 grafana_k8s: grafana
 grafana_namespace: grafana
-grafana_image: grafana/grafana-enterprise:8.3.2
+grafana_image: grafana/grafana-enterprise:11.4.1
 
 # Usage: deployment.yml
 grafana_port: "5000"

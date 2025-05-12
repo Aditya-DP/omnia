@@ -89,8 +89,14 @@ Storage
 
 ⦾ **What to do if NFS clients are unable to access the share after an NFS server reboot?**
 
-Reboot the NFS server (external to the cluster) to bring up the services again: ::
+**Resolution**: Reboot the NFS server (external to the cluster) to bring up the services again: ::
 
     systemctl disable nfs-server
     systemctl enable nfs-server
     systemctl restart nfs-server
+
+⦾ **What to do if the mounted BeeGFS storage is not accessible with the following error?**
+
+.. image:: ../../../images/beegfs_issue.png
+
+**Resolution**: Re-deploy the BeeGFS storage using the ``storage.yml`` playbook. For more information, `click here <../../../OmniaInstallGuide/Ubuntu/OmniaCluster/BuildingCluster/Storage/BeeGFS.html>`_.

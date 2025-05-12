@@ -23,13 +23,3 @@
   ansible.builtin.fail:
     msg: "{{ k8s_fail_msg }}"
   when: "'Ready' not in kubectl_nodes.stdout"
-
-- name: Check for Flannel pods in kube-system namespace
-  ansible.builtin.command: kubectl get pods -n kube-system
-  register: kubectl_pods
-  changed_when: false
-
-- name: Ensure Flannel pods are present
-  ansible.builtin.fail:
-    msg: "{{ flannel_fail_msg }}"
-  when: "'flannel' not in kubectl_pods.stdout"

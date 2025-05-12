@@ -75,6 +75,7 @@
   when:
     - "'nvidia-device-plugin' not in k8s_pods.stdout"
     - hostvars['localhost']['is_nvidia_cluster'] is defined
+    - not hostvars['127.0.0.1']['nvidia_gpu_operator_support']
   block:
     - name: Copy nvidia_runtime_class.yml file
       ansible.builtin.copy:

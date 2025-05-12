@@ -1,0 +1,8 @@
+﻿Package Name,Unsupported OS
+FreeIPA,Ubuntu (22.04 and 24.04)
+Intel Habana software stack,RHEL and Rocky OS
+Racadm,Ubuntu 24.04
+Slurm workload manager,Ubuntu (22.04 and 24.04)
+Containerized benchmarking,Ubuntu (22.04 and 24.04)
+Kubernetes plugin for RoCE NIC,RHEL and Rocky OS
+NVIDIA GPU operator,"RHEL and Rocky OS, Ubuntu 22.04"

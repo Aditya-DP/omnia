@@ -1,0 +1,56 @@
+# Copyright 2025 Dell Inc. or its subsidiaries. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+
+- name: Get grafana pod name
+  ansible.builtin.shell: |
+    set -o pipefail
+    kubectl get pods -n "{{ grafana_namespace }}" --no-headers | grep grafana | awk '{print $1}'
+  register: grafana_pod_name
+  changed_when: false
+  failed_when: grafana_pod_name.stdout | length == 0
+
+- name: Get grafana pod status
+  ansible.builtin.shell: |
+    set -o pipefail
+    kubectl get pod -n "{{ grafana_namespace }}" "{{ grafana_pod_name.stdout }}" -o jsonpath='{.status.phase}'
+  register: grafana_pod_status
+  changed_when: false
+  failed_when: grafana_pod_status.rc != 0
+  when: grafana_pod_name.stdout | length > 0
+
+- name: Print pod status
+  ansible.builtin.debug:
+    msg: "{{ grafan_pod_status_msg }}"
+
+- name: Fail if Grafana pod is not in running state
+  ansible.builtin.fail:
+    msg: "{{ grafana_pod_failure_msg }}"
+  when: grafana_pod_status.stdout != 'Running'
+
+- name: Update the Grafana image version
+  when: grafana_pod_status.stdout == 'Running'
+  block:
+    - name: Include vars from telemetry grafana
+      ansible.builtin.include_vars: "{{ role_path }}/../../../telemetry/roles/grafana/vars/main.yml"
+
+    - name: Apply the deployment.yml from telemetry
+      ansible.builtin.include_tasks: "{{ role_path }}/../../../telemetry/roles/grafana/tasks/deployment.yml"
+
+    - name: Wait for all pods in Grafana namespace to become Running
+      ansible.builtin.shell: |
+        set -o pipefail
+        kubectl wait --for=condition=Ready pod --all -n "{{ grafana_namespace }}" --timeout="{{ grafana_timeout }}"
+      register: grafana_wait_status
+      changed_when: false

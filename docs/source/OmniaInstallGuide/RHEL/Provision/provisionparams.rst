@@ -6,7 +6,7 @@ Fill in all required parameters in ``input/provision_config.yml``, ``input/provi
 .. caution:: Do not remove or comment any lines in the above mentioned ``.yml`` files.
 
 .. csv-table:: provision_config.yml
-   :file: ../../../Tables/Provision_config.csv
+   :file: ../../../Tables/Provision_config_rhel.csv
    :header-rows: 1
    :keepspace:
 

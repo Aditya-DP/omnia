@@ -31,11 +31,6 @@
   changed_when: true
   failed_when: false
 
-- name: Uninstall whereabouts plugin
-  ansible.builtin.command: "kubectl delete -f {{ wherabout_crds_folder }}"
-  changed_when: true
-  failed_when: false
-
 - name: Delete directories
   ansible.builtin.file:
     state: absent

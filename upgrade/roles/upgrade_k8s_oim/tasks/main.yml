@@ -1,4 +1,4 @@
-# Copyright 2024 Dell Inc. or its subsidiaries. All Rights Reserved.
+# Copyright 2025 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -91,3 +91,6 @@
 
     - name: Restore metallb
       ansible.builtin.include_tasks: restore_metallb.yml
+
+    - name: Upgrade Grafana image version
+      ansible.builtin.include_tasks: grafana_deployment.yml

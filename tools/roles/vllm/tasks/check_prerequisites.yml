@@ -82,7 +82,7 @@
       when: amd_gpu.rc == 0
 
     - name: Check Nvidia GPU Driver
-      ansible.builtin.command: nvidia-smi
+      ansible.builtin.command: nvidia-detector
       register: nvidia_gpu
       changed_when: true
       failed_when: false
@@ -90,7 +90,9 @@
     - name: Modify processing_unit_nvidia
       ansible.builtin.set_fact:
         processing_unit: "nvidia"
-      when: nvidia_gpu.rc == 0
+      when:
+        - nvidia_gpu.rc == 0
+        - nvidia_gpu.stdout | lower != "none"
 
 - name: GPU not present
   ansible.builtin.debug:
@@ -186,9 +188,10 @@
       ansible.builtin.command:
         cmd: "{{ vllm_python_version }} -m ensurepip"
       changed_when: false
+      failed_when: false
 
     - name: Install pytorch
-      ansible.builtin.command: "{{ vllm_python_version }} -m pip install {{ vllm_pytorch_cuda_version }}"
+      ansible.builtin.command: "{{ vllm_python_version }} -m pip install {{ vllm_pytorch_cuda_version }} --break-system-packages"
       changed_when: true
       failed_when: false
       register: pytorch_package_status

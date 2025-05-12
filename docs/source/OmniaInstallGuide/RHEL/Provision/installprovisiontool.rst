@@ -10,15 +10,6 @@ Edit the ``input/provision_config.yml``, ``input/provision_config.yml``, and ``i
 [Optional] Additional configurations handled by the provision tool
 -------------------------------------------------------------------------
 
-**Using multiple versions of a given OS**
-
-Omnia now supports deploying different versions of the same OS. With each run of ``discovery_provision.yml``, a new deployable OS image is created with a distinct type depending on the values provided in ``input/software_config.json``. Supported RHEL/Rocky Linux OS's are:
-
-    * RHEL 8.6, 8.7, 8.8
-    * Rocky Linux 8.6, 8.7, 8.8
-
-.. note:: While Omnia deploys the minimal version of the OS, the multiple version feature requires that the Rocky Linux full (DVD) version of the OS be provided.
-
 **Disk partitioning**
 
     Omnia now allows for customization of disk partitions applied to remote servers. The disk partition ``desired_capacity`` has to be provided in MB. Valid ``mount_point`` values accepted for disk partition are  ``/var``, ``/tmp``, ``/usr``, ``swap``. The default partition size provided for RHEL/Rocky Linux is /boot: 1024MB, /boot/efi: 256MB and remaining space to / partition. Default partition size provided for Ubuntu is /boot: 2148MB, /boot/efi: 1124MB and remaining space to / partition. Values are accepted in the form of JSON list such as:
@@ -38,6 +29,20 @@ To deploy the Omnia provision tool, ensure that ``input/provision_config.yml``, 
     ansible-playbook discovery_provision.yml
 
 .. note:: If the ``input/software_config.json`` has AMD ROCm and NVIDIA CUDA drivers mentioned, the AMD and NVIDIA accelerator drivers are installed on the nodes post provisioning.
+
+.. caution::
+
+    * If you intend to configure additional NICs during provisioning, ensure that you are aware of the network and NIC details of the cluster.
+    * Assigning IP rules to additional NICs is not supported on RHEL or Rocky clusters.
+    * You can only use the below [Optional] functionality on new nodes (during first provisioning). Nodes which have already been provisioned and are in booted state can't be modified with a re-run of ``discovery_provision.yml`` playbook.
+    * For a node in the "booted" state, configuring additional NICs or kernel parameter changes is not possible with a re-run of the ``discovery_provision.yml`` playbook. Instead, use the ``server_spec_update.yml`` playbook to make any changes to the "booted" node. For more information, `click here <../AdvancedConfigurationsRHEL/AdditionalNIC_rhel.html>`_.
+
+**[Optional] Configure additional NICs and specify Kernel Parameters on the nodes during cluster provisioning**
+
+To do this, you need to add the necessary inputs to the ``input/network_spec.yml`` and ``input/server_spec.yml`` and then run the ``discovery_provision.yml`` playbook with your created `inventory file <../../samplefiles.html#inventory-file-for-additional-nic-and-kernel-parameter-configuration>`_. For more information on what inputs are required, `click here <../AdvancedConfigurationsRHEL/AdditionalNIC_rhel.html>`_.
+After you've provided all the necessary inputs, provide the file path to the inventory file and execute the following command to invoke the playbook: ::
+
+    ansible-playbook discovery_provision.yml - i <inventory_filepath>
 
 Stages of the provision tool
 -----------------------------
@@ -130,7 +135,7 @@ The provision tool, invoked by the ``discovery_provision.yml`` playbook, runs in
         - ``/docker-registry``
         - ``/opt/omnia``
         - ``/var/log/omnia``
-        - ``/opt/omnia17_venv/``
+        - ``/opt/omnia171_venv/``
     * On subsequent runs of ``discovery_provision.yml``, if users are unable to log into the server, refresh the ssh key manually and retry. ::
 
         ssh-keygen -R <node IP>

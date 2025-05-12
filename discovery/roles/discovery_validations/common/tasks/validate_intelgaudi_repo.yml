@@ -53,6 +53,13 @@
       ansible.builtin.set_fact:
         intelgaudi_config_status: true
       when: check_intelgaudi_dir.stat.exists
+
+    - name: Warning - Intel Gaudi and BCM Roce found in software_config.json
+      ansible.builtin.pause:
+        seconds: "{{ warning_wait_time }}"
+        prompt: "{{ intelgaudi_bcm_warning_msg }}"
+      when: intelgaudi_config_status and roce_config_status
+
   rescue:
     - name: Warning - Please wait, This task will take few seconds
       ansible.builtin.pause:

@@ -26,6 +26,8 @@ xcat_root_env: "/opt/xcat"
 xcat_path_env: "/opt/xcat/bin:/opt/xcat/sbin:/opt/xcat/share/xcat/tools"
 xcat_manpath_env: "/opt/xcat/share/man:$MANPATH"
 perl_badlang_env: 0
+ssh_port: 22
+ssh_timeout: 10
 
 ping_msg: "100% packet loss"
 update_nodes_rescue_msg: "Failed to remove telemetry service and host entry!!"

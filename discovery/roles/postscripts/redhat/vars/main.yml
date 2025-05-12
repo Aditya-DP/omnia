@@ -34,7 +34,7 @@ cuda_core_path: /install/cuda/x86_64/cuda-core
 invalid_cuda_rpm_fail_msg: "Failed. Invalid cuda_toolkit_path: {{ cuda_toolkit_path }} provided in provision_config.yml.
 Make sure cuda rpm file is downloaded completely."
 cuda_postscripts_path:
-  - { src: "{{ role_path }}/../redhat/templates/omnia_cuda.j2", dest: "/install/postscripts/omnia_cuda", mode: "755" }
+  - { src: "{{ role_path }}/../common/templates/omnia_cuda.j2", dest: "/install/postscripts/omnia_cuda", mode: "755" }
 xcat_path: /opt/xcat/bin
 
 # Usage: configure_rocm.yml

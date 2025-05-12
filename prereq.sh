@@ -47,7 +47,7 @@ install_ansible() {
     echo "----------------------------------------------------------"
     echo "INSTALLING ANSIBLE $ansible_version IN THE OMNIA VIRTUAL ENVIRONMENT:"
     echo "----------------------------------------------------------"
-    $venv_py -m pip install ansible=="$ansible_version" ansible-core=="$ansible_core_version" #--force-reinstall or --ignore-installed is not required
+    $venv_py -m pip install ansible=="$ansible_version" ansible-core=="$ansible_core_version" distlib #--force-reinstall or --ignore-installed is not required
 }
 
 disable_selinux() {
@@ -80,23 +80,23 @@ compare_and_copy_config() {
 
     # Try to extract cluster_os_type from the input file
     local input_os_type
-    local jq_output
-    jq_output=$(jq -r '.cluster_os_type' "$input_config" 2>&1)
+    local input_os_version
+
+    input_os_type=$(jq -r '.cluster_os_type' "$input_config" 2>&1)
+    input_os_version=$(jq -r '.cluster_os_version' "$input_config" 2>&1) 
 
     if [[ $? -ne 0 ]]; then
         echo -e "${RED}Error: Failed to parse ${YELLOW}${input_config}${NC}"
         echo -e "Below is the error details:"
-        echo -e "${RED}${jq_output}${NC}"
+        echo -e "${RED}${input_os_type}${NC}"
         echo ""
         echo -e "${RED}Please check software_config.json for syntax errors and correct them.${NC}"
         echo -e "${RED}After correcting, please rerun ${YELLOW}prereq.sh${NC}"
         exit 1
-    else
-        input_os_type="$jq_output"
     fi
 
     # Check against OS_ID
-    if [[ "$input_os_type" == "$OS_ID" ]]; then
+    if [[ "$input_os_type" == "$OS_ID" && "$input_os_version" == "$OS_VERSION" ]]; then
         echo -e "${GREEN}Existing software_config.json matches the current OS type. No changes made.${NC}"
     else
         echo -e "${RED}Updating software_config.json to match the current OS type and version.${NC}"
@@ -130,7 +130,7 @@ py_major_version="3"
 py_minor_version="11"
 venv_py=python$python_version
 os_release_data="/etc/os-release"
-venv_location="/opt/omnia/omnia17_venv" # Do not give a trailing slash
+venv_location="/opt/omnia/omnia171_venv" # Do not give a trailing slash
 unsupported_os=false
 os_type="rhel"
 SELINUX_REBOOT_REQUIRED=false
@@ -154,21 +154,10 @@ if [[ "$OS_ID" == "ubuntu" ]]; then
     fi
 fi
 
-if [ "$unsupported_os" = true ]; then
-	echo "Unsupported OS for Omnia v1.7 software stack. Creating venv for Omnia v1.6.1 software stack."
-	ansible_version="7.7.0"
- 	ansible_core_version="2.14.12"
-	python_version="39" # RHEL-8.8 onwards and ubuntu-20.04 onwards this is '3.9'
-	py_major_version="3"
-	py_minor_version="9"
-	venv_py=python3.9
-	venv_location="/opt/omnia/omnia161_venv" # Do not give a trailing slash
-fi
-
 # Check if the OS version is unsupported and print a warning message
 install_omnia_version=$(grep "omnia_version:" ".metadata/omnia_version" | cut -d ':' -f 2 | tr -d ' ')
 if [[ "$OS_ID" == "rhel" || "$OS_ID" == "rocky" ]]; then
-    if [[ "$VERSION_ID" != "8.8" ]]; then
+    if [[ "$unsupported_os" = true ]]; then
         echo -e "Warning: Running Omnia $install_omnia_version on an unsupported OS ${OS_ID} ${VERSION_ID} may lead to failures in subsequent playbooks. To prevent such issues, please use a supported OS ${OS_ID} 8.8 ."
     fi
 elif [[ "$OS_ID" == "ubuntu" ]]; then
@@ -179,7 +168,7 @@ elif [[ "$OS_ID" == "ubuntu" ]]; then
 To prevent such issues, please use the Server edition of Ubuntu.${NC}"
        fi
    fi
-   if [[ "$VERSION_ID" != "22.04" ]]; then
+   if [[ "$unsupported_os" = true ]]; then
      echo -e "Warning: Running Omnia $install_omnia_version on an unsupported OS ${OS_ID} ${VERSION_ID} may lead to failures in subsequent playbooks. To prevent such issues, please use a supported OS ${OS_ID} 22.04 ."
    fi
 else
@@ -199,12 +188,6 @@ fi
 [ -d $venv_location ] || mkdir $venv_location
 [ -d /var/log/omnia ] || mkdir /var/log/omnia
 
-if [[ "$OS_ID" == "rocky" ]]; then
-  echo "------------------------"
-  echo "INSTALLING EPEL RELEASE:"
-  echo "------------------------"
-  dnf install epel-release -y
-fi
 
 allow_unauth_apt=""
 echo ""
@@ -224,6 +207,7 @@ else
 	else
             check_ubuntu22="$(cat $os_release_data | grep 'VERSION_ID="22.04"' | wc -l)"
             check_ubuntu20="$(cat $os_release_data | grep 'VERSION_ID="20.04"' | wc -l)"
+            check_ubuntu24="$(cat $os_release_data | grep 'VERSION_ID="24.04"' | wc -l)"
 	    allow_unauth_apt="--allow-unauthenticated" 
             if [[ "$check_ubuntu22" == "1" ]]; then
                echo "Adding repo for jammy $OS_ID $OS_VERSION"
@@ -231,6 +215,9 @@ else
             elif [[ "$check_ubuntu20" == "1" ]]; then
                echo "Adding repo for focal $OS_ID $OS_VERSION"
                echo "deb [trusted=yes] http://ppa.launchpad.net/deadsnakes/ppa/ubuntu focal main" > /etc/apt/sources.list.d/deadsnakes-ppa.list
+            elif [[ "$check_ubuntu24" == "1" ]]; then
+               echo "Adding repo for noble $OS_ID $OS_VERSION"
+               echo "deb [trusted=yes] http://ppa.launchpad.net/deadsnakes/ppa/ubuntu noble main" > /etc/apt/sources.list.d/deadsnakes-ppa.list
             fi
 	fi
         apt update
@@ -267,7 +254,7 @@ echo ""
 if [ "$VIRTUAL_ENV" != "$venv_location" ]; then
     echo "Omnia virtual environment not activated in $venv_location"
     if [ ! -f "$venv_location/bin/activate" ]; then
-       $venv_py -m venv $venv_location --prompt omnia17
+       $venv_py -m venv $venv_location --prompt omnia171
     fi
     echo "Activating the Omnia virtual environment .."
     source $venv_location/bin/activate
@@ -311,10 +298,6 @@ echo "----------------------------------------------------"
 max_retries=3
 retry_count=0
 venv_collection_req_file="requirements_collections.yml"
-if [ "$unsupported_os" = true ]; then
-    echo "Unsupported OS: Installing collections in omnia v1.6.1 venv"
-    venv_collection_req_file="upgrade/roles/upgrade_oim/files/requirements_venv161.yml"
-fi
 while [ $retry_count -lt $max_retries ]; do
     ansible-galaxy collection install -r $venv_collection_req_file
     if [ $? -eq 0 ]; then

@@ -20,16 +20,16 @@ Input parameters for Local Repositories
             "cluster_os_version": "8.8",
             "repo_config": "partial",
             "softwares": [
-                {"name": "amdgpu", "version": "6.2.2"},
-                {"name": "cuda", "version": "12.3.2"},
+                {"name": "amdgpu", "version": "6.3.1"},
+                {"name": "cuda", "version": "12.8.0"},
                 {"name": "ofed", "version": "24.01-0.3.3.1"},
                 {"name": "freeipa"},
                 {"name": "openldap"},
                 {"name": "secure_login_node"},
                 {"name": "nfs"},
-                {"name": "beegfs", "version": "7.4.2"},
+                {"name": "beegfs", "version": "7.4.5"},
                 {"name": "slurm"},
-                {"name": "k8s", "version":"1.29.5"},
+                {"name": "k8s", "version":"1.31.4"},
                 {"name": "jupyter"},
                 {"name": "kubeflow"},
                 {"name": "kserve"},
@@ -42,11 +42,11 @@ Input parameters for Local Repositories
                 {"name": "utils"},
                 {"name": "ucx", "version": "1.15.0"},
                 {"name": "openmpi", "version": "4.1.6"},
-                {"name": "csi_driver_powerscale", "version":"v2.11.0"}
+                {"name": "csi_driver_powerscale", "version":"v2.13.0"}
             ],
 
             "amdgpu": [
-                {"name": "rocm", "version": "6.2.2" }
+                {"name": "rocm", "version": "6.3.1" }
             ],
             "vllm": [
                 {"name": "vllm_amd"},
@@ -97,7 +97,8 @@ For a list of repositories (and their types) configured for AMD GPUs, view the `
       },
       "rocm": {
         "cluster": [
-          {"package": "rocm-hip-sdk{{ rocm_version }}*", "type": "deb", "repo_name": "rocm"}
+          {"package": "rocm", "type": "rpm", "repo_name": "rocm"}
+          {"package": "rocm-validation-suite", "type": "rpm", "repo_name": "rocm"}
         ]
       }
     }

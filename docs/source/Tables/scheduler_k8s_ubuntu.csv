@@ -10,8 +10,7 @@
                                  
      * ``""calico""``  <-   default
      * ``""flannel""`` 
-
-.. note:: While setting up Kubernetes for the RoCE NIC, ensure that the value for this parameter is always set to ``flannel``. For more information, `click here <../AdvancedConfigurationsUbuntu/k8s_plugin_roce_nic.html>`_.            "
+        "
 "**pod_external_ip_range**
 
      ``string``
@@ -69,3 +68,10 @@
 * **Default value**: ``false``
 
 **Example**: ``run_intel_gaudi_tests: ""false""``"
+"**k8s_offline_install** 
+
+      ``boolean``
+
+      Optional","* **Default value**: ``true``.
+* Keep it ``true`` when you want Omnia to provision OS on the cluster nodes. With the variable set to ``true``,  all packages and images necessary to set up a Kubernetes cluster are pulled from the OIM local repository.
+* Set it to ``false`` only when you want to add external nodes (with pre-loaded OS) to a Kubernetes cluster. With the variable set to ``false``,  all packages and images necessary to set up a Kubernetes cluster are pulled from the internet instead of the OIM local repository."

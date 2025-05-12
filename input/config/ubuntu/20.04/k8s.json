@@ -2,6 +2,17 @@
   "k8s": {
     "cluster": [
     {
+      "package": "multus-daemonset",
+       "type": "manifest",
+       "url": "https://raw.githubusercontent.com/k8snetworkplumbingwg/multus-cni/master/deployments/multus-daemonset.yml"
+    },
+    {
+       "package": "whereabouts",
+       "url": "https://github.com/k8snetworkplumbingwg/whereabouts.git",
+       "type": "git",
+       "version": "v0.8.0"
+    },
+    {
       "package": "nvidia-container-toolkit",
       "type": "deb",
       "repo_name": "nvidia-repo"
@@ -83,9 +94,9 @@
       "url": "https://vault.habana.ai/artifactory/docker-k8s-device-plugin/habana-k8s-device-plugin.yaml"
     },
     {
-      "package": "mpi-operator-v0.5.0",
+      "package": "mpi-operator-v0.6.0",
       "type": "manifest",
-      "url": "https://raw.githubusercontent.com/kubeflow/mpi-operator/v0.5.0/deploy/v2beta1/mpi-operator.yaml"
+      "url": "https://raw.githubusercontent.com/kubeflow/mpi-operator/v0.6.0/deploy/v2beta1/mpi-operator.yaml"
     },
     {
       "package": "xilinx-device-plugin",
@@ -101,6 +112,16 @@
       "package": "nfs-subdir-external-provisioner-4.0.18",
       "type": "tarball",
       "url": "https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner/releases/download/nfs-subdir-external-provisioner-4.0.18/nfs-subdir-external-provisioner-4.0.18.tgz"
+    },
+    {
+        "package": "ghcr.io/k8snetworkplumbingwg/multus-cni",
+        "tag": "v4.1.4-thick",
+        "type": "image"
+    },
+    {
+        "package": "ghcr.io/k8snetworkplumbingwg/whereabouts",
+        "tag": "latest",
+        "type": "image"
     },
     {
       "package": "docker.io/library/nginx",
@@ -214,7 +235,7 @@
     },
     {
       "package": "docker.io/mpioperator/mpi-operator",
-      "tag": "0.5.0",
+      "tag": "0.6.0",
       "type": "image"
     },
     {

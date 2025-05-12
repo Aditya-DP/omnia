@@ -43,15 +43,6 @@ Local Repositories
 **Resolution**: Provide the required (read, write, and execute) permissions for the NFS share. Verify the permissions of NFS share from the root user of the OIM.
 
 
-⦾ **Why does the** ``TASK [parse_and_download : Display Failed Packages`` **fail during** ``prepare_upgrade.yml`` **execution?**
-
-.. image:: ../../../images/upgrade_failed_packages.png
-
-**Potential Cause**: This issue may arise while setting up of local repo for Omnia v1.6 and can occur due to internet connection issues on OIM.
-
-**Resolution**: Verify that the internet connectivity on OIM is stable and re-run the ``prepare_upgrade.yml`` playbook.
-
-
 ⦾ **Why does the** ``TASK [configure_repos : Generate metadata for repositories]`` **fails during the execution of** ``local_repo.yml`` **on RHEL clusters, if the Epel repository is unstable?**
 
 **Potential Cause**: If the external Epel repository link mentioned in ``omnia_repo_url_rhel`` is not stable, then it can cause failures in ``local_repo.yml`` playbook execution.
@@ -65,6 +56,7 @@ Local Repositories
     - If none of the packages are dependent on the Epel repository, users can remove the Epel repository URL from ``omnia_repo_url_rhel``.
 
     - If any package required from the Epel repository is listed in the ``software_config.json`` file, it's advisable to either wait for the Epel repository to stabilize or host those Epel repository packages locally. Afterward, remove the Epel repository link from ``omnia_repo_url_rhel`` and provide the locally hosted URL for the Epel repository packages via the ``user_repo_url`` variable.
+
 
 ⦾ **Why does** ``omnia.yml`` **execution fail during the** ``TASK [Kubernetes_sigs.kubesprate.container-engine/runc : Download_file | Create dest directory on node]`` **?**
 

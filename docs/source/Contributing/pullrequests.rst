@@ -1,5 +1,5 @@
 Creating A Pull Request
-======================
+=========================
 
 Contributions to Omnia are made through `Pull Requests (PRs) <https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests>`_.
 

@@ -4,24 +4,23 @@
    contain the root `toctree` directive.
 
 Omnia: Everything at once!
-----------------------------------
+-----------------------------
 
 |Omnia version| |Downloads| |Last Commit| |Contributors| |Forks| |License|
 
-Ansible playbook-based deployment of Slurm and Kubernetes on servers running an RPM-based Linux OS.
+Ansible playbook-based deployment of Slurm and Kubernetes on servers running on Linux OS.
 
-**Omnia**, derived from the Latin word for "all" or "everything", serves as a deployment tool designed to transform servers equipped with RPM-based Linux images into fully operational Slurm/Kubernetes clusters.
+Omnia is an open-source deployment toolkit that helps customers efficiently manage compute servers, storage, and networking within complex environments.
+ 
+Omnia utilizes Ansible playbook-based deployment to automate OS provisioning, driver installation and configuration, deployment of schedulers like Slurm and Kubernetes, as well as optimization libraries, machine learning frameworks/platforms, and AI models.
 
-**Omnia** is an open source project hosted on `GitHub <https://github.com/dell/omnia>`_. Go to `GitHub <https://github.com/dell/omnia>`_ to view the source, open issues, ask questions, and participate in the project.
+**Omnia** is hosted an open source project on `GitHub <https://github.com/dell/omnia>`_. Go to `GitHub <https://github.com/dell/omnia>`_ to view the source, open issues, ask questions, and participate in the project.
 
 **Licensing**
 
 Omnia is made available under the `Apache 2.0 license. <https://opensource.org/licenses/Apache-2.0>`_
 
 .. note:: Omnia playbooks are licensed under the Apache 2.0 license. Once an end-user initiates Omnia, that end-user will deploy other open-source and/or third-party software that is licensed separately by their respective developer communities and/or third parties. For a comprehensive list of software and their licenses, `click here <Overview/SupportMatrix/omniainstalledsoftware.html>`_. Dell (or any other contributors) shall have no liability regarding (and no responsibility to provide support for) an end-users use of any open-source and/or third-party software and OMNIA users are solely responsible for ensuring that they are complying with all such licenses. Omnia is provided “as is” without any warranty, express or implied. Dell (or any other contributors) shall have no liability for any direct, indirect, incidental, punitive, special, or consequential damages for an end-user's use of Omnia.
-
-For a better understanding of what Omnia does, check out our `docs <https://omnia-doc.readthedocs.io/en/latest/index.html>`_!
-
 
 **Omnia Community Members**
 

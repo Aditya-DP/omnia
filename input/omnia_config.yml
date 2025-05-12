@@ -78,6 +78,13 @@ topology_manager_policy: "none"
 # Default value assigned is "container".
 topology_manager_scope: "container"
 
+# ---------------------------- NVIDIA GPU OPERATOR-------------------------------
+# Mandatory when nvidia_gpu_operator entry is present in software_config.json
+# Default value assigned is the relative file path of nvidia_gpu_operator_config.yml file
+# User can update below parameter with absolute file path, if any changes are made in input/nvidia_gpu_operator_config.yml
+# User needs to provide http_proxy and https_proxy values in nvidia_gpu_operator_config.yml file
+nvidia_gpu_operator_value_file_path: "{{ role_path }}/../../../input/nvidia_gpu_operator_config.yml"
+
 # ----------------------------VERIFY INTEL GAUDI INSTALLATION------------------------------------------------------
 
 # It's recommended to do extensive tests hl_qual and hccl when installing a new Gaudi node. This takes around 20mins.
@@ -97,3 +104,11 @@ csi_powerscale_driver_secret_file_path: ""
 # User need to download values.yaml file and fill required data in values.yaml file. Provided the path of the values.yaml file here.
 # mention configurable values
 csi_powerscale_driver_values_file_path: ""
+
+# Kubernetes Offline Install
+# If set to true, all packages/images will be pulled from OIM local repo.
+# If set to false, all packages/images will be pulled from source via internet.
+# It can either be true or false
+# Default value is true, means packages/images will be pulled from OIM local repo
+k8s_offline_install: true
+

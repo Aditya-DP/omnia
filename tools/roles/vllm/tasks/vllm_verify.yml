@@ -43,26 +43,35 @@
         installation_status: "{{ error_vllm_example_failed }}"
       when: vllm_amd_example_run.rc != 0
 
-- name: Example vllm inference (NVIDIA)
+- name: Example vLLM inference (NVIDIA)
   environment:
     http_proxy: "{{ http_proxy }}"
     https_proxy: "{{ https_proxy }}"
     no_proxy: "{{ oim_hostname }},{{ admin_nic_ip }}"
   when: processing_unit == "nvidia"
   block:
-    - name: Run vllm_nvidia_example
-      ansible.builtin.command: "{{ vllm_python_version }}  {{ vllm_example_file_path }}"
-      when: copy_vllm_example is succeeded
+    - name: Get vLLM version
+      ansible.builtin.command: "{{ vllm_python_version }} -c '{{ vllm_python_cmd }}'"
+      register: vllm_version_check
+      ignore_errors: true
       changed_when: false
-      failed_when: false
-      register: vllm_nvidia_example_run
 
-    - name: Example vllm nvidia inference failed
+    - name: Extract vLLM version
+      ansible.builtin.set_fact:
+        vllm_version: "{{ vllm_version_check.stdout_lines[-1] }}"
+      when: vllm_version_check.rc == 0
+
+    - name: Print vLLM status
       ansible.builtin.debug:
-        msg: "Warning: {{ error_vllm_example_failed }}"
-      when: vllm_nvidia_example_run.rc != 0
+        msg: "vllm {{ vllm_version }} installed successfully"
+      when: vllm_version_check.rc == 0
 
-    - name: Update vLLM verification status (NVIDIA)
+    - name: Get vLLM verification status
       ansible.builtin.set_fact:
         installation_status: "{{ error_vllm_example_failed }}"
-      when: vllm_nvidia_example_run.rc != 0
+      when: vllm_version_check.rc != 0
+
+    - name: Print vLLM status failure warning
+      ansible.builtin.debug:
+        msg: "Warning: {{ error_vllm_example_failed }}"
+      when: vllm_version_check.rc != 0

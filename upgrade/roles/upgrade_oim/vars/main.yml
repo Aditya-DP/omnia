@@ -14,8 +14,6 @@
 ---
 
 # Usage: create_older_venv.yml
-omnia161_venv_path: /opt/omnia/omnia161_venv
-venv_creation_failed: "Venv setup for Omnia 1.6.1 has failed"
 python_pip_modules:
   - omsdk==1.2.513
   - pysnmp==6.1.3

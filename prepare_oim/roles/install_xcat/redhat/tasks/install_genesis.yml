@@ -54,7 +54,7 @@
       when: genesis_version_check.stdout | length > 1
 
     - name: Install genesis base rpm file generated
-      ansible.builtin.yum:
+      ansible.builtin.dnf:
         name: "{{ xcat_genesis_rpm_file }}"
         state: present
         disable_gpg_check: true

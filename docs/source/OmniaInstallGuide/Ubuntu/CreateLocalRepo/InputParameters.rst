@@ -18,15 +18,15 @@ Input parameters for Local Repositories
         "cluster_os_version": "22.04",
         "repo_config": "partial",
         "softwares": [
-            {"name": "amdgpu", "version": "6.2.2"},
-            {"name": "cuda", "version": "12.3.2"},
-            {"name": "bcm_roce", "version": "230.2.54.0"},
+            {"name": "amdgpu", "version": "6.3.1"},
+            {"name": "cuda", "version": "12.8.0"},
+            {"name": "bcm_roce", "version": "232.1.133.2"},
             {"name": "ofed", "version": "24.01-0.3.3.1"},
             {"name": "openldap"},
             {"name": "secure_login_node"},
             {"name": "nfs"},
-            {"name": "beegfs", "version": "7.4.2"},
-            {"name": "k8s", "version":"1.29.5"},
+            {"name": "beegfs", "version": "7.4.5"},
+            {"name": "k8s", "version":"1.31.4"},
             {"name": "roce_plugin"},
             {"name": "jupyter"},
             {"name": "kubeflow"},
@@ -37,15 +37,17 @@ Input parameters for Local Repositories
             {"name": "telemetry"},
             {"name": "ucx", "version": "1.15.0"},
             {"name": "openmpi", "version": "4.1.6"},
-            {"name": "intelgaudi", "version": "1.18.0-524"},
-            {"name": "csi_driver_powerscale", "version":"v2.11.0"}
+            {"name": "intelgaudi", "version": "1.19.2-32"},
+            {"name": "csi_driver_powerscale", "version":"v2.13.0"}
+            {"name": "intel_benchmarks", "version": "2024.1"},
+            {"name": "amd_benchmarks"}
         ],
 
         "bcm_roce": [
-            {"name": "bcm_roce_libraries", "version": "230.2.54.0"}
+            {"name": "bcm_roce_libraries", "version": "232.1.133.2"}
         ],
         "amdgpu": [
-            {"name": "rocm", "version": "6.2.2" }
+            {"name": "rocm", "version": "6.3.1" }
         ],
         "intelgaudi": [
             {"name": "intel"}
@@ -100,7 +102,8 @@ For a list of repositories (and their types) configured for AMD GPUs, view the `
       },
       "rocm": {
         "cluster": [
-          {"package": "rocm-hip-sdk{{ rocm_version }}*", "type": "deb", "repo_name": "rocm"}
+          {"package": "rocm", "type": "deb", "repo_name": "rocm"},
+          {"package": "rocm-validation-suite", "type": "deb", "repo_name": "rocm"}
         ]
       }
     }

@@ -62,11 +62,69 @@ Kubernetes
 3. Period (.): The period should be used only to delimit fields in a hostname (For example, dvader.empire.gov)
 
 
-⦾ **What to do if** ``omnia.yml`` **playbook execution fails with MetalLB, a load-balancer for bare metal Kubernetes cluster?**
+⦾ **Why does the** ``omnia.yml`` **or** ``scheduler.yml`` **fail at** ``TASK [kubernetes_sigs.kubespray.kubernetes-apps/metallb : MetalLB | Create address pools configuration]`` **?**
 
-**Potential Cause**: This failure is caused due to an issue with Kubespray, a third-party software. For more information about this issue, `click here <https://github.com/kubernetes-sigs/kubespray/issues/11847>`_.
+**Potential Cause**: The error occurs when MetalLB Controller Pods don't come to Running state. This failure is caused due to an issue with Kubespray, a third-party software. For more information about this issue, `click here <https://github.com/kubernetes-sigs/kubespray/issues/11847>`_.
 
-**Resolution**: If your ``omnia.yml`` playbook execution fails while waiting for the MetalLB controller to be up and running, you need to wait for the MetalLB pods to come to running state and then re-run ``omnia.yml/scheduler.yml``.
+**Resolution**: 
+
+    * Check for metallb controller pods status using: ::
+        
+         kubectl get pods -n metallb-system.
+
+    * Once the pods comes to the running state, do the following:
+
+    * Create a ``ipaddrespool.yml`` file  with below contents on the ``kube_control_plane``:
+
+        * Refer the ``input/omnia_config.yml`` and update the ``<pod_external_ip_range>`` value ::
+
+            apiVersion: metallb.io/v1beta1
+            kind: IPAddressPool
+            metadata:
+              namespace: "metallb-system"
+              name: "primary"
+            spec:
+              addresses:
+              - "<pod_external_ip_range>"
+              autoAssign: True
+              avoidBuggyIPs: False
+        
+    * Create a ``l2advertisement.yml`` file with below contents on ``kube_control_plane``: ::
+
+        apiVersion: metallb.io/v1beta1
+        kind: L2Advertisement
+        metadata:
+          name: "primary"
+          namespace: "metallb-system"
+        spec:
+          ipAddressPools:
+          - "primary"
+
+    * Run the following command on ``kube_control_plane``: ::
+        
+         kubectl get svc -A.
+       
+    * Run the following command on ``kube_control_plane``: ::
+        
+         kubectl edit svc <svc_name> -n <namespace>
+ 
+    * Run the following command on ``kube_control_plane``: ::
+
+         kubectl delete -f /etc/kubernetes/metallb.yaml
+        
+    .. note:: The ``metallb.yaml`` file is available in the ``/etc/kubernetes`` directory on the ``kube_control_plane``.    
+
+    * Apply the following manifests strictly in the same order: ::
+
+         kubectl apply -f /etc/kubernetes/metallb.yaml
+         kubectl apply -f l2advertisement.yml 
+         kubectl apply -f ipaddrespool.yml
+    
+    * Finally, use the following command to open the definition file and change the ``type`` from ``ClusterIP`` to ``LoadBalancer``: ::
+
+         kubectl edit svc <svc_name> -n <namespace>
+
+    * Post this workaround, re-run the ``omnia.yml`` or ``scheduler.yml`` playbook.
 
 
 ⦾ **Why does the** ``omnia.yml`` **or** ``scheduler.yml`` **playbook execution fails with a** ``Unable to retrieve file contents`` **error?**
@@ -128,3 +186,25 @@ Kubernetes
 **Potential Cause**: When ``reset_cluster_configuration.yml`` is executed on a Kubernetes cluster, it triggers the Kubespray playbook ``kubernetes_sigs.kubespray.reset`` internally, which is responsible for removing Kubernetes configuration and services from the cluster. However, this Kubespray playbook doesn't delete all Kubernetes services and files, resulting in some files being left behind on the ``kube_control_plane``.
 
 **Workaround**: After running the ``reset_cluster_configuration.yml`` playbook on a Kubernetes cluster, users can choose to remove the files from the directories mentioned above if they wish to do so.
+
+⦾ **Why are Kubernetes services not accessible?**
+
+**Potential Cause**: When firewalld is enabled on compute nodes, it blocks incoming traffic unless the appropriate ports are explicitly opened. This can prevent access to services exposed by Kubernetes (such as those using NodePort, LoadBalancer, or Ingress).
+
+**Resolution**: You need to manually open the required firewalld ports in order to allow traffic through the ports used by the Kubernetes services. Perform the following steps:
+
+1. Open the TCP/UDP ports manually.
+
+    * For **TCP** ports, use the following command: ::
+
+            sudo firewall-cmd --permanent --add-port=<port_number>/tcp
+
+    * For **UDP** ports, use the following command: ::
+
+            sudo firewall-cmd --permanent --add-port=<port_number>/udp
+
+2. Reload the firewalld service using the below command to apply the changes. ::
+
+            sudo firewall-cmd --reload
+  
+3. Try accessing the service again. Ensure that the correct ports are open and the service is running. To know more about the ports, `click here <../../../SecurityConfigGuide/ProductSubsystemSecurity.html#firewall-settings>`_.

@@ -19,7 +19,7 @@ vllm_warning: "The vLLM container requires at least 60GB of storage. Additionall
 so please ensure that the necessary storage is available."
 installation_success_status: "vLLM succesfully installed"
 installation_failed_status: "Failed to install vLLM"
-unsupported_os_msg: "The vLLM feature is only supported on Ubuntu 22.04 and RHEL 8.8. Installation may fail on other OS versions."
+unsupported_os_msg: "The vLLM feature is only supported on Ubuntu 24.04, Ubuntu 22.04 and RHEL 8.8. Installation may fail on other OS versions."
 
 # Validate inventory
 fail_no_node_kube_node: "Failed. vllm software is present in software_config.json. No node is part of kube_node group in inventory"
@@ -81,3 +81,4 @@ vllm_example_file_mode: "0755"
 
 # Error: vllm_verify.yml
 error_vllm_example_failed: "Failed to execute vLLM sample model"
+vllm_python_cmd: "import vllm; print(vllm.__version__)"

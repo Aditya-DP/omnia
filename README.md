@@ -10,9 +10,11 @@
 
 ![GitHub issues](https://img.shields.io/github/issues-raw/dell/omnia) ![GitHub Discussions](https://img.shields.io/github/discussions/dell/omnia)[<img src="https://img.shields.io/badge/slack-dell-blue.svg?logo=slack">](https://app.slack.com/client/TH80K68HY/C018L5109PW)
 
-#### Ansible playbook-based deployment of Slurm and Kubernetes on servers running an RPM-based Linux OS
+#### Ansible playbook-based deployment of Slurm and Kubernetes on servers running on Linux OS.
 
-Omnia (Latin: all or everything) is a deployment tool to turn servers with RPM-based Linux images into functioning Slurm/Kubernetes clusters.
+Omnia is an open-source deployment toolkit that helps customers efficiently manage compute servers, storage, and networking within complex environments.
+ 
+Omnia utilizes Ansible playbook-based deployment to automate OS provisioning, driver installation and configuration, deployment of schedulers like Slurm and Kubernetes, as well as optimization libraries, machine learning frameworks/platforms, and AI models.
 
 
 ## Omnia Documentation
@@ -103,7 +105,7 @@ Our thanks go to everyone who makes Omnia possible ([emoji key](https://allcontr
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Rohith-Ravut"><img src="https://avatars.githubusercontent.com/u/196186062?v=4" width="100px;" alt="Rohith-Ravut"/><br/><sub><b>Rohith-Ravut</b></sub></a><br /><a href="https://github.com/dell/omnia/commits?author=Rohith-Ravut" title="Tests">⚠️</a> <a href="https://github.com/dell/omnia/commits?author=Rohith-Ravut" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/jiad-vmware"><img src="https://avatars.githubusercontent.com/u/68653329?v=4?s=100" width="100px;" alt="jiad-vmware"/><br /><sub><b>jiad-vmware</b></sub></a><br /><a href="https://github.com/dell/omnia/issues?q=author%3Ajiad-vmware" title="Bug reports">🐛</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://jlec.de"><img src="https://avatars.githubusercontent.com/u/79732?v=4?s=100" width="100px;" alt="Justin Lecher"/><br /><sub><b>Justin Lecher</b></sub></a><br /><a href="#ideas-jlec" title="Ideas, Planning, & Feedback">🤔</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Sindhu-Ranganath"><img src="https://avatars.githubusercontent.com/u/208789597?v=4" width="100px;" alt="Sindhu-Ranganath"/><br /><sub><b>Sindhu Ranganath</b></sub></a><br /><a href="https://github.com/dell/omnia/commits?author=Sindhu-Ranganath" title="Tests">⚠️</a> <a href="https://github.com/dell/omnia/issues?q=author%3Sindhu-Ranganath" title="Bug reports">🐛</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Kavyabr23"><img src="https://avatars.githubusercontent.com/u/90390587?v=4?s=100" width="100px;" alt="Kavyabr23"/><br /><sub><b>Kavyabr23</b></sub></a><br /><a href="https://github.com/dell/omnia/commits?author=Kavyabr23" title="Code">💻</a> <a href="https://github.com/dell/omnia/commits?author=Kavyabr23" title="Tests">⚠️</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/vedaprakashanp"><img src="https://avatars.githubusercontent.com/u/90596073?v=4?s=100" width="100px;" alt="vedaprakashanp"/><br /><sub><b>vedaprakashanp</b></sub></a><br /><a href="https://github.com/dell/omnia/commits?author=vedaprakashanp" title="Tests">⚠️</a> <a href="https://github.com/dell/omnia/commits?author=vedaprakashanp" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Bhagyashree-shetty"><img src="https://avatars.githubusercontent.com/u/90620926?v=4?s=100" width="100px;" alt="Bhagyashree-shetty"/><br /><sub><b>Bhagyashree-shetty</b></sub></a><br /><a href="https://github.com/dell/omnia/commits?author=Bhagyashree-shetty" title="Tests">⚠️</a> <a href="https://github.com/dell/omnia/commits?author=Bhagyashree-shetty" title="Code">💻</a></td>
@@ -175,6 +177,7 @@ Our thanks go to everyone who makes Omnia possible ([emoji key](https://allcontr
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Lakshmi-Patneedi"><img src="https://avatars.githubusercontent.com/u/94051091?v=4?s=100" width="100px;" alt="Lakshmi-Patneedi"/><br /><sub><b>Lakshmi-Patneedi</b></sub></a><br /><a href="https://github.com/dell/omnia/commits?author=Lakshmi-Patneedi" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Artlands"><img src="https://avatars.githubusercontent.com/u/31781106?v=4?s=100" width="100px;" alt="Jie Li"/><br /><sub><b>Jie Li</b></sub></a><br /><a href="https://github.com/dell/omnia/commits?author=Artlands" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://jlec.de"><img src="https://avatars.githubusercontent.com/u/79732?v=4?s=100" width="100px;" alt="Justin Lecher"/><br /><sub><b>Justin Lecher</b></sub></a><br /><a href="#ideas-jlec" title="Ideas, Planning, & Feedback">🤔</a></td>
     </tr>
   </tbody>
 </table>

@@ -20,8 +20,6 @@ roce_nad_tmp_folder: "/tmp/roce"
 rdma_plugin_folder: "/tmp/k8s-rdma-shared-dev-plugin"
 wherabout_crds_folder: "/tmp/whereabouts/doc/crds/"
 files_list:
-  - "/tmp/whereabouts.tar.gz"
-  - "/tmp/whereabouts"
   - "/tmp/k8s-rdma-shared-dev-plugin.tar.gz"
   - "/tmp/k8s-rdma-shared-dev-plugin"
   - "/tmp/rocepod.yml"
