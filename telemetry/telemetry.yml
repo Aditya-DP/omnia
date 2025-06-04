@@ -73,15 +73,15 @@
   roles:
     - service_node_config
 
-# - name: Deployment of telemetry container in service node
-#   hosts: sn_active
-#   connection: ssh
-#   gather_facts: false
-#   tasks:
-#     - name: Deployment of telemetry container in service node
-#       ansible.builtin.include_role:
-#         name: service_node_config
-#         tasks_from: pcs_deployment.yml
+- name: Deployment of telemetry container in service node
+  hosts: sn_active
+  connection: ssh
+  gather_facts: false
+  tasks:
+    - name: Deployment of telemetry container in service node
+      ansible.builtin.include_role:
+        name: service_node_config
+        tasks_from: pcs_deployment.yml
 
 - name: Enable idrac telemetry in OIM
   hosts: localhost
