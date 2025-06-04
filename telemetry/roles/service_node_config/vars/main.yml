@@ -54,6 +54,127 @@ prometheus_podman_volumes:
   - { name: "prometheus_data", path: "{{ prometheus_data_dir }}" }
   - { name: "prometheus_log", path: "{{ prometheus_log_dir }}" }
 
+# Usage: pull_podman_images.yml
+omnia_images_tar: "{{ omnia_nfs_share }}/images/omnia_images.tar"
+load_images_fail_msg: |
+  "Failed to load the telemetry images from the tar file {{ omnia_images_tar }}.
+  Ensure the tar file is present in the shared folder by running prepare_oim.yml and re-run telemetry.yml again."
+
 # Usage: pcs_deployment.yml
+
 service_node_base_dir: "/opt/omnia/service_nodes"
 file_permissions: '0755'
+oim_telemetry_dir_path: "{{ omnia_nfs_share }}/telemetry"
+oim_idrac_telemetry_dir: "{{ oim_telemetry_dir_path }}/idrac_telemetry"
+telemetry_pcs_group: "omnia_telemetry"
+monitor_interval: "30s"
+monitor_timeout: "60s"
+start_interval: "0s"
+start_timeout: "20s"
+stop_interval: "0s"
+stop_timeout: "60s"
+
+####################################
+# MySQL Container Configuration
+####################################
+mysql_docker_image: "docker.io/library/mysql:8.0"
+mysql_container_name: "mysqldb"
+mysql_database: "idrac_telemetrydb"
+mysql_entry_script: "/usr/local/bin/mysqldb_init.sh"
+
+mysql_run_opts: >-
+  --restart=no
+  --network=host
+  --secret {{ mysql_root_password }},type=env,target=MYSQL_ROOT_PASSWORD
+  --secret {{ mysql_user }},type=env,target=MYSQL_USER
+  --secret {{ mysql_user_password }},type=env,target=MYSQL_PASSWORD
+  --env "MYSQL_DATABASE={{ mysql_database }}"
+  --volume mysqldb_data:/var/lib/mysql
+  --volume mysqldb_log:/var/log/mysql
+  --volume "{{ oim_idrac_telemetry_dir }}/mysqldb_init.sh:{{ mysql_entry_script }}"
+  --entrypoint {{ mysql_entry_script }}
+  --detach
+
+####################################
+# ActiveMQ Container Configuration
+####################################
+activemq_container_name: "activemq"
+activemq_image: "docker.io/rmohr/activemq:5.14.3"
+activemq_run_opts: >-
+  --network=host
+  --volume activemq_log:/opt/activemq/data
+  --detach
+  --name {{ activemq_container_name }}
+
+####################################
+# iDRAC Telemetry Receiver Container
+####################################
+idrac_telemetry_receiver_container_name: "idrac_telemetry_receiver"
+idrac_telemetry_receiver_go_image: "docker.io/library/golang:1.17"
+oim_idrac_telemetry_receiver_dir_path: "{{ oim_idrac_telemetry_dir }}/idrac_telemetry_receiver"
+oim_idrac_telemetry_reference_path: "{{ idrac_telemetry_receiver_dir_path }}/iDRAC-Telemetry-Reference-Tools"
+idrac_telemetry_receiver_entry_script: "/usr/local/bin/idrac_telemetry_receiver_init.sh"
+
+idrac_telemetry_receiver_env:
+  MESSAGEBUS_HOST: "127.0.0.1"
+  MESSAGEBUS_PORT: "61613"
+  CONFIGUI_HTTP_PORT: "3000"
+  MYSQL_DATABASE: "{{ mysql_database }}"
+  MYSQL_HOST: "127.0.0.1"
+  MYSQL_HOST_PORT: "{{ mysql_port }}"
+  HTTP_PROXY: ""
+  HTTPS_PROXY: ""
+
+idrac_telemetry_receiver_run_opts: >-
+  --network=host
+  --secret {{ mysql_user }},type=env,target=MYSQL_USER
+  --secret {{ mysql_user_password }},type=env,target=MYSQL_PASSWORD
+  --volume {{ oim_idrac_telemetry_reference_path }}:/go/src/github.com/telemetry-reference-tools
+  --volume {{ oim_idrac_telemetry_dir }}/idrac_telemetry_receiver_init.sh:{{ idrac_telemetry_receiver_entry_script }}
+  --workdir=/go/src/github.com/telemetry-reference-tools
+  {% for key, value in idrac_telemetry_receiver_env.items() %}
+  --env {{ key }}={{ value }}
+  {% endfor %}
+  --entrypoint {{ idrac_telemetry_receiver_entry_script }}
+  --detach
+
+####################################
+# Prometheus Container
+####################################
+
+prometheus_dir: "{{ telemetry_data_dir }}/prometheus"
+prometheus_container_name: "prometheus"
+prometheus_image: "docker.io/prom/prometheus:v2.43.0"
+prometheus_env:
+  PROMETHEUS_DB: "poweredge_telemetry_metrics"
+  node.name: "127.0.0.1"
+prometheus_run_opts: >-
+  --network=host
+  {% for key, value in prometheus_env.items() %}
+  --env {{ key }}={{ value }}
+  {% endfor %}
+  --volume "{{ prometheus_dir }}/prometheus.yml:/config/prometheus.yml"
+  --volume prometheus_data:/prometheus
+  --volume prometheus_log:/prometheus/log
+  --detach
+
+####################################
+# Prometheus Pump Container
+####################################
+prometheus_pump_entry_script: "/opt/omnia/telemetry/prometheus_pump/prometheus_pump.sh"
+oim_prometheus_pump_dir: "{{ oim_telemetry_dir_path }}/prometheus_pump"
+prometheus_pump_receiver_env:
+  MESSAGEBUS_HOST: "localhost"
+  MESSAGEBUS_PORT: "61613"
+  PROMETHEUSDB_SERVER: "prometheus"
+prometheus_pump_image: "docker.io/library/golang:1.17"
+prometheus_pump_run_opts: >-
+  --network=host
+  {% for key, value in prometheus_pump_receiver_env.items() %}
+  --env {{ key }}={{ value }}
+  {% endfor %}
+  --volume {{ idrac_telemetry_reference_path }}:/go/src/github.com/telemetry-reference-tools
+  --volume {{ oim_prometheus_pump_dir }}:/opt/omnia/telemetry/prometheus_pump
+  -w /go/src/github.com/telemetry-reference-tools
+  --entrypoint {{ prometheus_pump_entry_script }}
+  --detach

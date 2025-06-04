@@ -1,4 +1,4 @@
-# Copyright 2024 Dell Inc. or its subsidiaries. All Rights Reserved.
+# Copyright 2025 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -12,20 +12,12 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
----
-
-# Usage: main.yml
-images_directory_path: "{{ oim_shared_path }}/omnia/images"
-read_write_mode: "0644"
-container_tag: "latest"
-container_tar_file: "omnia_images.tar"
-kubespray_tag: "v2.27.0"
-mysql_tag: "8.0"
-golang_tag: "1.17"
-prometheus_tag: "v2.36.0"
-activemq_tag: "5.14.3"
-container_images:
-  - "omnia_core:{{ container_tag }}"
-  - "omnia_pcs:{{ container_tag }}"
-  - "omnia_provision:{{ container_tag }}"
-  - "pulp:{{ container_tag }}"
+- name: Pull podman images from tar file
+  block:
+    - name: Load podman images
+      containers.podman.podman_load:
+        input: "{{ omnia_images_tar }}"
+  rescue:
+    - name: Failed to load the telemetry images
+      ansible.builtin.fail:
+        msg: "{{ load_images_fail_msg }}"

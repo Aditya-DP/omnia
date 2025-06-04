@@ -99,7 +99,7 @@ def main():
         service_dir = os.path.join(base_dir, service_tag)
         pcs_dir = os.path.join(service_dir, 'pcs')
         pcs_config_dir = os.path.join(pcs_dir, 'config')
-        pcs_telemetry_script_path = os.path.join(pcs_config_dir, 'telemetry.sh')
+        pcs_telemetry_script_path = os.path.join(pcs_config_dir, 'pcs_telemetry.sh')
 
         # Create telemetry directories when idrac telemetry is supported
         # if module.params['idrac_telemetry_support'] == 'true':

@@ -41,3 +41,6 @@
       when: hostvars['localhost']['idrac_telemetry_collection_type'] == "prometheus"
       vars:
         podman_volume_name: "{{ prometheus_podman_volumes }}"
+
+    - name: Include tasks for podman images
+      ansible.builtin.include_tasks: pull_podman_images.yml

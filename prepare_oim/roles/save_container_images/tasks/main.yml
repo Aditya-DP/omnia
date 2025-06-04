@@ -29,6 +29,17 @@
   ansible.builtin.set_fact:
     container_images: "{{ container_images + ['omnia_kubespray:' + kubespray_tag] }}"
 
+- name: Add telemetry to container image list if telemetry_support is true
+  when: hostvars['localhost']['idrac_telemetry_support'] | default(false)
+  ansible.builtin.set_fact:
+    container_images: >-
+      {{ container_images + [
+          'docker.io/library/mysql:' + mysql_tag,
+          'docker.io/rmohr/activemq:' + activemq_tag,
+          'docker.io/library/golang:' + golang_tag,
+          'docker.io/prom/prometheus:' + prometheus_tag
+        ] }}
+
 - name: Save container images
   containers.podman.podman_save:
     image: "{{ container_images }}"

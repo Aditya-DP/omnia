@@ -56,6 +56,13 @@ pcs constraint location {{ pcs_group }} prefers {{ node.hostname }}=100
 {% endfor %}
 {% endif %}
 
+if [ -f pcs_telemetry.sh ]; then
+    echo "Found pcs_telemetry.sh. Running using bash..."
+    bash pcs_telemetry.sh
+else
+    echo "pcs_telemetry.sh not found in the current directory. Skipping..."
+fi
+
 # Stickiness to avoid unnecessary failover
 pcs resource defaults resource-stickiness=100
 # Enable on boot

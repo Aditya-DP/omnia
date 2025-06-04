@@ -45,20 +45,6 @@
     idrac_telemetry_support: "{{ idrac_telemetry_support | lower }}"
     visualization_support: "{{ visualization_support | lower }}"
 
-- name: Assert idrac telemetry support
-  ansible.builtin.assert:
-    that:
-      - idrac_telemetry_support == true or idrac_telemetry_support == false
-    success_msg: "{{ idrac_telemetry_support_success_msg }}"
-    fail_msg: "{{ idrac_telemetry_support_fail_msg }}"
-
-- name: Assert visualization support
-  ansible.builtin.assert:
-    that:
-      - visualization_support == true or visualization_support == false
-    success_msg: "{{ visualization_support_success_msg }}"
-    fail_msg: "{{ visualization_support_fail_msg }}"
-
 - name: Warning for all telemetry support category values set as false
   ansible.builtin.pause:
     seconds: "{{ pause_time_15 }}"
@@ -66,13 +52,6 @@
   when:
     - not idrac_telemetry_support
     - not visualization_support
-
-- name: Please wait, This task will take few seconds
-  ansible.builtin.pause:
-    seconds: "{{ idrac_omnia_telemetry_support_false_warn_time }}"
-    prompt: "{{ idrac_omnia_telemetry_support_warn_msg }}"
-  when:
-    - not idrac_telemetry_support
 
 # - name: Validate k8s prometheus, scrape interval and prometheus gaudi
 #   ansible.builtin.include_tasks: validate_k8s_prometheus_prometheus_gaudi.yml

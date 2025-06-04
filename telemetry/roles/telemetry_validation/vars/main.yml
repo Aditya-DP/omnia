@@ -13,136 +13,53 @@
 # limitations under the License.
 ---
 
+# Usage: validate_telemetry_config.yml
 omnia_metadata_file: "/opt/omnia/.data/oim_metadata.yml"
-
-# local repo
-software_config_file: "{{ role_path }}/../../../input/software_config.json"
-local_repo_access_path: "/opt/omnia/offline/local_repo_access.yml"
-telemetry_packages_file: "{{ role_path }}/../../../input/config/{{ software_config.cluster_os_type }}/{{ software_config.cluster_os_version }}/telemetry.json"
-
-slurm_telemetry_support: false
-
-# Usage: include_provision_config.yml
-provision_config_file: "{{ role_path }}/../../../input/provision_config.yml"
-fail_msg_provision_config_file: "provision_config.yml file doesn't exist."
 telemetry_config_file: "{{ input_project_dir }}/telemetry_config.yml"
 fail_msg_telemetry_config_file: "telemetry_config.yml file doesn't exist."
-
-# Usage: validate_telemetry_config.yml
-success_msg_k8s_pod_network_cidr: "Appliance k8s pod network cidr validated"
-fail_msg_k8s_pod_network_cidr: "Failed. Incorrect appliance k8s pod network cidr provided in input/telemetry_config.yml"
-folder_perm: '644'
-vault_file_perm: '0644'
-idrac_telemetry_support_success_msg: "idrac_telemetry_support validated"
-idrac_telemetry_support_fail_msg: "Failed. idrac_telemetry_support only accepts boolean
-                                    values true or false"
-omnia_telemetry_support_fail_msg: "Failed. omnia_telemetry_support accepts boolean value true or false"
-visualization_support_success_msg: "visualization_support_ validated"
-visualization_support_fail_msg: "Failed. visualization_support accepts boolean value true or false"
-k8s_prometheus_support_success_msg: "k8s_prometheus_support validated"
-k8s_prometheus_support_fail_msg: "Failed. k8s_prometheus_support accepts boolean value true or false"
-prometheus_gaudi_support_success_msg: "prometheus_gaudi_support validated"
-prometheus_gaudi_support_fail_msg: "Failed. prometheus_gaudi_support accepts boolean value true or false"
-idrac_omnia_telemetry_support_false_warn_time: 10
 pause_time_15: 15
-warning_telemetry_support_false: "Warning. telemetry entry is present in software_config.json, but all telemetry support categories \
-(idrac_telemetry_support, omnia_telemetry_support, visualization_support, k8s_prometheus_support and prometheus_gaudi_support) are false  \
-in input/telemetry_config.yml. omnia does not deploy telemetry feature if none of the support category is true."
-idrac_omnia_telemetry_support_warn_msg: "Warning. idrac_telemetry_support, omnia_telemetry_support, \
-k8s_prometheus_support and prometheus_gaudi_support are set to false"
-vault_filename: "{{ role_path }}/../../../input/.telemetry_vault_key"
-login_vars_fail_msg: "Username/password validation in telemetry_config.yml failed. Please check the requirements."
-# K8s Input validation
-invalid_k8s_cni: "Invalid k8s_cni entry in telemetry_config.yml. Enter either calico or flannel"
-invalid_pod_external_ip_range: "Invalid pod_external_ip_range in telemetry_config.yml."
-invalid_k8s_service_addresses: "Invalid k8s_service_addresses in telemetry_config.yml."
-invalid_k8s_pod_network_cidr: "Invalid k8s_pod_network_cidr in telemetry_config.yml."
+warning_telemetry_support_false: |
+  "Warning. idrac_telemetry_support and visualization_support are false in input/telemetry_config.yml.
+  Omnia does not deploy telemetry feature if none of the support category is true."
+telemetry_config_syntax_fail_msg: "Failed. Syntax errors present in telemetry_config.yml. Fix errors and re-run playbook again."
 
-# Usage: validate_idrac_telemetry.yml
-min_length_idrac: 3
-max_length: 30
-fail_timezone_msg: "Failed. Incorrect timezone provided. Please check the file timezone.txt in discovery/roles/discovery_validations/common/files/ folder."
-idrac_credentials_fail_msg: "idrac_username and idrac_password must be provided in telemetry_config.yml."
-idrac_inventory_msg: "Failed. The inventory containing idrac groups must be provided when idrac_telemetry_support is set to true \
-                      in telemetry_config.yml playbook."
-idrac_exec_msg: "Since the absence of idrac group in inventory and existence of /opt/omnia/provisioned_idrac_inventory file.
-                   iDRAC telemetry execution will be skipped"
-advanced_vars_fail_msg: "Please give correct inputs for advanced configurations (mysqldb credentials) for idrac telemetry in telemetry_config.yml.
-                  Advanced configurations include inputs related to mysqldb for storing idrac credentials"
+# # Usage: include_provision_config.yml
+# provision_config_file: "{{ input_project_dir }}/provision_config.yml"
+# fail_msg_provision_config_file: "provision_config.yml file doesn't exist."
+# fail_timezone_msg: "Failed. Incorrect timezone provided. Please check the file timezone.txt in discovery/roles/discovery_validations/common/files/ folder."
 
-# Usage: validate_omnia_telemetry.yml
-min_interval: 60
-max_interval: 3600
-omnia_telemetry_collection_interval_fail_msg: "Failed. omnia_telemetry_collection_interval accepts integer values between 60 to 3600 seconds"
-collect_regular_metrics_fail_msg: "Failed. collect_regular_metrics accepts values true or false"
-collect_health_check_metrics_fail_msg: "Failed. collect_health_check_metrics accepts values true or false"
-collect_gpu_metrics_fail_msg: "Failed. collect_gpu_metrics accepts values true or false"
-all_omnia_telemetry_support_false_fail_msg: "Failed. One of Regular, health-check or GPU metric collector must be true if omnia_telemetry_support is true"
-fuzzy_offset_fail_msg: "Failed. fuzzy_offset accepts integer values greater than equal to 60 and less than omnia_telemetry_collection_interval value"
-metric_collection_timeout_fail_msg: "Failed. metric_collection_timeout accepts integer values greater than 0 and less than omnia_telemetry_collection_interval"
-telemetry_config_syntax_fail_msg: "Failed. Syntax errors present in telemetry_config.yml. Fix errors and re-run playbook again. Common syntax Errors:
-indentation errors, improper quotes, improper space or tab, missing colon, missing comma etc. "
-k8s_inventory_fail_msg: "Inventory comprising kube_control_plane, kube_node and etcd groups should be passed when k8s entry present in \
-software_config.json and omnia_telemetry_support is true."
-inventory_success_msg: "Inventory is passed."
-kube_control_plane_group_fail_msg: "kube_control_plane group should contain exactly 1 node in inventory"
-kube_node_group_fail_msg: "kube_node group should contain atleast 1 node in inventory"
-etcd_group_fail_msg: "etcd group should contain atleast 1 node in inventory"
-etcd_odd_entry_fail_msg: "etcd group should have odd number of nodes in inventory"
-login_group_fail_msg: "Login group should contain exactly 1 node"
-slurm_inventory_fail_msg: "Inventory comprising slurm_control_node and slurm_node groups should be passed when slurm entry present in \
-software_config.json and omnia_telemetry_support is true."
-slurm_control_node_group_fail_msg: "slurm_control_node group should contain exactly 1 node in inventory"
-slurm_node_group_fail_msg: "slurm_node group should contain atleast 1 node in inventory"
+# # Usage: validate_k8s_prometheus_prometheus_gaudi.yml
+# k8s_prom_gaudi_inventory_fail_msg: "Inventory comprising kube_control_plane, kube_node and etcd groups should be passed  \
+# when k8s_prometheus_support or prometheus_gaudi_support is true in telemetry_config.yml."
+# prometheus_scrape_interval_fail_msg: "Failed. prometheus_scrape_interval accepts integer values greater than 0"
+# # local repo
+# software_config_file: "{{ input_project_dir }}/software_config.json"
+# local_repo_access_path: "/opt/omnia/offline/local_repo_access.yml"
+# telemetry_packages_file: "{{ input_project_dir }}/config/{{ software_config.cluster_os_type }}/{{ software_config.cluster_os_version }}/telemetry.json"
 
-# Usage: validate_k8s_prometheus_prometheus_gaudi.yml
-k8s_prom_gaudi_inventory_fail_msg: "Inventory comprising kube_control_plane, kube_node and etcd groups should be passed  \
-when k8s_prometheus_support or prometheus_gaudi_support is true in telemetry_config.yml."
-prometheus_scrape_interval_fail_msg: "Failed. prometheus_scrape_interval accepts integer values greater than 0"
+# # Usage: validate_prometheus_gaudi.yaml
+# fail_msg_k8s_prometheus_support_false: "Failed. k8s_prometheus_support must be true when prometheus_gaudi_support is true in telemetry_config.yml."
+# fail_msg_prometheus_gaudi_support: "Failed. prometheus_gaudi_support is only available for cluster_os_type: ubuntu and cluster_os_version: 22.04 , 24.04. \
+# Please update prometheus_gaudi_support to false in telemetry_config.yml."
 
-# Usage: validate_prometheus_gaudi.yaml
-fail_msg_k8s_prometheus_support_false: "Failed. k8s_prometheus_support must be true when prometheus_gaudi_support is true in telemetry_config.yml."
-fail_msg_prometheus_gaudi_support: "Failed. prometheus_gaudi_support is only available for cluster_os_type: ubuntu and cluster_os_version: 22.04 , 24.04. \
-Please update prometheus_gaudi_support to false in telemetry_config.yml."
+# # Usage: validate_k8s_setup.yml
+# k8s_error_message: "No such file or directory"
+# k8s_cluster_fail_msg: "Failed. k8s cluster setup not found. Hence k8s prometheus or prometheus gaudi will not be deployed. \
+# Please run scheduler/scheduler.yml to setup k8s cluster"
 
-# Usage: validate_k8s_setup.yml
-k8s_error_message: "No such file or directory"
-k8s_cluster_fail_msg: "Failed. k8s cluster setup not found. Hence k8s prometheus or prometheus gaudi will not be deployed. \
-Please run scheduler/scheduler.yml to setup k8s cluster"
-
-# Usage: set_docker_os.yml
-docker_rocky_os: "8.5"
-slurm_telemetry_dockerfile_path: "{{ playbook_dir }}/roles/slurm_telemetry/files/Dockerfile"
-
-# Usage: validate_grafana.yml
-fail_msg_grafana_credentials: "Failed. Incorrect grafana_username or grafana_password format provided"
-mount_validation_msg: "Make sure mount location value is not null"
-min_length_grafana: 5
-
-# Usage: validate_site_config.yml
-site_config_file: "{{ role_path }}/../../../input/site_config.yml"
-invalid_proxy_failure_msg: "Failed. Both http_proxy and https_proxy should be set for proxy variable provided in site_config.yml"
-# proxy_env_fail_msg: "Failed. The values for http_proxy {{ proxy[0].http_proxy }} and https_proxy {{ proxy[0].https_proxy }} in the
-# proxy variable of the site_config.yml should be set as environment variables http_proxy and https_proxy in the Omnia Infrastructure Manager.
-# The no_proxy environment variable should include the Omnia Infrastructure Manager hostname and the admin network IP address."
-update_repos_fail_msg: "Failed to update repos. Verify proxy configuration in Omnia Infrastructure Manager for acccessing internet."
-oim_os_redhat: "redhat"
-oim_os_rocky: "rocky"
-oim_os_ubuntu: "ubuntu"
-repo_retries: 5
-repo_delay: 10
-dnf_conf_path: "/etc/dnf/dnf.conf"
-
-# Usage: validate_provision_config_credentials.yml
-docker_password_fail_msg: "docker password must be mentioned when docker_username is defined."
-warning_wait_time: 30
-warning_msg_docker_username_password_incomplete: "[WARNING] Docker credentials not provided in provision_config_credentials.yml.
-Proceeding without docker credentials."
-provision_config_credentials_filename: "{{ role_path }}/../../../input/provision_config_credentials.yml"
-provision_credentials_vault_path: "{{ role_path }}/../../../input/.provision_credential_vault_key"
-ansible_vault_search_key: "$ANSIBLE_VAULT;"
-provision_config_credentials_syntax_fail_msg: "Failed. Syntax errors present in provision_config_credentials.yml. Fix errors and re-run playbook again."
-conf_file_mode: "0644"
+# # Usage: validate_site_config.yml
+# site_config_file: "{{ input_project_dir }}/site_config.yml"
+# invalid_proxy_failure_msg: "Failed. Both http_proxy and https_proxy should be set for proxy variable provided in site_config.yml"
+# # proxy_env_fail_msg: "Failed. The values for http_proxy {{ proxy[0].http_proxy }} and https_proxy {{ proxy[0].https_proxy }} in the
+# # proxy variable of the site_config.yml should be set as environment variables http_proxy and https_proxy in the Omnia Infrastructure Manager.
+# # The no_proxy environment variable should include the Omnia Infrastructure Manager hostname and the admin network IP address."
+# update_repos_fail_msg: "Failed to update repos. Verify proxy configuration in Omnia Infrastructure Manager for acccessing internet."
+# oim_os_redhat: "redhat"
+# oim_os_rocky: "rocky"
+# oim_os_ubuntu: "ubuntu"
+# repo_retries: 5
+# repo_delay: 10
+# dnf_conf_path: "/etc/dnf/dnf.conf"
 
 # Usage: validate_idrac_inventory.yml
 bmc_group_data_filename: "/opt/omnia/telemetry/bmc_group_data.csv"
