@@ -32,7 +32,7 @@ telemetry_report: |
 
   Total IPs Found: {{ idrac_ip_count }}
   IPs List:
-    {% for item in idrac_ip %}
+    {% for item in filtered_bmc_ips %}
     - {{ item }}
     {% endfor %}
 
@@ -42,7 +42,7 @@ telemetry_report: |
     - {{ item }}
     {% endfor %}
 
-  IPs with Telemetry Initiated: {{ filtered_idrac_count }}
+  IPs with Telemetry Initiated: {{ telemetry_idrac_count }}
   IPs List (Telemetry Activated):
     {% for item in telemetry_idrac %}
     - {{ item }}
