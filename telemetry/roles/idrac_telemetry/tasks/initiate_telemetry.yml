@@ -1,4 +1,4 @@
-# Copyright 2024 Dell Inc. or its subsidiaries. All Rights Reserved.
+# Copyright 2025 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,18 +30,14 @@
         idrac_telemetry_scripting_repo: "https://github.com/dell/iDRAC-Telemetry-Scripting.git"
         idrac_telemetry_scripting_stable_commit: "1f4bb26"
         idrac_telemetry_scripting_folder: iDRAC-Telemetry-Scripting
-        min_firmware_version_reqd: 4
-        datacenter_license: false
-        firmware_version: false
-        skipped_idrac: []
-        telemetry_idrac: []
+        # telemetry_idrac: []
         service_type: 3
         auth_type: 1
-        idrac_ip_count: 0
-        filtered_idrac_count: 0
-        failed_idrac_count: 0
-        failed_idrac: []
-        idrac_ip: []
+        # idrac_ip_count: 0
+        # filtered_idrac_count: 0
+        # failed_idrac_count: 0
+        # failed_idrac: []
+        # idrac_ip: []
 
     - name: Fetch and filter iDRAC details from mysqlDB
       block:
@@ -93,6 +89,22 @@
       loop_control:
         index_var: idrac_index
       # no_log: true
+    
+    - name: Add iDRAC nodes and initiate telemetry
+      filter_idrac:
+        filtered_bmc_ips: "{{ filtered_bmc_ips }}"
+        idrac_user: "{{ hostvars['localhost']['bmc_username'] }}"
+        idrac_password: "{{ hostvars['localhost']['bmc_password'] }}"
+      no_log: true
+      register: idrac_manager
+
+    - name: Set facts from iDRAC manager results
+      set_fact:
+        idrac_ip_count: "{{ idrac_manager.idrac_ip_count | default(0) }}"
+        telemetry_idrac: "{{ idrac_manager.telemetry_idrac | default([]) }}"
+        telemetry_idrac_count: "{{ idrac_manager.telemetry_idrac_count | default(0) }}"
+        failed_idrac: "{{ idrac_manager.failed_idrac | default([]) }}"
+        failed_idrac_count: "{{ idrac_manager.failed_idrac_count | default(0) }}"
 
 # Add iDRAC Credentials in DB and enable telemetry fetching
 
