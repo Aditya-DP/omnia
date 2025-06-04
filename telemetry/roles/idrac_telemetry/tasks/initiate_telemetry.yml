@@ -82,13 +82,6 @@
             msg: "{{ mysqldb_insert_fail_msg }}"
 
 # Filter iDRACs matching telemetry pre-requisites
-
-    - name: Add iDRAC nodes and initiate telemetry
-      ansible.builtin.include_tasks: filter_idrac.yml
-      with_items: "{{ filtered_bmc_ips }}"
-      loop_control:
-        index_var: idrac_index
-      # no_log: true
     
     - name: Add iDRAC nodes and initiate telemetry
       filter_idrac:
