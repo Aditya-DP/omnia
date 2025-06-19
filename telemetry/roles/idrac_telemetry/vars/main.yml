@@ -18,8 +18,7 @@ python_version: "{{ ansible_python_interpreter }}"
 mysqldb_name: "idrac_telemetrydb"
 omnia_nfs_share: "{{ hostvars['localhost']['oim_shared_path'] }}/omnia"
 idrac_telemetry_scripting_folder: "idrac_telemetry/iDRAC-Telemetry-Scripting"
-telemetry_dir_path: >-
-  {{ (omnia_nfs_share ~ '/telemetry') if inventory_hostname != 'localhost' else '/opt/omnia/telemetry/' }}
+telemetry_dir_path: "/opt/omnia/telemetry/"
 mysqldb_insert_fail_msg: |
   Failed to add/get iDRAC credential details in the mysql database.
   This could be due to the tables in the mysqldb not being accessible at the moment. Please try running the playbook again after some time.

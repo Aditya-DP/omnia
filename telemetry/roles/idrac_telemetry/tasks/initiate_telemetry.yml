@@ -92,6 +92,8 @@
         bmc_username: "{{ hostvars['localhost']['bmc_username'] }}"
         bmc_password: "{{ hostvars['localhost']['bmc_password'] }}"
         verify_bmc: true
+      delegate_to: localhost
+      connection: local
       register: bmc_result
 
     - name: Show verified BMC entries
@@ -140,6 +142,8 @@
             bmc_password: "{{ hostvars['localhost']['bmc_password'] }}"
             min_firmware_version_reqd: "{{ min_firmware_version_reqd }}"
           no_log: true
+          delegate_to: localhost
+          connection: local
           register: filter_idrac_output
           when:
             - bmc_result.verified_bmc is defined
@@ -170,6 +174,8 @@
             chdir: "{{ telemetry_dir_path }}/{{ idrac_telemetry_scripting_folder }}"
           with_items: "{{ telemetry_idrac }}"
           changed_when: false
+          delegate_to: localhost
+          connection: local
           no_log: true
       rescue:
         - name: Failed to enable the iDRAC telemetry
