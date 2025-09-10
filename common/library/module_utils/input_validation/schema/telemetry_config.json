@@ -76,6 +76,9 @@
               "log_retention_bytes": {
                 "type": "integer"
               },
+              "log_segment_bytes": {
+                "type": "integer"
+              },
               "topic_partitions": {
                 "type": "integer",
                 "minimum": 1
@@ -85,6 +88,7 @@
               "persistence_size",
               "log_retention_hours",
               "log_retention_bytes",
+              "log_segment_bytes",
               "topic_partitions"
             ]
           }

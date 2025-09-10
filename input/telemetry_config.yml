@@ -66,8 +66,8 @@ kafka_configurations:
   log_retention_bytes: -1
 
   # The maximum size of Kafka log segments (in bytes) before they are deleted.
-  # Default: 104857600 (100 MB)
-  log_segment_bytes: 104857600
+  # Default: 104857600 (1 GB)
+  log_segment_bytes: 1073741824
 
   # The number of partitions for each Kafka topic.
   # Increasing this can improve throughput but also increases storage/overhead.
