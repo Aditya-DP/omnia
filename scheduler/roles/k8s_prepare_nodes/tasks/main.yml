@@ -21,8 +21,8 @@
 
     - name: Update the inventory with kube vip interface
       ansible.builtin.include_tasks: update_inv.yml
-      when:
-        - hostvars['127.0.0.1']['enable_k8s_ha']
+      # when:
+      #   - hostvars['127.0.0.1']['enable_k8s_ha']
 
     - name: Copy docker login file
       ansible.builtin.include_tasks: docker_login.yml

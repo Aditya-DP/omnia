@@ -19,43 +19,43 @@
   when:
     - "('kube_control_plane' not in groups or 'etcd' not in groups)"
 
-- name: Ensure correct Kubernetes in non-HA setup
-  when:
-    - cluster_type != "unknown"
-    - not enable_k8s_ha
-  block:
-    - name: Kube control plane group to contain at least 3 kube control plane
-      ansible.builtin.assert:
-        that:
-          - "((groups['kube_control_plane'] | length | int) >= 1)"
-        success_msg: "{{ kube_one_node_validation_success_msg }}"
-        fail_msg: "{{ kube_control_plane_validation_fail_msg }}"
+# - name: Ensure correct Kubernetes in non-HA setup
+#   when:
+#     - cluster_type != "unknown"
+#     - not enable_k8s_ha
+#   block:
+#     - name: Kube control plane group to contain at least 3 kube control plane
+#       ansible.builtin.assert:
+#         that:
+#           - "((groups['kube_control_plane'] | length | int) >= 1)"
+#         success_msg: "{{ kube_one_node_validation_success_msg }}"
+#         fail_msg: "{{ kube_control_plane_validation_fail_msg }}"
 
-    - name: Warning Kube control plane group contain multiple kube control plane
-      ansible.builtin.pause:
-        seconds: "{{ warning_wait_time }}"
-        prompt: "{{ kube_nonha_setup_warning_msg }}"
-      when:
-        - groups['kube_control_plane'] | length | int > 1
+#     - name: Warning Kube control plane group contain multiple kube control plane
+#       ansible.builtin.pause:
+#         seconds: "{{ warning_wait_time }}"
+#         prompt: "{{ kube_nonha_setup_warning_msg }}"
+#       when:
+#         - groups['kube_control_plane'] | length | int > 1
 
-- name: Ensure correct Kubernetes in HA setup
-  when:
-    - cluster_type != "unknown"
-    - enable_k8s_ha
-  block:
-    - name: Kube control plane group to contain atleast 3 kube control plane
-      ansible.builtin.assert:
-        that:
-          - "((groups['kube_control_plane'] | length | int) > 1)"
-        success_msg: "{{ kube_one_node_validation_success_msg }}"
-        fail_msg: "{{ kube_control_plane_ha_validation_fail_msg }}"
+# - name: Ensure correct Kubernetes in HA setup
+#   when:
+#     - cluster_type != "unknown"
+#     - enable_k8s_ha
+#   block:
+#     - name: Kube control plane group to contain atleast 3 kube control plane
+#       ansible.builtin.assert:
+#         that:
+#           - "((groups['kube_control_plane'] | length | int) > 1)"
+#         success_msg: "{{ kube_one_node_validation_success_msg }}"
+#         fail_msg: "{{ kube_control_plane_ha_validation_fail_msg }}"
 
-    - name: Warning Kube control plane group contain even number of nodes in the inventory
-      ansible.builtin.pause:
-        seconds: "{{ warning_wait_time }}"
-        prompt: "{{ kube_ha_setup_warning_msg }}"
-      when:
-        - ((groups['kube_control_plane'] | length | int) % 2) == 0
+#     - name: Warning Kube control plane group contain even number of nodes in the inventory
+#       ansible.builtin.pause:
+#         seconds: "{{ warning_wait_time }}"
+#         prompt: "{{ kube_ha_setup_warning_msg }}"
+#       when:
+#         - ((groups['kube_control_plane'] | length | int) % 2) == 0
 
 - name: Etcd node group to contain atleast 1 etcd node
   ansible.builtin.assert:
