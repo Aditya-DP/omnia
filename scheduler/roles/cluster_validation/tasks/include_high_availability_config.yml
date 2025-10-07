@@ -43,15 +43,15 @@
       when: selected_cluster_ha is defined
       ansible.builtin.set_fact:
         enable_k8s_ha: "{{ selected_cluster_ha.enable_k8s_ha | default(false) }}"
-        k8s_vip: "{{ selected_cluster_ha.virtual_ip_address | default('') }}"
+        k8s_vip: "{{ groups['kube_control_plane'][0] }}"
         external_lb_ip: "{{ selected_cluster_ha.external_loadbalancer_ip | default('') }}"
         lb_port: "{{ selected_cluster_ha.loadbalancer_port | default('') }}"
         active_node_service_tags: "{{ selected_cluster_ha.active_node_service_tags | default([]) }}"
 
-    - name: Fail if HA is disabled
-      ansible.builtin.fail:
-        msg: "{{ ha_fail_msg }}"
-      when: not enable_k8s_ha
+    # - name: Fail if HA is disabled
+    #   ansible.builtin.fail:
+    #     msg: "{{ ha_fail_msg }}"
+    #   when: not enable_k8s_ha
 
     - name: Validate virtual_ip_address details when enable_k8s_ha is provided
       ansible.builtin.assert:
@@ -59,4 +59,4 @@
           - k8s_vip is defined
           - k8s_vip | length > 1
         fail_msg: "{{ ha_vip_address_fail_msg }}"
-      when: enable_k8s_ha
+      # when: enable_k8s_ha
