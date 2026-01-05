@@ -98,8 +98,10 @@
       no_log: true
       when: not cluster_id_present | default(false)
 
-- name: Configure TLS certificate for VictoriaMetrics
-  when: "'victoria' in hostvars['localhost']['idrac_telemetry_collection_type']"
+- name: Configure TLS certificate for VictoriaMetrics (legacy manual deployment only)
+  when:
+    - "'victoria' in hostvars['localhost']['idrac_telemetry_collection_type']"
+    - false  # Disabled: operator handles TLS internally. Re-enable only if reverting to manual deployment.
   block:
     - name: Create VictoriaMetrics certificate directory
       ansible.builtin.file:
