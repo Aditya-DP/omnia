@@ -181,6 +181,10 @@ vmagent:
 
 strmzi_kafka_tarball_url: "{{ offline_tarball_path }}/{{ strimzi_kafka_pkg }}/{{ strimzi_kafka_pkg }}.tar.gz"
 
+# Victoria Metrics operator tarball configuration
+victoria_operator_pkg: "victoria-metrics-operator-0.50.0"
+victoria_operator_tarball_url: "{{ offline_tarball_path }}/{{ victoria_operator_pkg }}/{{ victoria_operator_pkg }}.tar.gz"
+
 # Usage: validate_idrac_inventory.yml
 bmc_group_data_filename: "/opt/omnia/telemetry/bmc_group_data.csv"
 bmc_group_data_headers: "BMC_IP,GROUP_NAME,PARENT"
@@ -195,39 +199,59 @@ common_mode: "0755"
 # Usage: generate_telemetry_deployments.yml - Template lists for different components
 # Victoria templates - conditional based on victoria_cluster.enabled
 victoria_templates_common:
-  - src: 'telemetry/victoria/victoria-tls-secret.yaml.j2'
-    dest: 'victoria-tls-secret.yaml'
   - src: 'telemetry/victoria/victoria-vmagent-rbac.yaml.j2'
     dest: 'victoria-vmagent-rbac.yaml'
   - src: 'telemetry/victoria/vmagent-scrape-config.yaml.j2'
     dest: 'vmagent-scrape-config.yaml'
+
+# Operator-based templates (new default)
+# Single-node operator template (used when victoria_cluster.enabled: false)
+victoria_templates_operator_single:
+  - src: 'telemetry/victoria/victoria-operator-vmsingle.yaml.j2'
+    dest: 'victoria-operator-vmsingle.yaml'
+  - src: 'telemetry/victoria/victoria-operator-vmagent.yaml.j2'
+    dest: 'victoria-operator-vmagent.yaml'
+
+# Cluster operator template (used when victoria_cluster.enabled: true)
+victoria_templates_operator_cluster:
+  - src: 'telemetry/victoria/victoria-operator-vmcluster.yaml.j2'
+    dest: 'victoria-operator-vmcluster.yaml'
+  - src: 'telemetry/victoria/victoria-operator-vmagent.yaml.j2'
+    dest: 'victoria-operator-vmagent.yaml'
+
+# Legacy manual deployment templates (kept for backward compatibility)
+# Single-node templates (used when victoria_cluster.enabled: false)
+victoria_templates_single:
+  - src: 'telemetry/victoria/victoria-tls-secret.yaml.j2'
+    dest: 'victoria-tls-secret.yaml'
+  - src: 'telemetry/victoria/victoria-statefulset.yaml.j2'
+    dest: 'victoria-statefulset.yaml'
   - src: 'telemetry/victoria/victoria-agent-deployment.yaml.j2'
     dest: 'victoria-agent-deployment.yaml'
 
-# Single-node templates (used when victoria_cluster.enabled: false)
-victoria_templates_single:
-  - src: 'telemetry/victoria/victoria-statefulset.yaml.j2'
-    dest: 'victoria-statefulset.yaml'
-
 # Cluster templates (used when victoria_cluster.enabled: true)
 victoria_templates_cluster:
+  - src: 'telemetry/victoria/victoria-tls-secret.yaml.j2'
+    dest: 'victoria-tls-secret.yaml'
   - src: 'telemetry/victoria/victoria-cluster-vmstorage.yaml.j2'
     dest: 'victoria-cluster-vmstorage.yaml'
   - src: 'telemetry/victoria/victoria-cluster-vminsert.yaml.j2'
     dest: 'victoria-cluster-vminsert.yaml'
   - src: 'telemetry/victoria/victoria-cluster-vmselect.yaml.j2'
     dest: 'victoria-cluster-vmselect.yaml'
+  - src: 'telemetry/victoria/victoria-agent-deployment.yaml.j2'
+    dest: 'victoria-agent-deployment.yaml'
 
 # Test job template (optional)
 victoria_templates_test:
   - src: 'telemetry/victoria/victoria-tls-test-job.yaml.j2'
     dest: 'test/victoria-tls-test-job.yaml'
 
-# Combined victoria_templates for backward compatibility
+# Combined victoria_templates - uses operator by default
 # Note: victoria_templates_test is commented out by default in kustomization.yaml.j2
 victoria_templates: >
   {{ victoria_templates_common +
-     (victoria_templates_cluster if victoria_cluster.enabled else victoria_templates_single) +
+     (victoria_templates_operator_cluster if victoria_cluster.enabled else victoria_templates_operator_single) +
      victoria_templates_test }}
 
 kafka_templates:
