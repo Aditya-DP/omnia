@@ -182,7 +182,7 @@ vmagent:
 strmzi_kafka_tarball_url: "{{ offline_tarball_path }}/{{ strimzi_kafka_pkg }}/{{ strimzi_kafka_pkg }}.tar.gz"
 
 # Victoria Metrics operator tarball configuration
-victoria_operator_pkg: "victoria-metrics-operator-0.50.0"
+victoria_operator_pkg: "victoria-metrics-operator-0.37.5"
 victoria_operator_tarball_url: "{{ offline_tarball_path }}/{{ victoria_operator_pkg }}/{{ victoria_operator_pkg }}.tar.gz"
 
 # Usage: validate_idrac_inventory.yml

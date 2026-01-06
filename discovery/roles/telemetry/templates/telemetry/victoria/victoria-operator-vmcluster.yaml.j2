@@ -33,12 +33,15 @@ spec:
       pullPolicy: IfNotPresent
     
     # Storage configuration per pod
+    storageDataPath: /vmstorage-data
     storage:
-      accessModes:
-        - ReadWriteOnce
-      resources:
-        requests:
-          storage: {{ hostvars['localhost']['victoria_configurations']['persistence_size'] }}
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: {{ hostvars['localhost']['victoria_configurations']['persistence_size'] }}
     
     # Resource limits
     resources:
@@ -170,8 +173,5 @@ spec:
 {% if victoria_cluster.vminsert.external_access %}
     
     # External access via LoadBalancer
-    serviceSpec:
-      type: LoadBalancer
-      metadata:
-        name: vminsert-external
+    serviceType: LoadBalancer
 {% endif %}
