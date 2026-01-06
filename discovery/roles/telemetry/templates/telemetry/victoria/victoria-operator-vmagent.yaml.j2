@@ -52,16 +52,11 @@ spec:
       memory: "1Gi"
       cpu: "1000m"
   
-  # Service discovery configs
+  # Service discovery configs - operator uses VMServiceScrape/VMPodScrape CRDs
   serviceScrapeNamespaceSelector: {}
   serviceScrapeSelector: {}
   podScrapeNamespaceSelector: {}
   podScrapeSelector: {}
-  
-  # Additional scrape configs from ConfigMap
-  additionalScrapeConfigs:
-    name: {{ vmagent.configmap_name }}
-    key: prometheus.yml
   
   # Extra args
   extraArgs:

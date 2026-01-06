@@ -2,9 +2,8 @@ resources:
   - telemetry_secret_creation.yaml
 {% set types = hostvars['localhost']['idrac_telemetry_collection_type'].split(',') %}
 {% if 'victoria' in types %}
-  # VictoriaMetrics Common Resources (RBAC and scrape config)
+  # VictoriaMetrics Common Resources (RBAC)
   - victoria-vmagent-rbac.yaml
-  - vmagent-scrape-config.yaml
   # VictoriaMetrics Operator-based Deployment (mode: {{ hostvars['localhost']['victoria_configurations']['deployment_mode'] }})
 {% if hostvars['localhost']['victoria_configurations']['deployment_mode'] == 'cluster' %}
   # Cluster Mode: VMCluster CR (operator manages StatefulSets)
@@ -15,6 +14,8 @@ resources:
 {% endif %}
   # VMAgent CR (operator-managed scraper)
   - victoria-operator-vmagent.yaml
+  # VMPodScrape CR (native operator-based pod discovery)
+  - victoria-operator-vmpodscrape.yaml
   # Uncomment to deploy VictoriaMetrics TLS test job
   # - test/victoria-tls-test-job.yaml
 {% endif %}
