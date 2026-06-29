@@ -1,0 +1,32 @@
+{{- if and .Values.enabled .Values.logs.enabled }}
+{{- $ns := include "victoria-metrics.namespace" . -}}
+{{- $tlsSecret := include "victoria-metrics.tlsSecretName" . -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vlagent-config
+  namespace: {{ $ns }}
+  labels:
+    app: vlagent
+    component: victorialogs
+    {{- include "victoria-metrics.labels" . | nindent 4 }}
+data:
+  vlagent.yml: |
+    syslog:
+      listenAddr: "0.0.0.0:{{ .Values.logs.vlagent.syslog.tcp }}"
+      tlsListenAddr: "0.0.0.0:{{ .Values.logs.vlagent.syslog.tlsPort }}"
+      {{- if .Values.tls.enabled }}
+      tlsCertFile: "/etc/victoria/certs/server.crt"
+      tlsKeyFile: "/etc/victoria/certs/server.key"
+      {{- end }}
+    remoteWrite:
+      url: "{{ if .Values.tls.enabled }}https{{ else }}http{{ end }}://vlinsert-victoria-logs-cluster.{{ $ns }}.svc.cluster.local:9481/internal/insert?_stream_fields=hostname,app_name"
+      {{- if .Values.tls.enabled }}
+      tls_config:
+        ca_file: "/etc/victoria/certs/ca.crt"
+        insecure_skip_verify: false
+      {{- end }}
+    persistentQueue:
+      dir: "/vlagent-data"
+      maxPendingBytes: "5GiB"
+{{- end }}

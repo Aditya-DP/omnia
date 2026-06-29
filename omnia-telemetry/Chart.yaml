@@ -1,0 +1,48 @@
+apiVersion: v2
+name: omnia-telemetry
+description: >-
+  Dell Omnia Telemetry Stack - unified Helm deployment for hardware and
+  infrastructure telemetry collection, routing, and storage.
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - telemetry
+  - monitoring
+  - metrics
+  - logs
+  - victoria-metrics
+  - kafka
+  - idrac
+  - ldms
+maintainers:
+  - name: Dell Omnia Team
+dependencies:
+  - name: kafka
+    version: "1.0.0"
+    repository: "file://charts/kafka"
+    condition: kafka.enabled
+  - name: victoria-metrics
+    version: "1.0.0"
+    repository: "file://charts/victoria-metrics"
+    condition: victoria-metrics.enabled
+  - name: idrac
+    version: "1.0.0"
+    repository: "file://charts/idrac"
+    condition: idrac.enabled
+  - name: ldms
+    version: "1.0.0"
+    repository: "file://charts/ldms"
+    condition: ldms.enabled
+  - name: vector
+    version: "1.0.0"
+    repository: "file://charts/vector"
+    condition: vector.enabled
+  - name: external-sources
+    version: "1.0.0"
+    repository: "file://charts/external-sources"
+    condition: external-sources.enabled
+  - name: telemetry-operator
+    version: "0.1.0"
+    repository: "file://charts/telemetry-operator"
+    condition: telemetry-operator.enabled

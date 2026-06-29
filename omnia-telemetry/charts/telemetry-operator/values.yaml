@@ -1,0 +1,27 @@
+enabled: true
+image: "docker.io/dellhpcomniaaisolution/telemetry-operator:0.1.0"
+replicas: 2
+resources:
+  requests: { cpu: "50m", memory: "64Mi" }
+  limits: { cpu: "200m", memory: "128Mi" }
+defaultPolicy:
+  create: true
+  stuckTerminating:
+    thresholdSeconds: 60
+    kafkaThresholdSeconds: 300
+  crashLoopBackoff:
+    minRestartCount: 5
+  pendingTooLong:
+    thresholdSeconds: 300
+serviceAccount:
+  create: true
+  name: "telemetry-operator"
+leaderElection:
+  enabled: true
+metrics:
+  port: 8080
+healthProbe:
+  port: 8081
+global:
+  namespace: telemetry
+  imageRegistry: ""

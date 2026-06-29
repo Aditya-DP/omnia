@@ -1,0 +1,114 @@
+{{- if and .Values.enabled .Values.ldms.enabled }}
+{{- $ns := include "vector.namespace" . -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vector-ldms-config
+  namespace: {{ $ns }}
+  labels:
+    app: vector-ldms
+    {{- include "vector.labels" . | nindent 4 }}
+data:
+  vector.toml: |
+    data_dir = "/var/lib/vector"
+
+    [sources.kafka_ldms]
+    type = "kafka"
+    bootstrap_servers = "kafka-kafka-bootstrap.{{ $ns }}.svc.cluster.local:9093"
+    group_id = {{ .Values.ldms.consumerGroup | quote }}
+    topics = [{{ .Values.ldms.kafkaTopic | quote }}]
+    auto_offset_reset = "earliest"
+    session_timeout_ms = 30000
+    fetch_wait_max_ms = 100
+
+    [sources.kafka_ldms.tls]
+    enabled = true
+    ca_file = "/etc/vector/kafka-ca/ca.crt"
+    crt_file = "/etc/vector/kafka-certs/user.crt"
+    key_file = "/etc/vector/kafka-certs/user.key"
+    verify_certificate = true
+    verify_hostname = true
+
+    [sources.kafka_ldms.decoding]
+    codec = "json"
+
+    [transforms.ldms_fan_out]
+    type = "lua"
+    version = "2"
+    inputs = ["kafka_ldms"]
+    hooks.process = "process"
+    source = '''
+    local skip = {
+      timestamp = true,
+      component_id = true,
+      job_id = true,
+      app_id = true,
+      offset = true,
+      partition = true,
+    }
+
+    function process(event, emit)
+      local log = event.log
+      local hostname = log.hostname or "unknown"
+      local inst = tostring(log.instance or "")
+      local schema = inst:match("/([^/]+)$") or "unknown"
+      local comp = tostring(log.component_id or "")
+
+      for k, v in pairs(log) do
+        if not skip[k] and type(v) == "number" then
+          emit({
+            log = {
+              MetricName = "ldms_" .. schema .. "_" .. k,
+              MetricValue = v,
+              instance = hostname,
+              job = "ldms",
+              plugin_name = schema,
+              component_id = comp,
+            }
+          })
+        end
+      end
+    end
+    '''
+
+    [transforms.ldms_to_metrics]
+    type = "log_to_metric"
+    inputs = ["ldms_fan_out"]
+
+      [[transforms.ldms_to_metrics.metrics]]
+      type = "gauge"
+      field = "MetricValue"
+      name = "{{`{{ MetricName }}`}}"
+
+        [transforms.ldms_to_metrics.metrics.tags]
+        instance = "{{`{{ instance }}`}}"
+        job = "{{`{{ job }}`}}"
+        plugin = "{{`{{ plugin_name }}`}}"
+        component = "{{`{{ component_id }}`}}"
+        source_subsystem = "ldms"
+        topic_name = {{ .Values.ldms.kafkaTopic | quote }}
+
+    [sinks.victoria_metrics]
+    type = "prometheus_remote_write"
+    inputs = ["ldms_to_metrics"]
+    endpoint = "http://vmagent-vector.{{ $ns }}.svc.cluster.local:{{ .Values.vmagentVector.port }}/api/v1/write"
+    healthcheck.enabled = false
+
+    [sinks.victoria_metrics.batch]
+    max_bytes = 1048576
+    timeout_secs = 5
+
+    [sinks.victoria_metrics.buffer]
+    type = "memory"
+    max_events = 10000
+
+    [sinks.victoria_metrics.request]
+    retry_attempts = 5
+    retry_max_duration_secs = 300
+    timeout_secs = 60
+
+    [api]
+    enabled = true
+    address = "0.0.0.0:{{ .Values.ldms.metricsPort }}"
+    playground = false
+{{- end }}

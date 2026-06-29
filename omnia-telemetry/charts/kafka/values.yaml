@@ -1,0 +1,51 @@
+# Kafka sub-chart values (overridden by parent)
+enabled: true
+cluster:
+  version: "4.1.0"
+  metadataVersion: "4.1-IV0"
+  replicas:
+    controllers: 3
+    brokers: 3
+  storage:
+    size: "8Gi"
+  config:
+    logRetentionHours: 168
+    logRetentionBytes: -1
+    logSegmentBytes: 1073741824
+    minInsyncReplicas: 2
+    defaultReplicationFactor: 3
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "200m"
+    limits:
+      memory: "1Gi"
+      cpu: "1000m"
+bridge:
+  enabled: true
+  replicas: 1
+  port: 8080
+  service:
+    type: LoadBalancer
+topics:
+  idrac:
+    partitions: 1
+    replicas: 2
+  ldms:
+    partitions: 2
+    replicas: 2
+entityOperator:
+  userOperator:
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "200m"
+      limits:
+        memory: "512Mi"
+        cpu: "1000m"
+images:
+  kafka: "quay.io/strimzi/kafka:0.48.0-kafka-4.1.0"
+  bridge: "quay.io/strimzi/kafka-bridge:0.33.1"
+global:
+  namespace: telemetry
+  imageRegistry: ""

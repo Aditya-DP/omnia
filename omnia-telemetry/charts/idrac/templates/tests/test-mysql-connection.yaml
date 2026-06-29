@@ -1,0 +1,26 @@
+{{- if .Values.enabled }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ .Release.Name }}-idrac-mysql-test
+  namespace: {{ include "idrac.namespace" . }}
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  restartPolicy: Never
+  containers:
+    - name: test
+      image: {{ include "idrac.image" (dict "image" .Values.images.mysql "global" .Values.global) }}
+      command: ["sh", "-c"]
+      args:
+        - |
+          echo "Testing MySQL connection..."
+          mysqladmin ping -h idrac-telemetry -P {{ .Values.mysql.port }} -u root -p${MYSQL_ROOT_PASSWORD} && echo "PASSED"
+      env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "idrac.secretName" . }}
+              key: mysqldb_root_password
+{{- end }}

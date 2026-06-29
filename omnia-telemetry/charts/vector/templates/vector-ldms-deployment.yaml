@@ -1,0 +1,118 @@
+{{- if and .Values.enabled .Values.ldms.enabled }}
+{{- $ns := include "vector.namespace" . -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vector-ldms
+  namespace: {{ $ns }}
+  labels:
+    app: vector-ldms
+    component: telemetry-bridge
+    subsystem: ldms
+    {{- include "vector.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.ldms.replicas }}
+  selector:
+    matchLabels:
+      app: vector-ldms
+  template:
+    metadata:
+      labels:
+        app: vector-ldms
+        component: telemetry-bridge
+        subsystem: ldms
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: vector
+          image: {{ include "vector.image" (dict "image" .Values.image "global" .Values.global) }}
+          imagePullPolicy: IfNotPresent
+          command: ["/usr/bin/vector"]
+          args: ["--config", "/etc/vector/vector.toml"]
+          resources:
+            requests:
+              memory: {{ .Values.ldms.resources.requests.memory | quote }}
+              cpu: {{ .Values.ldms.resources.requests.cpu | quote }}
+            limits:
+              memory: {{ .Values.ldms.resources.limits.memory | quote }}
+              cpu: {{ .Values.ldms.resources.limits.cpu | quote }}
+          ports:
+            - name: health
+              containerPort: {{ .Values.ldms.healthPort }}
+              protocol: TCP
+            - name: metrics
+              containerPort: {{ .Values.ldms.metricsPort }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.ldms.metricsPort }}
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.ldms.metricsPort }}
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          volumeMounts:
+            - name: vector-config
+              mountPath: /etc/vector
+              readOnly: true
+            - name: kafka-certs
+              mountPath: /etc/vector/kafka-certs
+              readOnly: true
+            - name: kafka-cluster-ca
+              mountPath: /etc/vector/kafka-ca
+              readOnly: true
+            - name: vector-data
+              mountPath: /var/lib/vector
+          env:
+            - name: VECTOR_LOG
+              value: "info"
+            - name: VECTOR_THREADS
+              value: "2"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop: ["ALL"]
+      volumes:
+        - name: vector-config
+          configMap:
+            name: vector-ldms-config
+            items:
+              - key: vector.toml
+                path: vector.toml
+        - name: kafka-certs
+          secret:
+            secretName: {{ .Values.ldms.kafkaUser }}
+            items:
+              - key: user.crt
+                path: user.crt
+              - key: user.key
+                path: user.key
+              - key: ca.crt
+                path: ca.crt
+        - name: kafka-cluster-ca
+          secret:
+            secretName: kafka-cluster-ca-cert
+            items:
+              - key: ca.crt
+                path: ca.crt
+        - name: vector-data
+          emptyDir: {}
+      restartPolicy: Always
+      dnsPolicy: ClusterFirst
+{{- end }}

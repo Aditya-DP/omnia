@@ -1,0 +1,101 @@
+{{- if .Values.enabled }}
+{{- $ns := include "kafka.namespace" . -}}
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaNodePool
+metadata:
+  name: controller
+  namespace: {{ $ns }}
+  labels:
+    strimzi.io/cluster: kafka
+    {{- include "kafka.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.cluster.replicas.controllers }}
+  roles:
+    - controller
+  storage:
+    type: jbod
+    volumes:
+      - id: 0
+        type: persistent-claim
+        size: {{ .Values.cluster.storage.size | quote }}
+        kraftMetadata: shared
+        deleteClaim: false
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaNodePool
+metadata:
+  name: broker
+  namespace: {{ $ns }}
+  labels:
+    strimzi.io/cluster: kafka
+    {{- include "kafka.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.cluster.replicas.brokers }}
+  roles:
+    - broker
+  storage:
+    type: jbod
+    volumes:
+      - id: 0
+        type: persistent-claim
+        size: {{ .Values.cluster.storage.size | quote }}
+        kraftMetadata: shared
+        deleteClaim: false
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  name: kafka
+  namespace: {{ $ns }}
+  labels:
+    {{- include "kafka.labels" . | nindent 4 }}
+  annotations:
+    strimzi.io/node-pools: enabled
+    strimzi.io/kraft: enabled
+spec:
+  kafka:
+    version: {{ .Values.cluster.version }}
+    metadataVersion: {{ .Values.cluster.metadataVersion }}
+    listeners:
+      - name: internal
+        port: 9092
+        type: internal
+        tls: true
+      - name: tls
+        port: 9093
+        type: internal
+        tls: true
+        authentication:
+          type: tls
+      - name: external
+        port: 9094
+        type: loadbalancer
+        tls: true
+        authentication:
+          type: tls
+    authorization:
+      type: simple
+    config:
+      offsets.topic.replication.factor: 3
+      transaction.state.log.replication.factor: 3
+      transaction.state.log.min.isr: 2
+      default.replication.factor: {{ .Values.cluster.config.defaultReplicationFactor }}
+      min.insync.replicas: {{ .Values.cluster.config.minInsyncReplicas }}
+      log.retention.hours: {{ .Values.cluster.config.logRetentionHours }}
+      log.segment.bytes: {{ .Values.cluster.config.logSegmentBytes }}
+      log.retention.bytes: {{ .Values.cluster.config.logRetentionBytes }}
+      log.retention.check.interval.ms: 300000
+      auto.create.topics.enable: true
+      num.partitions: 3
+  entityOperator:
+    topicOperator: {}
+    userOperator:
+      secretPrefix: ""
+      resources:
+        requests:
+          memory: {{ .Values.entityOperator.userOperator.resources.requests.memory | quote }}
+          cpu: {{ .Values.entityOperator.userOperator.resources.requests.cpu | quote }}
+        limits:
+          memory: {{ .Values.entityOperator.userOperator.resources.limits.memory | quote }}
+          cpu: {{ .Values.entityOperator.userOperator.resources.limits.cpu | quote }}
+{{- end }}

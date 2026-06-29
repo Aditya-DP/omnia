@@ -1,0 +1,213 @@
+{{- if and .Values.enabled .Values.logs.enabled }}
+{{- $ns := include "victoria-metrics.namespace" . -}}
+{{- $tlsSecret := include "victoria-metrics.tlsSecretName" . -}}
+apiVersion: operator.victoriametrics.com/v1
+kind: VLCluster
+metadata:
+  name: victoria-logs-cluster
+  namespace: {{ $ns }}
+  labels:
+    {{- include "victoria-metrics.labels" . | nindent 4 }}
+spec:
+  clusterVersion: {{ (split ":" .Values.logs.cluster.vlstorage.image)._1 }}
+
+  vlstorage:
+    replicaCount: {{ .Values.logs.cluster.vlstorage.replicas }}
+    replicationFactor: {{ .Values.logs.cluster.vlstorage.replicationFactor }}
+    image:
+      repository: {{ (split ":" .Values.logs.cluster.vlstorage.image)._0 }}
+      tag: {{ (split ":" .Values.logs.cluster.vlstorage.image)._1 }}
+      pullPolicy: IfNotPresent
+    terminationGracePeriodSeconds: {{ .Values.logs.cluster.vlstorage.terminationGracePeriod }}
+    initContainers:
+      - name: remove-stale-locks
+        image: {{ include "victoria-metrics.image" (dict "image" .Values.busyboxImage "global" .Values.global) }}
+        command: ["sh", "-c", "rm -f /vlstorage-data/flock.lock || true"]
+        volumeMounts:
+          - name: vlstorage-db
+            mountPath: /vlstorage-data
+    storageDataPath: /vlstorage-data
+    storage:
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: {{ .Values.logs.storageSize | quote }}
+    resources:
+      requests:
+        memory: {{ .Values.logs.cluster.vlstorage.resources.requests.memory | quote }}
+        cpu: {{ .Values.logs.cluster.vlstorage.resources.requests.cpu | quote }}
+      limits:
+        memory: {{ .Values.logs.cluster.vlstorage.resources.limits.memory | quote }}
+        cpu: {{ .Values.logs.cluster.vlstorage.resources.limits.cpu | quote }}
+    startupProbe:
+      httpGet:
+        path: /health
+        port: 9491
+        scheme: {{ if .Values.tls.enabled }}HTTPS{{ else }}HTTP{{ end }}
+      initialDelaySeconds: {{ .Values.logs.cluster.vlstorage.startupProbe.initialDelaySeconds }}
+      periodSeconds: {{ .Values.logs.cluster.vlstorage.startupProbe.periodSeconds }}
+      failureThreshold: {{ .Values.logs.cluster.vlstorage.startupProbe.failureThreshold }}
+      timeoutSeconds: {{ .Values.logs.cluster.vlstorage.startupProbe.timeoutSeconds }}
+    readinessProbe:
+      httpGet:
+        path: /health
+        port: 9491
+        scheme: {{ if .Values.tls.enabled }}HTTPS{{ else }}HTTP{{ end }}
+      initialDelaySeconds: {{ .Values.logs.cluster.vlstorage.readinessProbe.initialDelaySeconds }}
+      periodSeconds: {{ .Values.logs.cluster.vlstorage.readinessProbe.periodSeconds }}
+      failureThreshold: {{ .Values.logs.cluster.vlstorage.readinessProbe.failureThreshold }}
+      timeoutSeconds: {{ .Values.logs.cluster.vlstorage.readinessProbe.timeoutSeconds }}
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: app.kubernetes.io/name
+                    operator: In
+                    values: ["vlstorage"]
+              topologyKey: "kubernetes.io/hostname"
+    tolerations:
+      - effect: NoExecute
+        key: node.kubernetes.io/not-ready
+        operator: Exists
+        tolerationSeconds: {{ .Values.logs.cluster.vlstorage.tolerationSeconds }}
+      - effect: NoExecute
+        key: node.kubernetes.io/unreachable
+        operator: Exists
+        tolerationSeconds: {{ .Values.logs.cluster.vlstorage.tolerationSeconds }}
+    extraArgs:
+      retentionPeriod: {{ .Values.logs.retention | quote }}
+      {{- if .Values.tls.enabled }}
+      tls: "true"
+      tlsCertFile: "/etc/victoria/certs/server.crt"
+      tlsKeyFile: "/etc/victoria/certs/server.key"
+      {{- end }}
+    {{- if .Values.tls.enabled }}
+    volumes:
+      - name: victoria-tls-certs
+        secret:
+          secretName: {{ $tlsSecret }}
+          items:
+            - key: tls.crt
+              path: server.crt
+            - key: tls.key
+              path: server.key
+            - key: ca.crt
+              path: ca.crt
+    volumeMounts:
+      - name: victoria-tls-certs
+        mountPath: /etc/victoria/certs
+        readOnly: true
+    {{- end }}
+
+  vlinsert:
+    replicaCount: {{ .Values.logs.cluster.vlinsert.replicas }}
+    image:
+      repository: {{ (split ":" .Values.logs.cluster.vlinsert.image)._0 }}
+      tag: {{ (split ":" .Values.logs.cluster.vlinsert.image)._1 }}
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        memory: {{ .Values.logs.cluster.vlinsert.resources.requests.memory | quote }}
+        cpu: {{ .Values.logs.cluster.vlinsert.resources.requests.cpu | quote }}
+      limits:
+        memory: {{ .Values.logs.cluster.vlinsert.resources.limits.memory | quote }}
+        cpu: {{ .Values.logs.cluster.vlinsert.resources.limits.cpu | quote }}
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: app.kubernetes.io/name
+                    operator: In
+                    values: ["vlinsert"]
+              topologyKey: "kubernetes.io/hostname"
+    {{- if .Values.tls.enabled }}
+    extraArgs:
+      tls: "true"
+      tlsCertFile: "/etc/victoria/certs/server.crt"
+      tlsKeyFile: "/etc/victoria/certs/server.key"
+      storageNode.tls: "true"
+      storageNode.tlsCAFile: "/etc/victoria/certs/ca.crt"
+    volumes:
+      - name: victoria-tls-certs
+        secret:
+          secretName: {{ $tlsSecret }}
+          items:
+            - key: tls.crt
+              path: server.crt
+            - key: tls.key
+              path: server.key
+            - key: ca.crt
+              path: ca.crt
+    volumeMounts:
+      - name: victoria-tls-certs
+        mountPath: /etc/victoria/certs
+        readOnly: true
+    {{- end }}
+    {{- if .Values.logs.cluster.vlinsert.externalAccess }}
+    serviceSpec:
+      useAsDefault: true
+      spec:
+        type: LoadBalancer
+    {{- end }}
+
+  vlselect:
+    replicaCount: {{ .Values.logs.cluster.vlselect.replicas }}
+    image:
+      repository: {{ (split ":" .Values.logs.cluster.vlselect.image)._0 }}
+      tag: {{ (split ":" .Values.logs.cluster.vlselect.image)._1 }}
+      pullPolicy: IfNotPresent
+    serviceSpec:
+      useAsDefault: true
+      spec:
+        type: LoadBalancer
+    resources:
+      requests:
+        memory: {{ .Values.logs.cluster.vlselect.resources.requests.memory | quote }}
+        cpu: {{ .Values.logs.cluster.vlselect.resources.requests.cpu | quote }}
+      limits:
+        memory: {{ .Values.logs.cluster.vlselect.resources.limits.memory | quote }}
+        cpu: {{ .Values.logs.cluster.vlselect.resources.limits.cpu | quote }}
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: app.kubernetes.io/name
+                    operator: In
+                    values: ["vlselect"]
+              topologyKey: "kubernetes.io/hostname"
+    {{- if .Values.tls.enabled }}
+    extraArgs:
+      tls: "true"
+      tlsCertFile: "/etc/victoria/certs/server.crt"
+      tlsKeyFile: "/etc/victoria/certs/server.key"
+      storageNode.tls: "true"
+      storageNode.tlsCAFile: "/etc/victoria/certs/ca.crt"
+      storageNode.tlsInsecureSkipVerify: "true"
+    volumes:
+      - name: victoria-tls-certs
+        secret:
+          secretName: {{ $tlsSecret }}
+          items:
+            - key: tls.crt
+              path: server.crt
+            - key: tls.key
+              path: server.key
+            - key: ca.crt
+              path: ca.crt
+    volumeMounts:
+      - name: victoria-tls-certs
+        mountPath: /etc/victoria/certs
+        readOnly: true
+    {{- end }}
+{{- end }}

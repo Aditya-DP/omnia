@@ -1,0 +1,70 @@
+{{- if .Values.enabled }}
+{{- $ns := include "ldms.namespace" . -}}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ldms-aggregator
+  namespace: {{ $ns }}
+  labels:
+    app: ldms-aggregator
+    {{- include "ldms.labels" . | nindent 4 }}
+spec:
+  serviceName: ldms-aggregator
+  replicas: {{ .Values.aggregator.replicas }}
+  selector:
+    matchLabels:
+      app: ldms-aggregator
+  template:
+    metadata:
+      labels:
+        app: ldms-aggregator
+        {{- include "ldms.labels" . | nindent 8 }}
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: aggregator
+          image: {{ include "ldms.image" (dict "image" .Values.image "global" .Values.global) }}
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              ldmsd -x {{ .Values.aggregator.transport }}:{{ .Values.aggregator.port }} \
+                -c /etc/ldms/aggregator.conf \
+                -l /var/log/ldms/aggregator.log \
+                -v INFO -F
+          ports:
+            - name: ldms
+              containerPort: {{ .Values.aggregator.port }}
+              protocol: TCP
+          resources:
+            requests:
+              cpu: {{ .Values.aggregator.resources.requests.cpu | quote }}
+              memory: {{ .Values.aggregator.resources.requests.memory | quote }}
+            limits:
+              cpu: {{ .Values.aggregator.resources.limits.cpu | quote }}
+              memory: {{ .Values.aggregator.resources.limits.memory | quote }}
+          volumeMounts:
+            - name: ovis-auth
+              mountPath: /etc/ldms/auth
+              readOnly: true
+            - name: munge-key
+              mountPath: /etc/munge
+              readOnly: true
+          livenessProbe:
+            tcpSocket:
+              port: ldms
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: ldms
+            initialDelaySeconds: 10
+            periodSeconds: 5
+      volumes:
+        - name: ovis-auth
+          secret:
+            secretName: {{ include "ldms.ovisSecretName" . }}
+        - name: munge-key
+          secret:
+            secretName: {{ include "ldms.mungeSecretName" . }}
+{{- end }}

@@ -1,0 +1,92 @@
+{{- if .Values.enabled }}
+{{- $ns := include "ldms.namespace" . -}}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ldms-store
+  namespace: {{ $ns }}
+  labels:
+    app: ldms-store
+    {{- include "ldms.labels" . | nindent 4 }}
+spec:
+  serviceName: ldms-store
+  replicas: {{ .Values.store.replicas }}
+  selector:
+    matchLabels:
+      app: ldms-store
+  template:
+    metadata:
+      labels:
+        app: ldms-store
+        {{- include "ldms.labels" . | nindent 8 }}
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: store
+          image: {{ include "ldms.image" (dict "image" .Values.image "global" .Values.global) }}
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              ldmsd -x {{ .Values.aggregator.transport }}:{{ .Values.store.port }} \
+                -c /etc/ldms/store.conf \
+                -l /var/log/ldms/store.log \
+                -v INFO -F
+          ports:
+            - name: ldms
+              containerPort: {{ .Values.store.port }}
+              protocol: TCP
+          resources:
+            requests:
+              cpu: {{ .Values.store.resources.requests.cpu | quote }}
+              memory: {{ .Values.store.resources.requests.memory | quote }}
+            limits:
+              cpu: {{ .Values.store.resources.limits.cpu | quote }}
+              memory: {{ .Values.store.resources.limits.memory | quote }}
+          volumeMounts:
+            - name: ovis-auth
+              mountPath: /etc/ldms/auth
+              readOnly: true
+            - name: munge-key
+              mountPath: /etc/munge
+              readOnly: true
+            - name: kafka-certs
+              mountPath: /etc/ldms/kafka-certs
+              readOnly: true
+            - name: kafka-ca
+              mountPath: /etc/ldms/kafka-ca
+              readOnly: true
+          livenessProbe:
+            tcpSocket:
+              port: ldms
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: ldms
+            initialDelaySeconds: 10
+            periodSeconds: 5
+      volumes:
+        - name: ovis-auth
+          secret:
+            secretName: {{ include "ldms.ovisSecretName" . }}
+        - name: munge-key
+          secret:
+            secretName: {{ include "ldms.mungeSecretName" . }}
+        - name: kafka-certs
+          secret:
+            secretName: kafkapump
+            items:
+              - key: user.crt
+                path: user.crt
+              - key: user.key
+                path: user.key
+              - key: ca.crt
+                path: ca.crt
+        - name: kafka-ca
+          secret:
+            secretName: kafka-cluster-ca-cert
+            items:
+              - key: ca.crt
+                path: ca.crt
+{{- end }}

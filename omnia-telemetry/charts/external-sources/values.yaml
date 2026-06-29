@@ -1,0 +1,39 @@
+enabled: true
+ufm:
+  enabled: false
+  endpoint: ""
+  port: 9001
+  scrapeInterval: "30s"
+  scrapeTimeout: "15s"
+  tlsMode: "self_signed"
+  caCertPath: ""
+  authMode: "basic"
+  credentials:
+    existingSecret: ""
+    username: ""
+    password: ""
+vast:
+  enabled: false
+  endpoint: ""
+  port: 443
+  metricsPath: "/api/prometheusmetrics/all"
+  scrapeInterval: "30s"
+  scrapeTimeout: "15s"
+  tlsMode: "self_signed"
+  caCertPath: ""
+  authMode: "basic"
+  credentials:
+    existingSecret: ""
+    username: ""
+    password: ""
+powerscale:
+  csiVolumeExporter:
+    enabled: true
+    image: "docker.io/dellhpcomniaaisolution/csi-volume-exporter:1.0"
+    port: 8080
+    resources:
+      requests: { cpu: "50m", memory: "64Mi" }
+      limits: { cpu: "200m", memory: "256Mi" }
+global:
+  namespace: telemetry
+  imageRegistry: ""

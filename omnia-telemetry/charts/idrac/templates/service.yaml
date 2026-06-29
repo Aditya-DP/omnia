@@ -1,0 +1,20 @@
+{{- if .Values.enabled }}
+{{- $ns := include "idrac.namespace" . -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: idrac-telemetry
+  namespace: {{ $ns }}
+  labels:
+    app: idrac-telemetry
+    {{- include "idrac.labels" . | nindent 4 }}
+spec:
+  clusterIP: None
+  ports:
+    - name: mysql
+      port: {{ .Values.mysql.port }}
+    - name: mysql-x
+      port: 33060
+  selector:
+    app: idrac-telemetry
+{{- end }}

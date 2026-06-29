@@ -1,0 +1,48 @@
+{{- if .Values.enabled }}
+{{- $ns := include "kafka.namespace" . -}}
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaUser
+metadata:
+  name: kafkapump
+  namespace: {{ $ns }}
+  labels:
+    strimzi.io/cluster: kafka
+    {{- include "kafka.labels" . | nindent 4 }}
+spec:
+  authentication:
+    type: tls
+  authorization:
+    type: simple
+    acls:
+      # Global topic permissions
+      - resource:
+          type: topic
+          name: "*"
+          patternType: literal
+        operations:
+          - Create
+          - Delete
+          - Describe
+          - Read
+          - Write
+          - Alter
+          - AlterConfigs
+        host: "*"
+      # Cluster-level permissions
+      - resource:
+          type: cluster
+        operations:
+          - Describe
+          - Create
+          - IdempotentWrite
+        host: "*"
+      # Consumer group permissions
+      - resource:
+          type: group
+          name: "*"
+          patternType: literal
+        operations:
+          - Read
+          - Describe
+        host: "*"
+{{- end }}

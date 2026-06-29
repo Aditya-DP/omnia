@@ -1,0 +1,19 @@
+{{- if and .Values.enabled .Values.ome.enabled }}
+{{- $ns := include "vector.namespace" . -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: vector-ome
+  namespace: {{ $ns }}
+  labels:
+    app: vector-ome
+    {{- include "vector.labels" . | nindent 4 }}
+spec:
+  ports:
+    - name: metrics
+      port: {{ .Values.ome.metricsPort }}
+      targetPort: {{ .Values.ome.metricsPort }}
+      protocol: TCP
+  selector:
+    app: vector-ome
+{{- end }}

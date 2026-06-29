@@ -1,0 +1,19 @@
+{{- if .Values.enabled }}
+{{- $ns := include "telemetry-operator.namespace" . -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: telemetry-operator-metrics
+  namespace: {{ $ns }}
+  labels:
+    app: telemetry-operator
+    {{- include "telemetry-operator.labels" . | nindent 4 }}
+spec:
+  ports:
+    - name: metrics
+      port: {{ .Values.metrics.port }}
+      targetPort: {{ .Values.metrics.port }}
+      protocol: TCP
+  selector:
+    app: telemetry-operator
+{{- end }}

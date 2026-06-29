@@ -1,0 +1,252 @@
+{{- if and .Values.enabled .Values.ome.enabled }}
+{{- $ns := include "vector.namespace" . -}}
+{{- $omeId := .Values.ome.omeIdentifier -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vector-ome-config
+  namespace: {{ $ns }}
+  labels:
+    app: vector-ome
+    {{- include "vector.labels" . | nindent 4 }}
+data:
+  vector.toml: |
+    data_dir = "/var/lib/vector"
+
+    [sources.kafka_ome]
+    type = "kafka"
+    bootstrap_servers = "kafka-kafka-bootstrap.{{ $ns }}.svc.cluster.local:9093"
+    group_id = {{ .Values.ome.consumerGroup | quote }}
+    topics = [{{ .Values.ome.kafkaTopicsPattern | quote }}]
+    auto_offset_reset = "earliest"
+    session_timeout_ms = 30000
+    fetch_wait_max_ms = 100
+
+    [sources.kafka_ome.librdkafka_options]
+    "metadata.max.age.ms" = "10000"
+    "topic.metadata.refresh.interval.ms" = "10000"
+    "allow.auto.create.topics" = "false"
+
+    [sources.kafka_ome.tls]
+    enabled = true
+    ca_file = "/etc/vector/kafka-ca/ca.crt"
+    crt_file = "/etc/vector/kafka-certs/user.crt"
+    key_file = "/etc/vector/kafka-certs/user.key"
+    verify_certificate = true
+    verify_hostname = true
+
+    [sources.kafka_ome.decoding]
+    codec = "json"
+
+    [transforms.parse_ome_topic]
+    type = "remap"
+    inputs = ["kafka_ome"]
+    source = '''
+      .source_topic = to_string(.topic) ?? "unknown"
+    '''
+
+    [transforms.ome_topic_router]
+    type = "route"
+    inputs = ["parse_ome_topic"]
+
+      [transforms.ome_topic_router.route]
+    {{- if .Values.ome.metricsEnabled }}
+      metrics = '.source_topic == "{{ $omeId }}.inventory" || .source_topic == "{{ $omeId }}.health" || .source_topic == "{{ $omeId }}.telemetry" || .source_topic == "{{ $omeId }}.event"'
+    {{- end }}
+    {{- if .Values.ome.logsEnabled }}
+      logs = '.source_topic == "{{ $omeId }}.alerts" || .source_topic == "{{ $omeId }}.auditlogs" || .source_topic == "{{ $omeId }}.logs"'
+    {{- end }}
+
+    {{- if .Values.ome.metricsEnabled }}
+
+    [transforms.metric_enricher]
+    type = "remap"
+    inputs = ["ome_topic_router.metrics", "ome_topic_router._unmatched"]
+    source = '''
+      all_metrics = []
+      SystemArr = array(.System) ?? []
+
+      for_each(SystemArr) -> |_index, system| {
+        identifier = to_string(system.Identifier) ?? "unknown"
+
+        if system.Metric != null && is_array(system.Metric) {
+          for_each(array!(system.Metric)) -> |_index1, metric| {
+            id_replaced = replace!(metric.MetricId, ".", "_")
+            parts = split(id_replaced, "_")
+            part_count = length(parts)
+            sliced, _ = slice(parts, 1, (part_count - 2))
+            metric_name, _ = join(sliced, "_")
+            componentId = if exists(metric.ComponentId) && metric.ComponentId != null {
+                    metric.ComponentId
+                } else {
+                    "System"
+                }
+            parsed_metric, _ = [{
+              "MetricName": metric_name,
+              "MetricValue": to_float(metric.MetricValue[0]),
+              "ComponentId": componentId,
+              "TimeStamp": metric.TimeStamp[0],
+              "Identifier": identifier,
+              "Type": parts[0]
+            }]
+            all_metrics = append(all_metrics, parsed_metric)
+          }
+        } else if system.Component != null && is_array(system.Component) {
+          ts = to_string(system.CollectionTime) ?? ""
+          for_each(array!(system.Component)) -> |_ci, component| {
+            comp_type = to_string(component.ComponentType) ?? "unknown"
+            data_arr = array(component.Data) ?? []
+            for_each(data_arr) -> |_di, data_entry| {
+              props = data_entry.Properties
+              if props != null && is_object(props) {
+                prop_keys = keys!(props)
+                for_each(prop_keys) -> |_pi, pkey| {
+                  pval = get!(props, [pkey])
+                  if is_float(pval) || is_integer(pval) || is_boolean(pval) {
+                    parsed_metric = [{
+                      "MetricName": pkey,
+                      "MetricValue": to_float(pval) ?? 0.0,
+                      "ComponentId": comp_type,
+                      "TimeStamp": ts,
+                      "Identifier": identifier,
+                      "Type": "inventory"
+                    }]
+                    all_metrics = append(all_metrics, parsed_metric)
+                  }
+                }
+              }
+            }
+          }
+        } else {
+          ts = to_string(system.CollectionTime) ?? ""
+          sys_keys = keys!(system)
+          for_each(sys_keys) -> |_i, key| {
+            val = get!(system, [key])
+            if is_float(val) || is_integer(val) || is_boolean(val) {
+              parsed_metric = [{
+                "MetricName": key,
+                "MetricValue": to_float(val) ?? 0.0,
+                "ComponentId": "System",
+                "TimeStamp": ts,
+                "Identifier": identifier,
+                "Type": "health"
+              }]
+              all_metrics = append(all_metrics, parsed_metric)
+            }
+          }
+        }
+      }
+
+      . = all_metrics
+    '''
+
+    [transforms.ome_to_metrics]
+    type = "log_to_metric"
+    inputs = ["metric_enricher"]
+
+      [[transforms.ome_to_metrics.metrics]]
+      type = "gauge"
+      field = "MetricValue"
+      name = "{{`{{ MetricName }}`}}"
+
+        [transforms.ome_to_metrics.metrics.tags]
+        component = "{{`{{ ComponentId }}`}}"
+        identifier = "{{`{{ Identifier }}`}}"
+        type = "{{`{{ Type }}`}}"
+        source_subsystem = {{ $omeId | quote }}
+
+    [sinks.victoria_metrics]
+    type = "prometheus_remote_write"
+    inputs = ["ome_to_metrics"]
+    endpoint = "http://vmagent-vector.{{ $ns }}.svc.cluster.local:{{ .Values.vmagentVector.port }}/api/v1/write"
+    healthcheck.enabled = false
+
+    [sinks.victoria_metrics.batch]
+    max_bytes = 1048576
+    timeout_secs = 5
+
+    [sinks.victoria_metrics.buffer]
+    type = "memory"
+    max_events = 10000
+
+    [sinks.victoria_metrics.request]
+    retry_attempts = 5
+    retry_max_duration_secs = 300
+    timeout_secs = 60
+    {{- end }}
+
+    {{- if .Values.ome.logsEnabled }}
+
+    [transforms.ome_log_enricher]
+    type = "remap"
+    inputs = ["ome_topic_router.logs"]
+    source = '''
+      ._msg = encode_json(.)
+      data_arr = array(.Data) ?? []
+      raw_ts = ""
+      if length(data_arr) > 0 {
+        first = data_arr[0]
+        raw_ts = if first.CreateDate != null {
+          to_string!(first.CreateDate)
+        } else if first.Timestamp != null {
+          to_string!(first.Timestamp)
+        } else {
+          ""
+        }
+      }
+      ts_parsed, ts_err = parse_timestamp(raw_ts, "%Y%m%dT%H%M%SZ")
+      if ts_err != null {
+        ts_parsed, ts_err = parse_timestamp(raw_ts, "%Y-%m-%dT%H:%M:%SZ")
+      }
+      ._time = if ts_err == null {
+        format_timestamp!(ts_parsed, "%Y-%m-%dT%H:%M:%SZ")
+      } else {
+        to_string(now())
+      }
+      ._msg_source = {{ $omeId | quote }}
+      ._msg_topic = to_string(.source_topic) ?? {{ $omeId | quote }}
+      .severity = if length(data_arr) > 0 {
+        to_string(data_arr[0].Severity) ?? "info"
+      } else {
+        "info"
+      }
+    '''
+
+    [sinks.victoria_logs]
+    type = "http"
+    inputs = ["ome_log_enricher"]
+    uri = "http://vlagent-vector.{{ $ns }}.svc.cluster.local:{{ .Values.vlagentVector.port }}/insert/jsonline"
+    method = "post"
+    healthcheck.enabled = false
+
+    [sinks.victoria_logs.encoding]
+    codec = "json"
+
+    [sinks.victoria_logs.framing]
+    method = "newline_delimited"
+
+    [sinks.victoria_logs.batch]
+    max_bytes = 1048576
+    timeout_secs = 5
+
+    [sinks.victoria_logs.buffer]
+    type = "memory"
+    max_events = 10000
+
+    [sinks.victoria_logs.request]
+    retry_attempts = 5
+    retry_max_duration_secs = 300
+    timeout_secs = 60
+    {{- end }}
+
+    {{- if not .Values.ome.metricsEnabled }}
+    [sinks.drop_unmatched]
+    type = "blackhole"
+    inputs = ["ome_topic_router._unmatched"]
+    {{- end }}
+
+    [api]
+    enabled = true
+    address = "0.0.0.0:{{ .Values.ome.metricsPort }}"
+    playground = false
+{{- end }}

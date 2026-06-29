@@ -1,0 +1,44 @@
+{{- if and .Values.enabled .Values.bridge.enabled }}
+{{- $ns := include "kafka.namespace" . -}}
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaBridge
+metadata:
+  name: bridge
+  namespace: {{ $ns }}
+  labels:
+    {{- include "kafka.labels" . | nindent 4 }}
+spec:
+  bootstrapServers: kafka-kafka-bootstrap:9093
+  enableMetrics: true
+  http:
+    port: {{ .Values.bridge.port }}
+  tls:
+    trustedCertificates:
+      - secretName: kafka-cluster-ca-cert
+        certificate: ca.crt
+  authentication:
+    type: tls
+    certificateAndKey:
+      secretName: kafkapump
+      certificate: user.crt
+      key: user.key
+  replicas: {{ .Values.bridge.replicas }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bridge-bridge-lb
+  namespace: {{ $ns }}
+  labels:
+    {{- include "kafka.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.bridge.service.type }}
+  selector:
+    app.kubernetes.io/name: kafka-bridge
+    app.kubernetes.io/instance: bridge
+  ports:
+    - name: http
+      port: {{ .Values.bridge.port }}
+      targetPort: {{ .Values.bridge.port }}
+      protocol: TCP
+{{- end }}

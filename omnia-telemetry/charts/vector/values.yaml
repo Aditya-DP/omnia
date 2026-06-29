@@ -1,0 +1,51 @@
+enabled: true
+image: "docker.io/timberio/vector:0.45.0-alpine"
+ldms:
+  enabled: true
+  replicas: 2
+  consumerGroup: "vector-ldms-group"
+  kafkaTopic: "ldms"
+  kafkaUser: "kafkapump"
+  healthPort: 8687
+  metricsPort: 9598
+  resources:
+    requests: { memory: "128Mi", cpu: "50m" }
+    limits: { memory: "256Mi", cpu: "250m" }
+ome:
+  enabled: true
+  replicas: 2
+  consumerGroup: "vector-ome-group"
+  kafkaTopicsPattern: "^ome\\."
+  kafkaUser: "vector-ome-user"
+  omeIdentifier: "ome"
+  metricsEnabled: true
+  logsEnabled: true
+  healthPort: 8688
+  metricsPort: 9599
+  resources:
+    requests: { memory: "256Mi", cpu: "100m" }
+    limits: { memory: "512Mi", cpu: "500m" }
+vmagentVector:
+  enabled: true
+  replicas: 2
+  image: "victoriametrics/vmagent:v1.128.0"
+  port: 8429
+  tmpDataPath: "/vmagent-data"
+  resources:
+    requests: { memory: "128Mi", cpu: "50m" }
+    limits: { memory: "256Mi", cpu: "250m" }
+vlagentVector:
+  enabled: true
+  replicas: 2
+  image: "victoriametrics/vlagent:v1.49.0"
+  port: 9427
+  tmpDataPath: "/vlagent-data"
+  resources:
+    requests: { memory: "128Mi", cpu: "50m" }
+    limits: { memory: "256Mi", cpu: "250m" }
+tls:
+  enabled: true
+  secretName: "victoria-tls-certs"
+global:
+  namespace: telemetry
+  imageRegistry: ""

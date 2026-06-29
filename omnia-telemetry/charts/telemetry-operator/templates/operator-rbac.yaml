@@ -1,0 +1,66 @@
+{{- if and .Values.enabled .Values.serviceAccount.create }}
+{{- $ns := include "telemetry-operator.namespace" . -}}
+{{- $sa := include "telemetry-operator.serviceAccountName" . -}}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ $sa }}
+  namespace: {{ $ns }}
+  labels:
+    {{- include "telemetry-operator.labels" . | nindent 4 }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: telemetry-operator-manager
+  labels:
+    {{- include "telemetry-operator.labels" . | nindent 4 }}
+rules:
+  # Pod management for health remediation
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch", "delete", "patch", "update"]
+  - apiGroups: [""]
+    resources: ["pods/status"]
+    verbs: ["get"]
+  # PVC access for lock file cleanup
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "watch"]
+  # Events for recording remediation actions
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+  # CRD access
+  - apiGroups: ["telemetry.omnia.dell.com"]
+    resources: ["telemetryhealthpolicies"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["telemetry.omnia.dell.com"]
+    resources: ["telemetryhealthpolicies/status"]
+    verbs: ["get", "update", "patch"]
+  - apiGroups: ["telemetry.omnia.dell.com"]
+    resources: ["telemetryhealthstatuses"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+  - apiGroups: ["telemetry.omnia.dell.com"]
+    resources: ["telemetryhealthstatuses/status"]
+    verbs: ["get", "update", "patch"]
+  # Leader election
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: telemetry-operator-manager
+  labels:
+    {{- include "telemetry-operator.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: telemetry-operator-manager
+subjects:
+  - kind: ServiceAccount
+    name: {{ $sa }}
+    namespace: {{ $ns }}
+{{- end }}

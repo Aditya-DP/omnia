@@ -1,0 +1,6 @@
+apiVersion: v2
+name: idrac
+description: iDRAC Telemetry collector - StatefulSet with MySQL, ActiveMQ, and pump containers
+type: application
+version: 1.0.0
+appVersion: "1.2"

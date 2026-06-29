@@ -1,0 +1,25 @@
+{{- if .Values.enabled }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ .Release.Name }}-kafka-test
+  namespace: {{ include "kafka.namespace" . }}
+  labels:
+    {{- include "kafka.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  restartPolicy: Never
+  containers:
+    - name: kafka-test
+      image: {{ include "kafka.image" (dict "image" .Values.images.kafka "global" .Values.global) }}
+      command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Testing Kafka bootstrap connection..."
+          /opt/kafka/bin/kafka-broker-api-versions.sh \
+            --bootstrap-server kafka-kafka-bootstrap:9092 && \
+          echo "Kafka connection test PASSED"
+{{- end }}

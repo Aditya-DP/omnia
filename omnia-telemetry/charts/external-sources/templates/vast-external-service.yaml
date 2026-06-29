@@ -1,0 +1,30 @@
+{{- if and .Values.enabled .Values.vast.enabled }}
+{{- $ns := include "external-sources.namespace" . -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: vast-external
+  namespace: {{ $ns }}
+  labels:
+    app: vast-external
+    {{- include "external-sources.labels" . | nindent 4 }}
+spec:
+  ports:
+    - name: metrics
+      port: {{ .Values.vast.port }}
+  clusterIP: None
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: vast-external
+  namespace: {{ $ns }}
+  labels:
+    {{- include "external-sources.labels" . | nindent 4 }}
+subsets:
+  - addresses:
+      - ip: {{ .Values.vast.endpoint | quote }}
+    ports:
+      - name: metrics
+        port: {{ .Values.vast.port }}
+{{- end }}

@@ -1,0 +1,47 @@
+enabled: true
+image: "docker.io/dellhpcomniaaisolution/ubuntu-ldms:1.1"
+aggregator:
+  replicas: 1
+  port: 6001
+  transport: sock
+  resources:
+    requests: { cpu: "250m", memory: "512Mi" }
+    limits: { cpu: "1000m", memory: "1Gi" }
+store:
+  replicas: 1
+  port: 6001
+  resources:
+    requests: { cpu: "250m", memory: "512Mi" }
+    limits: { cpu: "1000m", memory: "1Gi" }
+sampler:
+  port: 10001
+  plugins:
+    - name: meminfo
+      config: ""
+      interval: 30000000
+    - name: procstat2
+      config: ""
+      interval: 30000000
+    - name: vmstat
+      config: ""
+      interval: 30000000
+    - name: loadavg
+      config: ""
+      interval: 30000000
+    - name: procnetdev2
+      config: ""
+      interval: 30000000
+auth:
+  existingSecret: ""
+  secretWord: ""
+munge:
+  existingSecret: ""
+network:
+  nad:
+    enabled: false
+secrets:
+  createOvisAuth: true
+  createMungeKey: true
+global:
+  namespace: telemetry
+  imageRegistry: ""

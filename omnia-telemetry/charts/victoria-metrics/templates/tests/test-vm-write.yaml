@@ -1,0 +1,24 @@
+{{- if and .Values.enabled .Values.metrics.enabled }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ .Release.Name }}-vm-write-test
+  namespace: {{ include "victoria-metrics.namespace" . }}
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  restartPolicy: Never
+  containers:
+    - name: test
+      image: {{ include "victoria-metrics.image" (dict "image" .Values.busyboxImage "global" .Values.global) }}
+      command: ["sh", "-c"]
+      args:
+        - |
+          echo "Testing VictoriaMetrics write endpoint..."
+          {{- if eq .Values.metrics.deploymentMode "cluster" }}
+          wget -q -O- --no-check-certificate "https://vminsert-victoria-cluster:8480/health" && echo "PASSED"
+          {{- else }}
+          wget -q -O- --no-check-certificate "https://victoria-single:8428/health" && echo "PASSED"
+          {{- end }}
+{{- end }}

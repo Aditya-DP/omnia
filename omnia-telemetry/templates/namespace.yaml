@@ -1,0 +1,10 @@
+{{- $ns := include "omnia-telemetry.namespace" . -}}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ $ns }}
+  labels:
+    {{- include "omnia-telemetry.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: pre-install
+    helm.sh/hook-weight: "-10"

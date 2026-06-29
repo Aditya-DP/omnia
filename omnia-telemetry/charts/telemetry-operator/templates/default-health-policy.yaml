@@ -1,0 +1,70 @@
+{{- if and .Values.enabled .Values.defaultPolicy.create }}
+{{- $ns := include "telemetry-operator.namespace" . -}}
+apiVersion: telemetry.omnia.dell.com/v1alpha1
+kind: TelemetryHealthPolicy
+metadata:
+  name: default
+  namespace: {{ $ns }}
+  labels:
+    {{- include "telemetry-operator.labels" . | nindent 4 }}
+spec:
+  targetNamespace: {{ $ns }}
+  reconcileInterval: "60s"
+  rules:
+    # Rule 1: Remediate stuck-terminating pods (non-Kafka)
+    - name: stuck-terminating-general
+      type: TerminatingDuration
+      selector:
+        matchExpressions:
+          - key: strimzi.io/cluster
+            operator: DoesNotExist
+      parameters:
+        thresholdSeconds: {{ .Values.defaultPolicy.stuckTerminating.thresholdSeconds }}
+      actions:
+        - type: RemoveFinalizers
+        - type: ForceDelete
+        - type: CleanPvcLockFiles
+
+    # Rule 2: Remediate stuck-terminating Kafka pods (longer threshold)
+    - name: stuck-terminating-kafka
+      type: TerminatingDuration
+      selector:
+        matchLabels:
+          strimzi.io/cluster: kafka
+      parameters:
+        thresholdSeconds: {{ .Values.defaultPolicy.stuckTerminating.kafkaThresholdSeconds }}
+      actions:
+        - type: RemoveFinalizers
+        - type: ForceDelete
+
+    # Rule 3: Alert on CrashLoopBackOff pods
+    - name: crashloop-alert
+      type: ContainerState
+      parameters:
+        containerState: CrashLoopBackOff
+        minRestartCount: {{ .Values.defaultPolicy.crashLoopBackoff.minRestartCount }}
+      actions:
+        - type: Alert
+          parameters:
+            severity: warning
+
+    # Rule 4: Alert on long-pending pods
+    - name: pending-too-long
+      type: PendingDuration
+      parameters:
+        thresholdSeconds: {{ .Values.defaultPolicy.pendingTooLong.thresholdSeconds }}
+      actions:
+        - type: Alert
+          parameters:
+            severity: warning
+---
+apiVersion: telemetry.omnia.dell.com/v1alpha1
+kind: TelemetryHealthStatus
+metadata:
+  name: default
+  namespace: {{ $ns }}
+  labels:
+    {{- include "telemetry-operator.labels" . | nindent 4 }}
+spec:
+  targetNamespace: {{ $ns }}
+{{- end }}

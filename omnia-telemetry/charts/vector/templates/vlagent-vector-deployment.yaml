@@ -1,0 +1,98 @@
+{{- if and .Values.enabled .Values.vlagentVector.enabled }}
+{{- $ns := include "vector.namespace" . -}}
+{{- $tlsSecret := include "vector.tlsSecretName" . -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vlagent-vector
+  namespace: {{ $ns }}
+  labels:
+    app: vlagent-vector
+    component: vector
+    role: log-write-buffer
+    {{- include "vector.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.vlagentVector.replicas }}
+  selector:
+    matchLabels:
+      app: vlagent-vector
+  template:
+    metadata:
+      labels:
+        app: vlagent-vector
+        component: vector
+        role: log-write-buffer
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: vlagent
+          image: {{ include "vector.image" (dict "image" .Values.vlagentVector.image "global" .Values.global) }}
+          args:
+            - "-httpListenAddr=:{{ .Values.vlagentVector.port }}"
+            - "-remoteWrite.url=http://vlinsert-victoria-logs-cluster.{{ $ns }}.svc:9481/insert/jsonline"
+            {{- if .Values.tls.enabled }}
+            - "-remoteWrite.tlsCAFile=/etc/victoria/certs/ca.crt"
+            {{- end }}
+            - "-remoteWrite.tmpDataPath={{ .Values.vlagentVector.tmpDataPath }}"
+          ports:
+            - name: http
+              containerPort: {{ .Values.vlagentVector.port }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+          resources:
+            requests:
+              memory: {{ .Values.vlagentVector.resources.requests.memory | quote }}
+              cpu: {{ .Values.vlagentVector.resources.requests.cpu | quote }}
+            limits:
+              memory: {{ .Values.vlagentVector.resources.limits.memory | quote }}
+              cpu: {{ .Values.vlagentVector.resources.limits.cpu | quote }}
+          volumeMounts:
+            - name: buffer
+              mountPath: {{ .Values.vlagentVector.tmpDataPath }}
+            {{- if .Values.tls.enabled }}
+            - name: victoria-tls-certs
+              mountPath: /etc/victoria/certs
+              readOnly: true
+            {{- end }}
+      volumes:
+        - name: buffer
+          emptyDir: {}
+        {{- if .Values.tls.enabled }}
+        - name: victoria-tls-certs
+          secret:
+            secretName: {{ $tlsSecret }}
+            items:
+              - key: ca.crt
+                path: ca.crt
+        {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vlagent-vector
+  namespace: {{ $ns }}
+  labels:
+    app: vlagent-vector
+    {{- include "vector.labels" . | nindent 4 }}
+spec:
+  ports:
+    - name: http
+      port: {{ .Values.vlagentVector.port }}
+      targetPort: {{ .Values.vlagentVector.port }}
+      protocol: TCP
+  selector:
+    app: vlagent-vector
+{{- end }}

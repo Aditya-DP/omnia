@@ -1,0 +1,52 @@
+enabled: true
+replicas: 1
+images:
+  receiver: "docker.io/dellhpcomniaaisolution/idrac_telemetry_receiver:1.2"
+  kafkaPump: "docker.io/dellhpcomniaaisolution/kafkapump:1.2"
+  victoriaPump: "docker.io/dellhpcomniaaisolution/victoriapump:1.2"
+  activemq: "docker.io/rmohr/activemq:5.15.9"
+  mysql: "docker.io/library/mysql:9.3.0"
+collectionTargets:
+  kafka: true
+  victoriaMetrics: true
+mysql:
+  storage: "1Gi"
+  port: 3306
+  database: "telemetry"
+  resources:
+    requests: { cpu: "100m", memory: "256Mi" }
+    limits: { cpu: "500m", memory: "512Mi" }
+activemq:
+  ports:
+    http: 8161
+    openwire: 61616
+    stomp: 61613
+  resources:
+    requests: { cpu: "100m", memory: "512Mi" }
+    limits: { cpu: "500m", memory: "1536Mi" }
+receiver:
+  configUiPort: 8080
+  messagebusPort: 61613
+  resources:
+    requests: { cpu: "100m", memory: "128Mi" }
+    limits: { cpu: "500m", memory: "256Mi" }
+kafkaPump:
+  skipVerify: false
+  topic: "idrac"
+  resources:
+    requests: { cpu: "50m", memory: "128Mi" }
+    limits: { cpu: "200m", memory: "512Mi" }
+victoriaPump:
+  metricsPort: 2112
+  resources:
+    requests: { cpu: "50m", memory: "128Mi" }
+    limits: { cpu: "200m", memory: "512Mi" }
+terminationGracePeriodSeconds: 120
+secrets:
+  mysqlUser: "telemetry"
+  mysqlPassword: ""
+  mysqlRootPassword: ""
+  existingSecret: ""
+global:
+  namespace: telemetry
+  imageRegistry: ""

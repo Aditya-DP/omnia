@@ -1,0 +1,152 @@
+{{- if and .Values.tls.enabled .Values.tls.selfSigned.enabled (not .Values.tls.existingSecret) }}
+{{- $ns := include "omnia-telemetry.namespace" . -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "omnia-telemetry.fullname" . }}-tls-scripts
+  namespace: {{ $ns }}
+  labels:
+    {{- include "omnia-telemetry.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "-5"
+    helm.sh/hook-delete-policy: before-hook-creation
+data:
+  generate-certs.sh: |
+    #!/bin/sh
+    set -e
+    CERT_DIR="/certs"
+    VALIDITY={{ .Values.tls.selfSigned.validityDays | default 3650 }}
+    NS="{{ $ns }}"
+
+    # Generate CA
+    openssl genrsa -out ${CERT_DIR}/ca.key 4096
+    openssl req -x509 -new -nodes -key ${CERT_DIR}/ca.key \
+      -sha256 -days ${VALIDITY} -out ${CERT_DIR}/ca.crt \
+      -subj "/CN=omnia-telemetry-ca/O=Dell/OU=Omnia"
+
+    # Build SAN list dynamically
+    cat > ${CERT_DIR}/san.cnf <<EOF
+    [req]
+    req_extensions = v3_req
+    distinguished_name = req_dn
+    [req_dn]
+    CN = omnia-telemetry
+    [v3_req]
+    subjectAltName = @alt_names
+    [alt_names]
+    DNS.1 = *.${NS}.svc.cluster.local
+    DNS.2 = *.${NS}.svc
+    DNS.3 = *.${NS}
+    DNS.4 = victoria-cluster-vminsert.${NS}.svc.cluster.local
+    DNS.5 = victoria-cluster-vmselect.${NS}.svc.cluster.local
+    DNS.6 = victoria-cluster-vmstorage.${NS}.svc.cluster.local
+    DNS.7 = vminsert-victoria-cluster.${NS}.svc.cluster.local
+    DNS.8 = vmselect-victoria-cluster.${NS}.svc.cluster.local
+    DNS.9 = vmstorage-victoria-cluster.${NS}.svc.cluster.local
+    DNS.10 = vlinsert-victoria-logs-cluster.${NS}.svc.cluster.local
+    DNS.11 = vlselect-victoria-logs-cluster.${NS}.svc.cluster.local
+    DNS.12 = vlstorage-victoria-logs-cluster.${NS}.svc.cluster.local
+    DNS.13 = victoria-logs-cluster-vlinsert.${NS}.svc.cluster.local
+    DNS.14 = victoria-logs-cluster-vlselect.${NS}.svc.cluster.local
+    DNS.15 = victoria-logs-cluster-vlstorage.${NS}.svc.cluster.local
+    DNS.16 = vmagent.${NS}.svc.cluster.local
+    DNS.17 = vlagent.${NS}.svc.cluster.local
+    DNS.18 = kafka-kafka-bootstrap.${NS}.svc.cluster.local
+    DNS.19 = localhost
+    IP.1 = 127.0.0.1
+    EOF
+
+    # Generate server cert
+    openssl genrsa -out ${CERT_DIR}/tls.key 4096
+    openssl req -new -key ${CERT_DIR}/tls.key \
+      -out ${CERT_DIR}/tls.csr \
+      -subj "/CN=omnia-telemetry/O=Dell/OU=Omnia" \
+      -config ${CERT_DIR}/san.cnf
+    openssl x509 -req -in ${CERT_DIR}/tls.csr \
+      -CA ${CERT_DIR}/ca.crt -CAkey ${CERT_DIR}/ca.key \
+      -CAcreateserial -out ${CERT_DIR}/tls.crt \
+      -days ${VALIDITY} -sha256 \
+      -extensions v3_req -extfile ${CERT_DIR}/san.cnf
+
+    echo "TLS certificates generated successfully"
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "omnia-telemetry.fullname" . }}-tls-gen
+  namespace: {{ $ns }}
+  labels:
+    {{- include "omnia-telemetry.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "-4"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: tls-cert-gen
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: {{ include "omnia-telemetry.fullname" . }}-tls-sa
+      containers:
+        - name: cert-gen
+          image: {{ include "omnia-telemetry.image" (dict "image" "docker.io/library/alpine/openssl:latest" "global" .Values.global) }}
+          command: ["/bin/sh", "/scripts/generate-certs.sh"]
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+            - name: certs
+              mountPath: /certs
+      volumes:
+        - name: scripts
+          configMap:
+            name: {{ include "omnia-telemetry.fullname" . }}-tls-scripts
+            defaultMode: 0755
+        - name: certs
+          emptyDir: {}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "omnia-telemetry.fullname" . }}-tls-sa
+  namespace: {{ $ns }}
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "-6"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "omnia-telemetry.fullname" . }}-tls-role
+  namespace: {{ $ns }}
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "-6"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["create", "update", "get", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "omnia-telemetry.fullname" . }}-tls-rb
+  namespace: {{ $ns }}
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "-6"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "omnia-telemetry.fullname" . }}-tls-sa
+    namespace: {{ $ns }}
+roleRef:
+  kind: Role
+  name: {{ include "omnia-telemetry.fullname" . }}-tls-role
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}

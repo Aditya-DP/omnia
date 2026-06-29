@@ -1,0 +1,251 @@
+{{- if and .Values.enabled .Values.metrics.enabled }}
+{{- $ns := include "victoria-metrics.namespace" . -}}
+{{- $tlsSecret := include "victoria-metrics.tlsSecretName" . -}}
+{{- if eq .Values.metrics.deploymentMode "cluster" }}
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMCluster
+metadata:
+  name: victoria-cluster
+  namespace: {{ $ns }}
+  labels:
+    {{- include "victoria-metrics.labels" . | nindent 4 }}
+spec:
+  retentionPeriod: {{ .Values.metrics.retention | quote }}
+
+  vmstorage:
+    replicaCount: {{ .Values.metrics.cluster.vmstorage.replicas }}
+    replicationFactor: {{ .Values.metrics.cluster.vmstorage.replicationFactor }}
+    image:
+      repository: {{ (split ":" .Values.metrics.cluster.vmstorage.image)._0 }}
+      tag: {{ (split ":" .Values.metrics.cluster.vmstorage.image)._1 }}
+      pullPolicy: IfNotPresent
+    terminationGracePeriodSeconds: {{ .Values.metrics.cluster.vmstorage.terminationGracePeriod }}
+    initContainers:
+      - name: remove-stale-locks
+        image: {{ include "victoria-metrics.image" (dict "image" .Values.busyboxImage "global" .Values.global) }}
+        command: ["sh", "-c", "rm -f /vmstorage-data/flock.lock || true"]
+        volumeMounts:
+          - name: vmstorage-db
+            mountPath: /vmstorage-data
+    storageDataPath: /vmstorage-data
+    storage:
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: {{ .Values.metrics.persistenceSize | quote }}
+    resources:
+      requests:
+        memory: {{ .Values.metrics.cluster.vmstorage.resources.requests.memory | quote }}
+        cpu: {{ .Values.metrics.cluster.vmstorage.resources.requests.cpu | quote }}
+      limits:
+        memory: {{ .Values.metrics.cluster.vmstorage.resources.limits.memory | quote }}
+        cpu: {{ .Values.metrics.cluster.vmstorage.resources.limits.cpu | quote }}
+    startupProbe:
+      httpGet:
+        path: /health
+        port: 8482
+        scheme: {{ if .Values.tls.enabled }}HTTPS{{ else }}HTTP{{ end }}
+      initialDelaySeconds: {{ .Values.metrics.cluster.vmstorage.startupProbe.initialDelaySeconds }}
+      periodSeconds: {{ .Values.metrics.cluster.vmstorage.startupProbe.periodSeconds }}
+      failureThreshold: {{ .Values.metrics.cluster.vmstorage.startupProbe.failureThreshold }}
+      timeoutSeconds: {{ .Values.metrics.cluster.vmstorage.startupProbe.timeoutSeconds }}
+    readinessProbe:
+      httpGet:
+        path: /health
+        port: 8482
+        scheme: {{ if .Values.tls.enabled }}HTTPS{{ else }}HTTP{{ end }}
+      initialDelaySeconds: {{ .Values.metrics.cluster.vmstorage.readinessProbe.initialDelaySeconds }}
+      periodSeconds: {{ .Values.metrics.cluster.vmstorage.readinessProbe.periodSeconds }}
+      failureThreshold: {{ .Values.metrics.cluster.vmstorage.readinessProbe.failureThreshold }}
+      timeoutSeconds: {{ .Values.metrics.cluster.vmstorage.readinessProbe.timeoutSeconds }}
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: app.kubernetes.io/name
+                    operator: In
+                    values: ["vmstorage"]
+              topologyKey: "kubernetes.io/hostname"
+    tolerations:
+      - effect: NoExecute
+        key: node.kubernetes.io/not-ready
+        operator: Exists
+        tolerationSeconds: {{ .Values.metrics.cluster.vmstorage.tolerationSeconds }}
+      - effect: NoExecute
+        key: node.kubernetes.io/unreachable
+        operator: Exists
+        tolerationSeconds: {{ .Values.metrics.cluster.vmstorage.tolerationSeconds }}
+    extraArgs:
+      {{- if .Values.metrics.cluster.vmstorage.dedupMinScrapeInterval }}
+      dedup.minScrapeInterval: {{ .Values.metrics.cluster.vmstorage.dedupMinScrapeInterval | quote }}
+      {{- end }}
+      {{- if .Values.tls.enabled }}
+      tls: "true"
+      tlsCertFile: "/etc/victoria/certs/server.crt"
+      tlsKeyFile: "/etc/victoria/certs/server.key"
+      {{- end }}
+    {{- if .Values.tls.enabled }}
+    volumes:
+      - name: victoria-tls-certs
+        secret:
+          secretName: {{ $tlsSecret }}
+          items:
+            - key: tls.crt
+              path: server.crt
+            - key: tls.key
+              path: server.key
+    volumeMounts:
+      - name: victoria-tls-certs
+        mountPath: /etc/victoria/certs
+        readOnly: true
+    {{- end }}
+
+  vmselect:
+    replicaCount: {{ .Values.metrics.cluster.vmselect.replicas }}
+    image:
+      repository: {{ (split ":" .Values.metrics.cluster.vmselect.image)._0 }}
+      tag: {{ (split ":" .Values.metrics.cluster.vmselect.image)._1 }}
+      pullPolicy: IfNotPresent
+    serviceSpec:
+      useAsDefault: true
+      spec:
+        type: LoadBalancer
+    resources:
+      requests:
+        memory: {{ .Values.metrics.cluster.vmselect.resources.requests.memory | quote }}
+        cpu: {{ .Values.metrics.cluster.vmselect.resources.requests.cpu | quote }}
+      limits:
+        memory: {{ .Values.metrics.cluster.vmselect.resources.limits.memory | quote }}
+        cpu: {{ .Values.metrics.cluster.vmselect.resources.limits.cpu | quote }}
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: app.kubernetes.io/name
+                    operator: In
+                    values: ["vmselect"]
+              topologyKey: "kubernetes.io/hostname"
+    extraArgs:
+      {{- if .Values.metrics.cluster.vmselect.maxQueryDuration }}
+      search.maxQueryDuration: {{ .Values.metrics.cluster.vmselect.maxQueryDuration | quote }}
+      {{- end }}
+      {{- if .Values.metrics.cluster.vmselect.maxConcurrentRequests }}
+      search.maxConcurrentRequests: {{ .Values.metrics.cluster.vmselect.maxConcurrentRequests | quote }}
+      {{- end }}
+      {{- if .Values.metrics.cluster.vmselect.cacheDataPath }}
+      cacheDataPath: /cache
+      {{- end }}
+      {{- if .Values.tls.enabled }}
+      tls: "true"
+      tlsCertFile: "/etc/victoria/certs/server.crt"
+      tlsKeyFile: "/etc/victoria/certs/server.key"
+      {{- end }}
+    {{- if .Values.tls.enabled }}
+    volumes:
+      - name: victoria-tls-certs
+        secret:
+          secretName: {{ $tlsSecret }}
+          items:
+            - key: tls.crt
+              path: server.crt
+            - key: tls.key
+              path: server.key
+            - key: ca.crt
+              path: ca.crt
+    volumeMounts:
+      - name: victoria-tls-certs
+        mountPath: /etc/victoria/certs
+        readOnly: true
+    {{- end }}
+
+  vminsert:
+    replicaCount: {{ .Values.metrics.cluster.vminsert.replicas }}
+    image:
+      repository: {{ (split ":" .Values.metrics.cluster.vminsert.image)._0 }}
+      tag: {{ (split ":" .Values.metrics.cluster.vminsert.image)._1 }}
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        memory: {{ .Values.metrics.cluster.vminsert.resources.requests.memory | quote }}
+        cpu: {{ .Values.metrics.cluster.vminsert.resources.requests.cpu | quote }}
+      limits:
+        memory: {{ .Values.metrics.cluster.vminsert.resources.limits.memory | quote }}
+        cpu: {{ .Values.metrics.cluster.vminsert.resources.limits.cpu | quote }}
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: app.kubernetes.io/name
+                    operator: In
+                    values: ["vminsert"]
+              topologyKey: "kubernetes.io/hostname"
+    {{- if .Values.tls.enabled }}
+    extraArgs:
+      tls: "true"
+      tlsCertFile: "/etc/victoria/certs/server.crt"
+      tlsKeyFile: "/etc/victoria/certs/server.key"
+      maxLabelsPerTimeseries: "60"
+    volumes:
+      - name: victoria-tls-certs
+        secret:
+          secretName: {{ $tlsSecret }}
+          items:
+            - key: tls.crt
+              path: server.crt
+            - key: tls.key
+              path: server.key
+            - key: ca.crt
+              path: ca.crt
+    volumeMounts:
+      - name: victoria-tls-certs
+        mountPath: /etc/victoria/certs
+        readOnly: true
+    {{- end }}
+    {{- if .Values.metrics.cluster.vminsert.externalAccess }}
+    serviceSpec:
+      useAsDefault: true
+      spec:
+        type: LoadBalancer
+    {{- end }}
+{{- else }}
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMSingle
+metadata:
+  name: victoria-single
+  namespace: {{ $ns }}
+  labels:
+    {{- include "victoria-metrics.labels" . | nindent 4 }}
+spec:
+  replicaCount: {{ .Values.metrics.single.replicas }}
+  retentionPeriod: {{ .Values.metrics.retention | quote }}
+  storageDataPath: /victoria-metrics-data
+  storage:
+    volumeClaimTemplate:
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: {{ .Values.metrics.persistenceSize | quote }}
+  image:
+    repository: {{ (split ":" .Values.metrics.single.image)._0 }}
+    tag: {{ (split ":" .Values.metrics.single.image)._1 }}
+    pullPolicy: IfNotPresent
+  port: "8428"
+  resources:
+    requests: { memory: "2Gi", cpu: "500m" }
+    limits: { memory: "4Gi", cpu: "2000m" }
+  extraArgs:
+    selfScrapeInterval: "5s"
+{{- end }}
+{{- end }}

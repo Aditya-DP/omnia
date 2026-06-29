@@ -1,0 +1,19 @@
+{{- if .Values.enabled }}
+{{- $ns := include "ldms.namespace" . -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: ldms-store
+  namespace: {{ $ns }}
+  labels:
+    app: ldms-store
+    {{- include "ldms.labels" . | nindent 4 }}
+spec:
+  clusterIP: None
+  ports:
+    - name: ldms
+      port: {{ .Values.store.port }}
+      protocol: TCP
+  selector:
+    app: ldms-store
+{{- end }}

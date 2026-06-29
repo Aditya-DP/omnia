@@ -1,0 +1,29 @@
+{{- if .Values.enabled }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ .Release.Name }}-vector-test
+  namespace: {{ include "vector.namespace" . }}
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  restartPolicy: Never
+  containers:
+    - name: test
+      image: {{ include "vector.image" (dict "image" "docker.io/library/busybox:1.36" "global" .Values.global) }}
+      command: ["sh", "-c"]
+      args:
+        - |
+          echo "Testing Vector endpoints..."
+          {{- if .Values.ldms.enabled }}
+          wget -q -O- http://vector-ldms:{{ .Values.ldms.metricsPort }}/health && echo "LDMS bridge OK"
+          {{- end }}
+          {{- if .Values.ome.enabled }}
+          wget -q -O- http://vector-ome:{{ .Values.ome.metricsPort }}/health && echo "OME bridge OK"
+          {{- end }}
+          {{- if .Values.vmagentVector.enabled }}
+          wget -q -O- http://vmagent-vector:{{ .Values.vmagentVector.port }}/health && echo "vmagent-vector OK"
+          {{- end }}
+          echo "All tests PASSED"
+{{- end }}

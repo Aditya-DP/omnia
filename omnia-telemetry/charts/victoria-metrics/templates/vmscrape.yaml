@@ -1,0 +1,27 @@
+{{- if and .Values.enabled .Values.metrics.enabled }}
+{{- $ns := include "victoria-metrics.namespace" . -}}
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMPodScrape
+metadata:
+  name: idrac-telemetry-scrape
+  namespace: {{ $ns }}
+  labels:
+    {{- include "victoria-metrics.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: idrac-telemetry
+  namespaceSelector:
+    matchNames:
+      - {{ $ns }}
+  podMetricsEndpoints:
+    - port: "victoriapump"
+      interval: {{ .Values.metrics.scrape.idrac.interval }}
+      honorLabels: true
+      relabelConfigs:
+        - sourceLabels: [__meta_kubernetes_pod_container_name]
+          regex: victoria-pump
+          action: keep
+        - sourceLabels: [__meta_kubernetes_pod_ip]
+          targetLabel: pod_ip
+{{- end }}

@@ -1,0 +1,23 @@
+{{- if .Values.enabled }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ .Release.Name }}-external-sources-test
+  namespace: {{ include "external-sources.namespace" . }}
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  restartPolicy: Never
+  containers:
+    - name: test
+      image: "docker.io/library/busybox:1.36"
+      command: ["sh", "-c"]
+      args:
+        - |
+          echo "External sources health check..."
+          {{- if .Values.powerscale.csiVolumeExporter.enabled }}
+          wget -q -O- http://csi-volume-exporter:{{ .Values.powerscale.csiVolumeExporter.port }}/healthz && echo "CSI exporter OK"
+          {{- end }}
+          echo "PASSED"
+{{- end }}

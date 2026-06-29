@@ -1,0 +1,65 @@
+{{- if and .Values.enabled .Values.powerscale.csiVolumeExporter.enabled }}
+{{- $ns := include "external-sources.namespace" . -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: csi-volume-exporter
+  namespace: {{ $ns }}
+  labels:
+    app: csi-volume-exporter
+    {{- include "external-sources.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: csi-volume-exporter
+  template:
+    metadata:
+      labels:
+        app: csi-volume-exporter
+    spec:
+      containers:
+        - name: exporter
+          image: {{ include "external-sources.image" (dict "image" .Values.powerscale.csiVolumeExporter.image "global" .Values.global) }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: metrics
+              containerPort: {{ .Values.powerscale.csiVolumeExporter.port }}
+              protocol: TCP
+          resources:
+            requests:
+              cpu: {{ .Values.powerscale.csiVolumeExporter.resources.requests.cpu | quote }}
+              memory: {{ .Values.powerscale.csiVolumeExporter.resources.requests.memory | quote }}
+            limits:
+              cpu: {{ .Values.powerscale.csiVolumeExporter.resources.limits.cpu | quote }}
+              memory: {{ .Values.powerscale.csiVolumeExporter.resources.limits.memory | quote }}
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: csi-volume-exporter
+  namespace: {{ $ns }}
+  labels:
+    app: csi-volume-exporter
+    {{- include "external-sources.labels" . | nindent 4 }}
+spec:
+  ports:
+    - name: metrics
+      port: {{ .Values.powerscale.csiVolumeExporter.port }}
+      targetPort: {{ .Values.powerscale.csiVolumeExporter.port }}
+      protocol: TCP
+  selector:
+    app: csi-volume-exporter
+{{- end }}

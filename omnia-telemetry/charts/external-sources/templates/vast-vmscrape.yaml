@@ -1,0 +1,51 @@
+{{- if and .Values.enabled .Values.vast.enabled }}
+{{- $ns := include "external-sources.namespace" . -}}
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMServiceScrape
+metadata:
+  name: vast-storage-metrics
+  namespace: {{ $ns }}
+  labels:
+    {{- include "external-sources.labels" . | nindent 4 }}
+spec:
+  jobLabel: vast
+  selector:
+    matchLabels:
+      app: vast-external
+  endpoints:
+    - port: metrics
+      interval: {{ .Values.vast.scrapeInterval }}
+      scrapeTimeout: {{ .Values.vast.scrapeTimeout }}
+      {{- if eq .Values.vast.tlsMode "ca_signed" }}
+      scheme: https
+      tlsConfig:
+        caFile: /etc/vast-credentials/ca.crt
+        insecureSkipVerify: false
+      {{- else if eq .Values.vast.tlsMode "self_signed" }}
+      scheme: https
+      tlsConfig:
+        insecureSkipVerify: true
+      {{- else }}
+      scheme: http
+      {{- end }}
+      path: {{ .Values.vast.metricsPath }}
+      honorLabels: true
+      {{- if eq .Values.vast.authMode "basic" }}
+      basicAuth:
+        username:
+          name: {{ include "external-sources.vastSecretName" . }}
+          key: username
+        password:
+          name: {{ include "external-sources.vastSecretName" . }}
+          key: password
+      {{- end }}
+      relabelConfigs:
+        - targetLabel: source_subsystem
+          replacement: vast
+        - targetLabel: subsystem
+          replacement: storage
+        - sourceLabels: [__meta_kubernetes_service_label_app]
+          targetLabel: vast_domain
+        - targetLabel: job
+          replacement: vast-storage-metrics
+{{- end }}

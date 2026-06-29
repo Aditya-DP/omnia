@@ -1,0 +1,132 @@
+enabled: true
+metrics:
+  enabled: true
+  deploymentMode: cluster
+  retention: "168h"
+  persistenceSize: "8Gi"
+  cluster:
+    vmstorage:
+      replicas: 3
+      replicationFactor: 2
+      dedupMinScrapeInterval: "1m"
+      image: "victoriametrics/vmstorage:v1.128.0-cluster"
+      terminationGracePeriod: 120
+      tolerationSeconds: 5
+      resources:
+        requests: { memory: "1Gi", cpu: "250m" }
+        limits: { memory: "2Gi", cpu: "1000m" }
+      startupProbe:
+        initialDelaySeconds: 30
+        periodSeconds: 10
+        failureThreshold: 30
+        timeoutSeconds: 5
+      readinessProbe:
+        initialDelaySeconds: 15
+        periodSeconds: 5
+        failureThreshold: 10
+        timeoutSeconds: 5
+    vminsert:
+      replicas: 2
+      image: "victoriametrics/vminsert:v1.128.0-cluster"
+      externalAccess: true
+      resources:
+        requests: { memory: "256Mi", cpu: "100m" }
+        limits: { memory: "512Mi", cpu: "500m" }
+    vmselect:
+      replicas: 2
+      image: "victoriametrics/vmselect:v1.128.0-cluster"
+      maxQueryDuration: "5m"
+      maxConcurrentRequests: "8"
+      cacheDataPath: true
+      resources:
+        requests: { memory: "256Mi", cpu: "100m" }
+        limits: { memory: "512Mi", cpu: "500m" }
+  single:
+    replicas: 1
+    image: "victoriametrics/victoria-metrics:v1.128.0"
+  vmagent:
+    replicas: 2
+    image: "victoriametrics/vmagent:v1.128.0"
+    resources:
+      requests: { memory: "128Mi", cpu: "50m" }
+      limits: { memory: "512Mi", cpu: "250m" }
+  additionalRemoteWriteEndpoints: []
+  scrape:
+    idrac:
+      port: 2112
+      path: /metrics
+      interval: "30s"
+    powerscaleOtel:
+      port: 8889
+      path: /metrics
+      interval: "30s"
+    csiVolumeExporter:
+      port: 8080
+      path: /metrics
+      interval: "30s"
+logs:
+  enabled: true
+  retention: "168h"
+  storageSize: "8Gi"
+  cluster:
+    vlstorage:
+      replicas: 3
+      replicationFactor: 2
+      image: "victoriametrics/victoria-logs:v1.49.0"
+      terminationGracePeriod: 120
+      tolerationSeconds: 5
+      resources:
+        requests: { memory: "512Mi", cpu: "100m" }
+        limits: { memory: "1Gi", cpu: "500m" }
+      startupProbe:
+        initialDelaySeconds: 30
+        periodSeconds: 10
+        failureThreshold: 30
+        timeoutSeconds: 5
+      readinessProbe:
+        initialDelaySeconds: 15
+        periodSeconds: 5
+        failureThreshold: 10
+        timeoutSeconds: 5
+    vlinsert:
+      replicas: 2
+      image: "victoriametrics/victoria-logs:v1.49.0"
+      externalAccess: true
+      port: 9481
+      resources:
+        requests: { memory: "256Mi", cpu: "100m" }
+        limits: { memory: "512Mi", cpu: "500m" }
+    vlselect:
+      replicas: 2
+      image: "victoriametrics/victoria-logs:v1.49.0"
+      port: 9471
+      resources:
+        requests: { memory: "256Mi", cpu: "100m" }
+        limits: { memory: "512Mi", cpu: "500m" }
+  vlagent:
+    replicas: 1
+    image: "victoriametrics/vlagent:v1.49.0"
+    pvcSize: "5Gi"
+    syslog:
+      tcp: 514
+      udp: 514
+      tlsPort: 6514
+    service:
+      type: LoadBalancer
+      nodePorts:
+        tcp: 32399
+        udp: 32400
+    resources:
+      requests: { memory: "64Mi", cpu: "25m" }
+      limits: { memory: "256Mi", cpu: "100m" }
+  additionalLogWriteEndpoints: []
+rbac:
+  create: true
+  serviceAccountName: "vmagent"
+tls:
+  enabled: true
+  secretName: "victoria-tls-certs"
+busyboxImage: "docker.io/library/busybox:1.36"
+global:
+  namespace: telemetry
+  imageRegistry: ""

@@ -1,0 +1,49 @@
+{{- if and .Values.enabled .Values.ufm.enabled }}
+{{- $ns := include "external-sources.namespace" . -}}
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMServiceScrape
+metadata:
+  name: ufm-infiniband-metrics
+  namespace: {{ $ns }}
+  labels:
+    {{- include "external-sources.labels" . | nindent 4 }}
+spec:
+  jobLabel: ufm
+  selector:
+    matchLabels:
+      app: ufm-external
+  endpoints:
+    - port: metrics
+      interval: {{ .Values.ufm.scrapeInterval }}
+      scrapeTimeout: {{ .Values.ufm.scrapeTimeout }}
+      {{- if eq .Values.ufm.tlsMode "ca_signed" }}
+      scheme: https
+      tlsConfig:
+        caFile: /etc/ufm-credentials/ca.crt
+        insecureSkipVerify: false
+      {{- else if eq .Values.ufm.tlsMode "self_signed" }}
+      scheme: https
+      tlsConfig:
+        insecureSkipVerify: true
+      {{- else }}
+      scheme: http
+      {{- end }}
+      path: /metrics
+      honorLabels: true
+      {{- if eq .Values.ufm.authMode "basic" }}
+      basicAuth:
+        username:
+          name: {{ include "external-sources.ufmSecretName" . }}
+          key: username
+        password:
+          name: {{ include "external-sources.ufmSecretName" . }}
+          key: password
+      {{- end }}
+      relabelConfigs:
+        - targetLabel: source
+          replacement: ufm
+        - targetLabel: subsystem
+          replacement: infiniband
+        - targetLabel: job
+          replacement: ufm-infiniband-metrics
+{{- end }}

@@ -1,0 +1,20 @@
+{{- if .Values.enabled }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ .Release.Name }}-ldms-agg-test
+  namespace: {{ include "ldms.namespace" . }}
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  restartPolicy: Never
+  containers:
+    - name: test
+      image: {{ include "ldms.image" (dict "image" .Values.image "global" .Values.global) }}
+      command: ["sh", "-c"]
+      args:
+        - |
+          echo "Testing LDMS aggregator connectivity..."
+          nc -z ldms-aggregator {{ .Values.aggregator.port }} && echo "PASSED" || exit 1
+{{- end }}

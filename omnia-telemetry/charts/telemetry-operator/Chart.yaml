@@ -1,0 +1,6 @@
+apiVersion: v2
+name: telemetry-operator
+description: Telemetry Health Operator - CRD-based pod health management replacing CronJob cleanup
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

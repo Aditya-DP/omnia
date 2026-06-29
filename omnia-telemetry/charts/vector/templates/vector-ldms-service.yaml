@@ -1,0 +1,19 @@
+{{- if and .Values.enabled .Values.ldms.enabled }}
+{{- $ns := include "vector.namespace" . -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: vector-ldms
+  namespace: {{ $ns }}
+  labels:
+    app: vector-ldms
+    {{- include "vector.labels" . | nindent 4 }}
+spec:
+  ports:
+    - name: metrics
+      port: {{ .Values.ldms.metricsPort }}
+      targetPort: {{ .Values.ldms.metricsPort }}
+      protocol: TCP
+  selector:
+    app: vector-ldms
+{{- end }}

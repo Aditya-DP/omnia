@@ -1,0 +1,66 @@
+{{- if and .Values.enabled .Values.metrics.enabled }}
+{{- $ns := include "victoria-metrics.namespace" . -}}
+{{- $tlsSecret := include "victoria-metrics.tlsSecretName" . -}}
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMAgent
+metadata:
+  name: vmagent
+  namespace: {{ $ns }}
+  labels:
+    {{- include "victoria-metrics.labels" . | nindent 4 }}
+spec:
+  serviceAccountName: {{ .Values.rbac.serviceAccountName }}
+  replicaCount: {{ .Values.metrics.vmagent.replicas }}
+  image:
+    repository: {{ (split ":" .Values.metrics.vmagent.image)._0 }}
+    tag: {{ (split ":" .Values.metrics.vmagent.image)._1 }}
+    pullPolicy: IfNotPresent
+  remoteWrite:
+    {{- if eq .Values.metrics.deploymentMode "cluster" }}
+    - url: {{ if .Values.tls.enabled }}https{{ else }}http{{ end }}://vminsert-victoria-cluster.{{ $ns }}.svc:8480/insert/0/prometheus/api/v1/write
+      {{- if .Values.tls.enabled }}
+      tlsConfig:
+        ca:
+          secret:
+            name: {{ $tlsSecret }}
+            key: ca.crt
+        insecureSkipVerify: false
+      {{- end }}
+    {{- else }}
+    - url: {{ if .Values.tls.enabled }}https{{ else }}http{{ end }}://victoria-single.{{ $ns }}.svc:8428/api/v1/write
+      tlsConfig:
+        insecureSkipVerify: true
+    {{- end }}
+    {{- range .Values.metrics.additionalRemoteWriteEndpoints }}
+    - url: {{ .url }}
+      tlsConfig:
+        insecureSkipVerify: {{ .tlsInsecureSkipVerify | default false }}
+    {{- end }}
+  resources:
+    requests:
+      memory: {{ .Values.metrics.vmagent.resources.requests.memory | quote }}
+      cpu: {{ .Values.metrics.vmagent.resources.requests.cpu | quote }}
+    limits:
+      memory: {{ .Values.metrics.vmagent.resources.limits.memory | quote }}
+      cpu: {{ .Values.metrics.vmagent.resources.limits.cpu | quote }}
+  serviceScrapeNamespaceSelector: {}
+  serviceScrapeSelector: {}
+  podScrapeNamespaceSelector: {}
+  podScrapeSelector: {}
+  nodeScrapeNamespaceSelector: {}
+  nodeScrapeSelector: {}
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app.kubernetes.io/name
+                  operator: In
+                  values: ["vmagent"]
+            topologyKey: "kubernetes.io/hostname"
+  extraArgs:
+    promscrape.streamParse: "true"
+    promscrape.maxScrapeSize: "16MB"
+{{- end }}

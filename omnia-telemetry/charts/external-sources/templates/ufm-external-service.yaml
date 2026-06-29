@@ -1,0 +1,30 @@
+{{- if and .Values.enabled .Values.ufm.enabled }}
+{{- $ns := include "external-sources.namespace" . -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: ufm-external
+  namespace: {{ $ns }}
+  labels:
+    app: ufm-external
+    {{- include "external-sources.labels" . | nindent 4 }}
+spec:
+  ports:
+    - name: metrics
+      port: {{ .Values.ufm.port }}
+  clusterIP: None
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: ufm-external
+  namespace: {{ $ns }}
+  labels:
+    {{- include "external-sources.labels" . | nindent 4 }}
+subsets:
+  - addresses:
+      - ip: {{ .Values.ufm.endpoint | quote }}
+    ports:
+      - name: metrics
+        port: {{ .Values.ufm.port }}
+{{- end }}

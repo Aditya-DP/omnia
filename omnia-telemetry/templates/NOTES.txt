@@ -1,0 +1,35 @@
+Omnia Telemetry Stack v{{ .Chart.Version }} deployed to namespace "{{ include "omnia-telemetry.namespace" . }}".
+
+Components:
+{{- if eq (include "omnia-telemetry.kafkaRequired" .) "true" }}
+  - Kafka (Strimzi KRaft)          : 3 controllers + 3 brokers
+{{- end }}
+{{- $vm := index .Values "victoria-metrics" }}
+{{- if $vm.metrics.enabled }}
+  - VictoriaMetrics ({{ $vm.metrics.deploymentMode }}) : retention={{ $vm.metrics.retention }}
+{{- end }}
+{{- if $vm.logs.enabled }}
+  - VictoriaLogs (cluster)         : retention={{ $vm.logs.retention }}
+{{- end }}
+{{- if .Values.idrac.enabled }}
+  - iDRAC Telemetry                : StatefulSet (MySQL + ActiveMQ + pumps)
+{{- end }}
+{{- if .Values.ldms.enabled }}
+  - LDMS                           : aggregator + store
+{{- end }}
+{{- if .Values.vector.enabled }}
+  - Vector bridges                 : LDMS={{ .Values.vector.ldms.enabled }}, OME={{ .Values.vector.ome.enabled }}
+{{- end }}
+{{- $es := index .Values "external-sources" }}
+{{- if $es.enabled }}
+  - External sources               : UFM={{ $es.ufm.enabled }}, VAST={{ $es.vast.enabled }}
+{{- end }}
+{{- $op := index .Values "telemetry-operator" }}
+{{- if $op.enabled }}
+  - Telemetry Health Operator      : replicas={{ $op.replicas }}
+{{- end }}
+
+Access:
+  VictoriaMetrics query:  kubectl -n {{ include "omnia-telemetry.namespace" . }} port-forward svc/vmselect-victoria-cluster 8481:8481
+  VictoriaLogs query:     kubectl -n {{ include "omnia-telemetry.namespace" . }} port-forward svc/vlselect-victoria-logs-cluster 9471:9471
+  Kafka bridge:           kubectl -n {{ include "omnia-telemetry.namespace" . }} port-forward svc/bridge-bridge-lb 8080:8080

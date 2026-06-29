@@ -1,0 +1,94 @@
+{{- if and .Values.enabled .Values.logs.enabled }}
+{{- $ns := include "victoria-metrics.namespace" . -}}
+{{- $tlsSecret := include "victoria-metrics.tlsSecretName" . -}}
+apiVersion: operator.victoriametrics.com/v1
+kind: VLAgent
+metadata:
+  name: vlagent
+  namespace: {{ $ns }}
+  labels:
+    app: vlagent
+    component: victorialogs
+    {{- include "victoria-metrics.labels" . | nindent 4 }}
+spec:
+  image:
+    repository: {{ (split ":" .Values.logs.vlagent.image)._0 }}
+    tag: {{ (split ":" .Values.logs.vlagent.image)._1 }}
+    pullPolicy: IfNotPresent
+  replicaCount: {{ .Values.logs.vlagent.replicas }}
+  extraArgs:
+    syslog.listenAddr.tcp: ":{{ .Values.logs.vlagent.syslog.tcp }}"
+    syslog.listenAddr.udp: ":{{ .Values.logs.vlagent.syslog.udp }}"
+    {{- if .Values.tls.enabled }}
+    remoteWrite.tlsCAFile: "/etc/victoria/certs/ca.crt"
+    {{- end }}
+  remoteWrite:
+    - url: {{ if .Values.tls.enabled }}https{{ else }}http{{ end }}://vlinsert-victoria-logs-cluster.{{ $ns }}.svc.cluster.local:9481/internal/insert
+    {{- range .Values.logs.additionalLogWriteEndpoints }}
+    - url: {{ .url }}
+    {{- end }}
+  resources:
+    requests:
+      memory: {{ .Values.logs.vlagent.resources.requests.memory | quote }}
+      cpu: {{ .Values.logs.vlagent.resources.requests.cpu | quote }}
+    limits:
+      memory: {{ .Values.logs.vlagent.resources.limits.memory | quote }}
+      cpu: {{ .Values.logs.vlagent.resources.limits.cpu | quote }}
+  initContainers:
+    - name: cleanup-stale-locks
+      image: {{ (split ":" .Values.logs.vlagent.image)._0 }}:{{ (split ":" .Values.logs.vlagent.image)._1 }}
+      command: ["sh", "-c", "find /tmp-data -name 'flock.lock' -delete 2>/dev/null || true"]
+      volumeMounts:
+        - name: tmp-data
+          mountPath: /tmp-data
+  storage:
+    volumeClaimTemplate:
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: {{ .Values.logs.vlagent.pvcSize | quote }}
+  {{- if .Values.tls.enabled }}
+  volumes:
+    - name: victoria-tls-certs
+      secret:
+        secretName: {{ $tlsSecret }}
+        items:
+          - key: tls.crt
+            path: server.crt
+          - key: tls.key
+            path: server.key
+          - key: ca.crt
+            path: ca.crt
+  volumeMounts:
+    - name: victoria-tls-certs
+      mountPath: /etc/victoria/certs
+      readOnly: true
+  {{- end }}
+  serviceSpec:
+    useAsDefault: true
+    spec:
+      type: {{ .Values.logs.vlagent.service.type }}
+      ports:
+        - name: syslog
+          port: {{ .Values.logs.vlagent.syslog.tcp }}
+          targetPort: {{ .Values.logs.vlagent.syslog.tcp }}
+          protocol: TCP
+          nodePort: {{ .Values.logs.vlagent.service.nodePorts.tcp }}
+        - name: syslog-udp
+          port: {{ .Values.logs.vlagent.syslog.udp }}
+          targetPort: {{ .Values.logs.vlagent.syslog.udp }}
+          protocol: UDP
+          nodePort: {{ .Values.logs.vlagent.service.nodePorts.udp }}
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app.kubernetes.io/name
+                  operator: In
+                  values: ["vlagent"]
+            topologyKey: "kubernetes.io/hostname"
+{{- end }}
