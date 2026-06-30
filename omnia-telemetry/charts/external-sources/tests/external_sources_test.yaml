@@ -1,0 +1,187 @@
+suite: External Sources Sub-Chart Tests
+templates:
+  - templates/ufm-external-service.yaml
+  - templates/ufm-secret.yaml
+  - templates/ufm-vmscrape.yaml
+  - templates/vast-external-service.yaml
+  - templates/vast-secret.yaml
+  - templates/vast-vmscrape.yaml
+  - templates/powerscale-csi-exporter.yaml
+tests:
+  # ===== UFM =====
+  - it: "ES-001: UFM Service+Endpoints when enabled"
+    template: templates/ufm-external-service.yaml
+    set:
+      ufm.enabled: true
+      ufm.endpoint: "10.10.10.50"
+    asserts:
+      - hasDocuments:
+          count: 2
+      - documentIndex: 0
+        isKind:
+          of: Service
+      - documentIndex: 0
+        equal:
+          path: metadata.name
+          value: ufm-external
+      - documentIndex: 1
+        isKind:
+          of: Endpoints
+
+  - it: "ES-002: UFM not rendered when ufm.enabled=false"
+    template: templates/ufm-external-service.yaml
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: "ES-003: UFM Secret with basic auth"
+    template: templates/ufm-secret.yaml
+    set:
+      ufm.enabled: true
+      ufm.credentials.username: admin
+      ufm.credentials.password: secret123
+    asserts:
+      - isKind:
+          of: Secret
+      - equal:
+          path: metadata.name
+          value: ufm-telemetry-credentials
+      - equal:
+          path: stringData.username
+          value: admin
+
+  - it: "ES-003b: UFM Secret NOT created when existingSecret set"
+    template: templates/ufm-secret.yaml
+    set:
+      ufm.enabled: true
+      ufm.credentials.existingSecret: my-ufm-secret
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: "ES-004: UFM VMServiceScrape with self_signed TLS"
+    template: templates/ufm-vmscrape.yaml
+    set:
+      ufm.enabled: true
+    asserts:
+      - isKind:
+          of: VMServiceScrape
+      - equal:
+          path: metadata.name
+          value: ufm-infiniband-metrics
+      - equal:
+          path: spec.endpoints[0].scheme
+          value: https
+
+  - it: "ES-004b: UFM VMServiceScrape not rendered when disabled"
+    template: templates/ufm-vmscrape.yaml
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  # ===== VAST =====
+  - it: "ES-005: VAST Service+Endpoints when enabled"
+    template: templates/vast-external-service.yaml
+    set:
+      vast.enabled: true
+      vast.endpoint: "10.10.10.60"
+    asserts:
+      - hasDocuments:
+          count: 2
+      - documentIndex: 0
+        isKind:
+          of: Service
+      - documentIndex: 0
+        equal:
+          path: metadata.name
+          value: vast-external
+
+  - it: "ES-006: VAST not rendered when vast.enabled=false"
+    template: templates/vast-external-service.yaml
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: "ES-007: VAST Secret with basic auth"
+    template: templates/vast-secret.yaml
+    set:
+      vast.enabled: true
+      vast.credentials.username: admin
+      vast.credentials.password: vastpw
+    asserts:
+      - isKind:
+          of: Secret
+      - equal:
+          path: metadata.name
+          value: vast-telemetry-credentials
+      - equal:
+          path: stringData.username
+          value: admin
+
+  - it: "ES-007b: VAST Secret NOT created when existingSecret set"
+    template: templates/vast-secret.yaml
+    set:
+      vast.enabled: true
+      vast.credentials.existingSecret: my-vast-secret
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: "ES-008: VAST VMServiceScrape with correct path"
+    template: templates/vast-vmscrape.yaml
+    set:
+      vast.enabled: true
+    asserts:
+      - isKind:
+          of: VMServiceScrape
+      - equal:
+          path: metadata.name
+          value: vast-storage-metrics
+      - equal:
+          path: spec.endpoints[0].path
+          value: "/api/prometheusmetrics/all"
+
+  # ===== POWERSCALE CSI =====
+  - it: "ES-009: CSI exporter Deployment+Service rendered"
+    template: templates/powerscale-csi-exporter.yaml
+    asserts:
+      - hasDocuments:
+          count: 2
+      - documentIndex: 0
+        isKind:
+          of: Deployment
+      - documentIndex: 0
+        equal:
+          path: metadata.name
+          value: csi-volume-exporter
+      - documentIndex: 1
+        isKind:
+          of: Service
+
+  - it: "ES-010: CSI exporter not rendered when disabled"
+    template: templates/powerscale-csi-exporter.yaml
+    set:
+      powerscale.csiVolumeExporter.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: "ES-009b: CSI exporter has health probes"
+    template: templates/powerscale-csi-exporter.yaml
+    documentIndex: 0
+    asserts:
+      - exists:
+          path: spec.template.spec.containers[0].livenessProbe
+      - exists:
+          path: spec.template.spec.containers[0].readinessProbe
+
+  # ===== NAMESPACE =====
+  - it: "ES-012: Resources use correct namespace"
+    template: templates/powerscale-csi-exporter.yaml
+    set:
+      global.namespace: custom-ext-ns
+    documentIndex: 0
+    asserts:
+      - equal:
+          path: metadata.namespace
+          value: custom-ext-ns

@@ -1,0 +1,509 @@
+suite: Kafka Sub-Chart Tests
+templates:
+  - templates/kafka-cluster.yaml
+  - templates/kafka-bridge.yaml
+  - templates/kafka-topics.yaml
+  - templates/kafka-users.yaml
+tests:
+  # ===== KAFKA CLUSTER =====
+  - it: "K-001: Controller KafkaNodePool with correct replicas"
+    template: templates/kafka-cluster.yaml
+    documentIndex: 0
+    asserts:
+      - isKind:
+          of: KafkaNodePool
+      - equal:
+          path: metadata.name
+          value: controller
+      - equal:
+          path: spec.replicas
+          value: 3
+      - contains:
+          path: spec.roles
+          content: controller
+
+  - it: "K-002: Broker KafkaNodePool with correct replicas"
+    template: templates/kafka-cluster.yaml
+    documentIndex: 1
+    asserts:
+      - isKind:
+          of: KafkaNodePool
+      - equal:
+          path: metadata.name
+          value: broker
+      - equal:
+          path: spec.replicas
+          value: 3
+      - contains:
+          path: spec.roles
+          content: broker
+
+  - it: "K-001b: Custom controller replicas"
+    template: templates/kafka-cluster.yaml
+    documentIndex: 0
+    set:
+      cluster.replicas.controllers: 5
+    asserts:
+      - equal:
+          path: spec.replicas
+          value: 5
+
+  - it: "K-002b: Custom broker replicas"
+    template: templates/kafka-cluster.yaml
+    documentIndex: 1
+    set:
+      cluster.replicas.brokers: 7
+    asserts:
+      - equal:
+          path: spec.replicas
+          value: 7
+
+  - it: "K-003: Kafka CR has KRaft annotations"
+    template: templates/kafka-cluster.yaml
+    documentIndex: 2
+    asserts:
+      - isKind:
+          of: Kafka
+      - equal:
+          path: metadata.name
+          value: kafka
+      - equal:
+          path: metadata.annotations["strimzi.io/kraft"]
+          value: enabled
+      - equal:
+          path: metadata.annotations["strimzi.io/node-pools"]
+          value: enabled
+
+  - it: "K-004: Kafka has 3 listeners (internal, tls, external)"
+    template: templates/kafka-cluster.yaml
+    documentIndex: 2
+    asserts:
+      - lengthEqual:
+          path: spec.kafka.listeners
+          count: 3
+      - equal:
+          path: spec.kafka.listeners[0].name
+          value: internal
+      - equal:
+          path: spec.kafka.listeners[0].port
+          value: 9092
+      - equal:
+          path: spec.kafka.listeners[1].name
+          value: tls
+      - equal:
+          path: spec.kafka.listeners[1].port
+          value: 9093
+      - equal:
+          path: spec.kafka.listeners[2].name
+          value: external
+      - equal:
+          path: spec.kafka.listeners[2].port
+          value: 9094
+
+  - it: "K-005: Controller storage size from values"
+    template: templates/kafka-cluster.yaml
+    documentIndex: 0
+    asserts:
+      - equal:
+          path: spec.storage.volumes[0].size
+          value: "8Gi"
+
+  - it: "K-005b: Custom storage size propagates to controller"
+    template: templates/kafka-cluster.yaml
+    documentIndex: 0
+    set:
+      cluster.storage.size: "50Gi"
+    asserts:
+      - equal:
+          path: spec.storage.volumes[0].size
+          value: "50Gi"
+
+  - it: "K-005c: Custom storage size propagates to broker"
+    template: templates/kafka-cluster.yaml
+    documentIndex: 1
+    set:
+      cluster.storage.size: "100Gi"
+    asserts:
+      - equal:
+          path: spec.storage.volumes[0].size
+          value: "100Gi"
+
+  - it: "K-006: Kafka config values from values.yaml"
+    template: templates/kafka-cluster.yaml
+    documentIndex: 2
+    asserts:
+      - equal:
+          path: spec.kafka.config["log.retention.hours"]
+          value: 168
+      - equal:
+          path: spec.kafka.config["log.retention.bytes"]
+          value: -1
+      - equal:
+          path: spec.kafka.config["min.insync.replicas"]
+          value: 2
+      - equal:
+          path: spec.kafka.config["default.replication.factor"]
+          value: 3
+
+  - it: "K-006b: Kafka version and metadataVersion from values"
+    template: templates/kafka-cluster.yaml
+    documentIndex: 2
+    asserts:
+      - equal:
+          path: spec.kafka.version
+          value: "4.1.0"
+      - equal:
+          path: spec.kafka.metadataVersion
+          value: "4.1-IV0"
+
+  - it: "K-006c: Entity operator userOperator resources from values"
+    template: templates/kafka-cluster.yaml
+    documentIndex: 2
+    asserts:
+      - equal:
+          path: spec.entityOperator.userOperator.resources.requests.memory
+          value: "512Mi"
+      - equal:
+          path: spec.entityOperator.userOperator.resources.requests.cpu
+          value: "200m"
+      - equal:
+          path: spec.entityOperator.userOperator.resources.limits.memory
+          value: "512Mi"
+      - equal:
+          path: spec.entityOperator.userOperator.resources.limits.cpu
+          value: "1000m"
+
+  - it: "K-007b: Cluster produces exactly 3 documents when enabled"
+    template: templates/kafka-cluster.yaml
+    asserts:
+      - hasDocuments:
+          count: 3
+
+  # ===== KAFKA BRIDGE =====
+  - it: "K-008: KafkaBridge rendered when bridge.enabled=true"
+    template: templates/kafka-bridge.yaml
+    asserts:
+      - hasDocuments:
+          count: 2
+      - documentIndex: 0
+        isKind:
+          of: KafkaBridge
+      - documentIndex: 0
+        equal:
+          path: metadata.name
+          value: bridge
+
+  - it: "K-008b: Bridge replicas and port from values"
+    template: templates/kafka-bridge.yaml
+    documentIndex: 0
+    asserts:
+      - equal:
+          path: spec.replicas
+          value: 1
+      - equal:
+          path: spec.http.port
+          value: 8080
+
+  - it: "K-008c: Bridge uses TLS authentication"
+    template: templates/kafka-bridge.yaml
+    documentIndex: 0
+    asserts:
+      - equal:
+          path: spec.authentication.type
+          value: tls
+      - equal:
+          path: spec.authentication.certificateAndKey.secretName
+          value: kafkapump
+
+  - it: "K-009: Bridge LB Service created with correct type and port"
+    template: templates/kafka-bridge.yaml
+    documentIndex: 1
+    asserts:
+      - isKind:
+          of: Service
+      - equal:
+          path: metadata.name
+          value: bridge-bridge-lb
+      - equal:
+          path: spec.type
+          value: LoadBalancer
+      - equal:
+          path: spec.ports[0].port
+          value: 8080
+
+  - it: "K-010: Bridge NOT rendered when bridge.enabled=false"
+    template: templates/kafka-bridge.yaml
+    set:
+      bridge.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  # ===== KAFKA TOPICS =====
+  - it: "K-011: One KafkaTopic per entry in .topics"
+    template: templates/kafka-topics.yaml
+    asserts:
+      - hasDocuments:
+          count: 2
+
+  - it: "K-012: idrac topic has correct partitions and replicas"
+    template: templates/kafka-topics.yaml
+    documentIndex: 0
+    asserts:
+      - isKind:
+          of: KafkaTopic
+      - equal:
+          path: metadata.name
+          value: idrac
+      - equal:
+          path: spec.partitions
+          value: 1
+      - equal:
+          path: spec.replicas
+          value: 2
+      - equal:
+          path: spec.config["cleanup.policy"]
+          value: delete
+
+  - it: "K-012b: ldms topic has correct partitions and replicas"
+    template: templates/kafka-topics.yaml
+    documentIndex: 1
+    asserts:
+      - isKind:
+          of: KafkaTopic
+      - equal:
+          path: metadata.name
+          value: ldms
+      - equal:
+          path: spec.partitions
+          value: 2
+      - equal:
+          path: spec.replicas
+          value: 2
+
+  - it: "K-012c: Topics have strimzi.io/cluster label"
+    template: templates/kafka-topics.yaml
+    documentIndex: 0
+    asserts:
+      - equal:
+          path: metadata.labels["strimzi.io/cluster"]
+          value: "kafka"
+
+  # ===== KAFKA USERS =====
+  - it: "K-013: KafkaUser kafkapump with TLS auth"
+    template: templates/kafka-users.yaml
+    asserts:
+      - isKind:
+          of: KafkaUser
+      - equal:
+          path: metadata.name
+          value: kafkapump
+      - equal:
+          path: spec.authentication.type
+          value: tls
+
+  - it: "K-014: ACLs include topic, cluster, group permissions"
+    template: templates/kafka-users.yaml
+    asserts:
+      - exists:
+          path: spec.authorization.acls
+      - lengthEqual:
+          path: spec.authorization.acls
+          count: 3
+      - equal:
+          path: spec.authorization.type
+          value: simple
+
+  - it: "K-014b: ACL[0] grants topic permissions"
+    template: templates/kafka-users.yaml
+    asserts:
+      - equal:
+          path: spec.authorization.acls[0].resource.type
+          value: topic
+      - equal:
+          path: spec.authorization.acls[0].resource.name
+          value: "*"
+
+  - it: "K-014c: ACL[1] grants cluster permissions"
+    template: templates/kafka-users.yaml
+    asserts:
+      - equal:
+          path: spec.authorization.acls[1].resource.type
+          value: cluster
+
+  - it: "K-014d: ACL[2] grants consumer group permissions"
+    template: templates/kafka-users.yaml
+    asserts:
+      - equal:
+          path: spec.authorization.acls[2].resource.type
+          value: group
+      - equal:
+          path: spec.authorization.acls[2].resource.name
+          value: "*"
+
+  - it: "K-014e: KafkaUser has strimzi.io/cluster label"
+    template: templates/kafka-users.yaml
+    asserts:
+      - equal:
+          path: metadata.labels["strimzi.io/cluster"]
+          value: kafka
+
+  # ===== NAMESPACE =====
+  - it: "K-015: Controller uses global.namespace"
+    template: templates/kafka-cluster.yaml
+    documentIndex: 0
+    asserts:
+      - equal:
+          path: metadata.namespace
+          value: telemetry
+
+  - it: "K-015b: Custom namespace propagates to controller"
+    template: templates/kafka-cluster.yaml
+    set:
+      global.namespace: custom-kafka-ns
+    documentIndex: 0
+    asserts:
+      - equal:
+          path: metadata.namespace
+          value: custom-kafka-ns
+
+  - it: "K-015c: Custom namespace propagates to Kafka CR"
+    template: templates/kafka-cluster.yaml
+    set:
+      global.namespace: custom-kafka-ns
+    documentIndex: 2
+    asserts:
+      - equal:
+          path: metadata.namespace
+          value: custom-kafka-ns
+
+  - it: "K-015d: Custom namespace propagates to bridge"
+    template: templates/kafka-bridge.yaml
+    set:
+      global.namespace: custom-kafka-ns
+    documentIndex: 0
+    asserts:
+      - equal:
+          path: metadata.namespace
+          value: custom-kafka-ns
+
+  - it: "K-015e: Custom namespace propagates to topics"
+    template: templates/kafka-topics.yaml
+    set:
+      global.namespace: custom-kafka-ns
+    documentIndex: 0
+    asserts:
+      - equal:
+          path: metadata.namespace
+          value: custom-kafka-ns
+
+  - it: "K-015f: Custom namespace propagates to users"
+    template: templates/kafka-users.yaml
+    set:
+      global.namespace: custom-kafka-ns
+    asserts:
+      - equal:
+          path: metadata.namespace
+          value: custom-kafka-ns
+
+  # ===== LABELS =====
+  - it: "K-016: Kafka CR has standard labels"
+    template: templates/kafka-cluster.yaml
+    documentIndex: 2
+    asserts:
+      - equal:
+          path: metadata.labels["app.kubernetes.io/part-of"]
+          value: omnia-telemetry
+      - equal:
+          path: metadata.labels["app.kubernetes.io/component"]
+          value: kafka
+
+  - it: "K-016b: Controller NodePool has strimzi.io/cluster label"
+    template: templates/kafka-cluster.yaml
+    documentIndex: 0
+    asserts:
+      - equal:
+          path: metadata.labels["strimzi.io/cluster"]
+          value: kafka
+
+  - it: "K-016c: Broker NodePool has strimzi.io/cluster label"
+    template: templates/kafka-cluster.yaml
+    documentIndex: 1
+    asserts:
+      - equal:
+          path: metadata.labels["strimzi.io/cluster"]
+          value: kafka
+
+  # ===== STORAGE =====
+  - it: "K-017: Controller uses JBOD storage with persistent-claim"
+    template: templates/kafka-cluster.yaml
+    documentIndex: 0
+    asserts:
+      - equal:
+          path: spec.storage.type
+          value: jbod
+      - equal:
+          path: spec.storage.volumes[0].type
+          value: persistent-claim
+      - equal:
+          path: spec.storage.volumes[0].id
+          value: 0
+      - equal:
+          path: spec.storage.volumes[0].deleteClaim
+          value: false
+
+  - it: "K-017b: Broker uses JBOD storage with persistent-claim"
+    template: templates/kafka-cluster.yaml
+    documentIndex: 1
+    asserts:
+      - equal:
+          path: spec.storage.type
+          value: jbod
+      - equal:
+          path: spec.storage.volumes[0].type
+          value: persistent-claim
+      - equal:
+          path: spec.storage.volumes[0].kraftMetadata
+          value: shared
+
+  # ===== KAFKA LISTENERS DETAIL =====
+  - it: "K-018: All listeners use TLS"
+    template: templates/kafka-cluster.yaml
+    documentIndex: 2
+    asserts:
+      - equal:
+          path: spec.kafka.listeners[0].tls
+          value: true
+      - equal:
+          path: spec.kafka.listeners[1].tls
+          value: true
+      - equal:
+          path: spec.kafka.listeners[2].tls
+          value: true
+
+  - it: "K-018b: TLS listener uses TLS authentication"
+    template: templates/kafka-cluster.yaml
+    documentIndex: 2
+    asserts:
+      - equal:
+          path: spec.kafka.listeners[1].authentication.type
+          value: tls
+
+  - it: "K-018c: External listener is loadbalancer type with TLS auth"
+    template: templates/kafka-cluster.yaml
+    documentIndex: 2
+    asserts:
+      - equal:
+          path: spec.kafka.listeners[2].type
+          value: loadbalancer
+      - equal:
+          path: spec.kafka.listeners[2].authentication.type
+          value: tls
+
+  - it: "K-019: Kafka uses simple authorization"
+    template: templates/kafka-cluster.yaml
+    documentIndex: 2
+    asserts:
+      - equal:
+          path: spec.kafka.authorization.type
+          value: simple

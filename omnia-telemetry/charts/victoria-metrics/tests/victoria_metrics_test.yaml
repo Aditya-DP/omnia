@@ -1,0 +1,235 @@
+suite: VictoriaMetrics Sub-Chart Tests
+templates:
+  - templates/vmcluster.yaml
+  - templates/vmagent.yaml
+  - templates/vmagent-rbac.yaml
+  - templates/vmscrape.yaml
+  - templates/vlcluster.yaml
+  - templates/vlagent.yaml
+  - templates/vlagent-config.yaml
+tests:
+  # ===== VMCLUSTER =====
+  - it: "VM-001: VMCluster rendered in cluster mode"
+    template: templates/vmcluster.yaml
+    asserts:
+      - isKind:
+          of: VMCluster
+      - equal:
+          path: metadata.name
+          value: victoria-cluster
+
+  - it: "VM-002: VMSingle rendered in single mode"
+    template: templates/vmcluster.yaml
+    set:
+      metrics.deploymentMode: single
+    asserts:
+      - isKind:
+          of: VMSingle
+      - equal:
+          path: metadata.name
+          value: victoria-single
+
+  - it: "VM-003: Retention period from values"
+    template: templates/vmcluster.yaml
+    asserts:
+      - equal:
+          path: spec.retentionPeriod
+          value: "168h"
+
+  - it: "VM-003b: Custom retention"
+    template: templates/vmcluster.yaml
+    set:
+      metrics.retention: "720h"
+    asserts:
+      - equal:
+          path: spec.retentionPeriod
+          value: "720h"
+
+  - it: "VM-004: vmstorage replicas from values"
+    template: templates/vmcluster.yaml
+    asserts:
+      - equal:
+          path: spec.vmstorage.replicaCount
+          value: 3
+      - equal:
+          path: spec.vmstorage.replicationFactor
+          value: 2
+
+  - it: "VM-005: TLS extraArgs when tls enabled"
+    template: templates/vmcluster.yaml
+    asserts:
+      - equal:
+          path: spec.vmstorage.extraArgs.tls
+          value: "true"
+      - equal:
+          path: spec.vmstorage.extraArgs.tlsCertFile
+          value: "/etc/victoria/certs/server.crt"
+
+  - it: "VM-006: TLS volumes present when enabled"
+    template: templates/vmcluster.yaml
+    asserts:
+      - contains:
+          path: spec.vmstorage.volumes
+          content:
+            name: victoria-tls-certs
+          any: true
+
+  - it: "VM-007: Init container for lock cleanup"
+    template: templates/vmcluster.yaml
+    asserts:
+      - equal:
+          path: spec.vmstorage.initContainers[0].name
+          value: remove-stale-locks
+
+  - it: "VM-008: Anti-affinity on vmstorage"
+    template: templates/vmcluster.yaml
+    asserts:
+      - exists:
+          path: spec.vmstorage.affinity.podAntiAffinity
+
+  - it: "VM-009b: Nothing rendered when metrics.enabled=false"
+    template: templates/vmcluster.yaml
+    set:
+      metrics.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  # ===== VMAGENT =====
+  - it: "VM-010: VMAgent remoteWrite points to vminsert in cluster mode"
+    template: templates/vmagent.yaml
+    asserts:
+      - isKind:
+          of: VMAgent
+      - matchRegex:
+          path: spec.remoteWrite[0].url
+          pattern: "vminsert-victoria-cluster.*:8480"
+
+  - it: "VM-011: VMAgent remoteWrite points to vmsingle in single mode"
+    template: templates/vmagent.yaml
+    set:
+      metrics.deploymentMode: single
+    asserts:
+      - matchRegex:
+          path: spec.remoteWrite[0].url
+          pattern: "victoria-single.*:8428"
+
+  - it: "VM-012: TLS CA in remoteWrite when TLS enabled"
+    template: templates/vmagent.yaml
+    asserts:
+      - exists:
+          path: spec.remoteWrite[0].tlsConfig
+
+  # ===== RBAC =====
+  - it: "VM-013: RBAC creates all 5 resources"
+    template: templates/vmagent-rbac.yaml
+    asserts:
+      - hasDocuments:
+          count: 5
+
+  - it: "VM-013b: ServiceAccount name from values"
+    template: templates/vmagent-rbac.yaml
+    documentIndex: 0
+    asserts:
+      - isKind:
+          of: ServiceAccount
+      - equal:
+          path: metadata.name
+          value: vmagent
+
+  - it: "VM-014: RBAC not created when rbac.create=false"
+    template: templates/vmagent-rbac.yaml
+    set:
+      rbac.create: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  # ===== VMSCRAPE =====
+  - it: "VM-015: VMPodScrape for iDRAC"
+    template: templates/vmscrape.yaml
+    asserts:
+      - isKind:
+          of: VMPodScrape
+      - equal:
+          path: metadata.name
+          value: idrac-telemetry-scrape
+
+  # ===== VLCLUSTER =====
+  - it: "VM-016: VLCluster rendered with correct structure"
+    template: templates/vlcluster.yaml
+    asserts:
+      - isKind:
+          of: VLCluster
+      - equal:
+          path: metadata.name
+          value: victoria-logs-cluster
+      - exists:
+          path: spec.vlstorage
+      - exists:
+          path: spec.vlinsert
+      - exists:
+          path: spec.vlselect
+
+  - it: "VM-017: TLS on VLCluster components"
+    template: templates/vlcluster.yaml
+    asserts:
+      - equal:
+          path: spec.vlstorage.extraArgs.tls
+          value: "true"
+
+  - it: "VM-018: VLCluster not rendered when logs disabled"
+    template: templates/vlcluster.yaml
+    set:
+      logs.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  # ===== VLAGENT =====
+  - it: "VM-019: VLAgent with syslog listeners"
+    template: templates/vlagent.yaml
+    asserts:
+      - isKind:
+          of: VLAgent
+      - matchRegex:
+          path: spec.extraArgs["syslog.listenAddr.tcp"]
+          pattern: ":514"
+      - matchRegex:
+          path: spec.extraArgs["syslog.listenAddr.udp"]
+          pattern: ":514"
+
+  - it: "VM-020: VLAgent LoadBalancer service with NodePorts"
+    template: templates/vlagent.yaml
+    asserts:
+      - equal:
+          path: spec.serviceSpec.spec.type
+          value: LoadBalancer
+      - equal:
+          path: spec.serviceSpec.spec.ports[0].nodePort
+          value: 32399
+
+  - it: "VM-021: VLAgent PVC size from values"
+    template: templates/vlagent.yaml
+    asserts:
+      - equal:
+          path: spec.storage.volumeClaimTemplate.spec.resources.requests.storage
+          value: "5Gi"
+
+  - it: "VM-019b: VLAgent not rendered when logs disabled"
+    template: templates/vlagent.yaml
+    set:
+      logs.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  # ===== NAMESPACE =====
+  - it: "VM-022: All resources use correct namespace"
+    template: templates/vmcluster.yaml
+    set:
+      global.namespace: custom-vm-ns
+    asserts:
+      - equal:
+          path: metadata.namespace
+          value: custom-vm-ns

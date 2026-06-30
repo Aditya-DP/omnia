@@ -1,0 +1,226 @@
+suite: Vector Sub-Chart Tests
+templates:
+  - templates/vector-ldms-deployment.yaml
+  - templates/vector-ldms-configmap.yaml
+  - templates/vector-ldms-service.yaml
+  - templates/vector-ome-deployment.yaml
+  - templates/vector-ome-configmap.yaml
+  - templates/vector-ome-service.yaml
+  - templates/vector-ome-kafkauser.yaml
+  - templates/vmagent-vector-deployment.yaml
+  - templates/vlagent-vector-deployment.yaml
+tests:
+  # ===== LDMS DEPLOYMENT =====
+  - it: "VE-001: LDMS deployment rendered when enabled"
+    template: templates/vector-ldms-deployment.yaml
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: metadata.name
+          value: vector-ldms
+      - equal:
+          path: spec.replicas
+          value: 2
+
+  - it: "VE-002: LDMS deployment has security context"
+    template: templates/vector-ldms-deployment.yaml
+    asserts:
+      - equal:
+          path: spec.template.spec.securityContext.runAsNonRoot
+          value: true
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.readOnlyRootFilesystem
+          value: true
+
+  - it: "VE-003: LDMS deployment has Kafka cert volumes"
+    template: templates/vector-ldms-deployment.yaml
+    asserts:
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: kafka-certs
+          any: true
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: kafka-cluster-ca
+          any: true
+
+  - it: "VE-004: LDMS not rendered when ldms.enabled=false"
+    template: templates/vector-ldms-deployment.yaml
+    set:
+      ldms.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  # ===== LDMS CONFIGMAP =====
+  - it: "VE-005: LDMS configmap has correct Kafka bootstrap"
+    template: templates/vector-ldms-configmap.yaml
+    asserts:
+      - isKind:
+          of: ConfigMap
+      - matchRegex:
+          path: data["vector.toml"]
+          pattern: "kafka-kafka-bootstrap"
+
+  - it: "VE-006: LDMS configmap has Lua fan-out transform"
+    template: templates/vector-ldms-configmap.yaml
+    asserts:
+      - matchRegex:
+          path: data["vector.toml"]
+          pattern: "ldms_fan_out"
+      - matchRegex:
+          path: data["vector.toml"]
+          pattern: 'type = "lua"'
+
+  # ===== OME DEPLOYMENT =====
+  - it: "VE-007: OME deployment rendered when enabled"
+    template: templates/vector-ome-deployment.yaml
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: metadata.name
+          value: vector-ome
+      - equal:
+          path: spec.replicas
+          value: 2
+
+  - it: "VE-008: OME not rendered when ome.enabled=false"
+    template: templates/vector-ome-deployment.yaml
+    set:
+      ome.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  # ===== OME CONFIGMAP =====
+  - it: "VE-009: OME configmap has topic router"
+    template: templates/vector-ome-configmap.yaml
+    asserts:
+      - matchRegex:
+          path: data["vector.toml"]
+          pattern: "ome_topic_router"
+
+  - it: "VE-010: OME configmap has only metrics when logsEnabled=false"
+    template: templates/vector-ome-configmap.yaml
+    set:
+      ome.logsEnabled: false
+    asserts:
+      - matchRegex:
+          path: data["vector.toml"]
+          pattern: "victoria_metrics"
+
+  # ===== OME KAFKAUSER =====
+  - it: "VE-011: KafkaUser with prefix-based ACLs"
+    template: templates/vector-ome-kafkauser.yaml
+    asserts:
+      - isKind:
+          of: KafkaUser
+      - equal:
+          path: metadata.name
+          value: vector-ome-user
+      - equal:
+          path: spec.authorization.acls[0].resource.patternType
+          value: prefix
+
+  # ===== VMAGENT-VECTOR =====
+  - it: "VE-012: vmagent write-buffer deployment rendered"
+    template: templates/vmagent-vector-deployment.yaml
+    documentIndex: 0
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: metadata.name
+          value: vmagent-vector
+
+  - it: "VE-013: vmagent-vector has TLS CA mount"
+    template: templates/vmagent-vector-deployment.yaml
+    documentIndex: 0
+    asserts:
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: victoria-certs
+          any: true
+
+  - it: "VE-012b: vmagent-vector Service created"
+    template: templates/vmagent-vector-deployment.yaml
+    documentIndex: 1
+    asserts:
+      - isKind:
+          of: Service
+      - equal:
+          path: metadata.name
+          value: vmagent-vector
+
+  # ===== VLAGENT-VECTOR =====
+  - it: "VE-014: vlagent log write-buffer deployment rendered"
+    template: templates/vlagent-vector-deployment.yaml
+    documentIndex: 0
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: metadata.name
+          value: vlagent-vector
+
+  - it: "VE-014b: vlagent-vector Service created"
+    template: templates/vlagent-vector-deployment.yaml
+    documentIndex: 1
+    asserts:
+      - isKind:
+          of: Service
+      - equal:
+          path: metadata.name
+          value: vlagent-vector
+
+  # ===== DISABLED =====
+  - it: "VE-015c: vmagent nothing when disabled"
+    template: templates/vmagent-vector-deployment.yaml
+    set:
+      vmagentVector.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: "VE-015d: vlagent nothing when disabled"
+    template: templates/vlagent-vector-deployment.yaml
+    set:
+      vlagentVector.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  # ===== LDMS SERVICE =====
+  - it: "VE-016: LDMS metrics Service"
+    template: templates/vector-ldms-service.yaml
+    asserts:
+      - isKind:
+          of: Service
+      - equal:
+          path: metadata.name
+          value: vector-ldms
+
+  # ===== OME SERVICE =====
+  - it: "VE-017: OME metrics Service"
+    template: templates/vector-ome-service.yaml
+    asserts:
+      - isKind:
+          of: Service
+      - equal:
+          path: metadata.name
+          value: vector-ome
+
+  # ===== NAMESPACE =====
+  - it: "VE-018: Resources use correct namespace"
+    template: templates/vector-ldms-deployment.yaml
+    set:
+      global.namespace: custom-vec-ns
+    asserts:
+      - equal:
+          path: metadata.namespace
+          value: custom-vec-ns

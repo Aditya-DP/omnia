@@ -1,0 +1,219 @@
+suite: Telemetry Operator Sub-Chart Tests
+templates:
+  - templates/operator-deployment.yaml
+  - templates/operator-rbac.yaml
+  - templates/default-health-policy.yaml
+  - templates/metrics-service.yaml
+tests:
+  # ===== DEPLOYMENT =====
+  - it: "TO-001: Deployment created with correct replicas"
+    template: templates/operator-deployment.yaml
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: metadata.name
+          value: telemetry-operator
+      - equal:
+          path: spec.replicas
+          value: 2
+
+  - it: "TO-001b: Custom replicas"
+    template: templates/operator-deployment.yaml
+    set:
+      replicas: 3
+    asserts:
+      - equal:
+          path: spec.replicas
+          value: 3
+
+  - it: "TO-002: Leader election arg when enabled"
+    template: templates/operator-deployment.yaml
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: "--leader-elect=true"
+
+  - it: "TO-002b: No leader election arg when disabled"
+    template: templates/operator-deployment.yaml
+    set:
+      leaderElection.enabled: false
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].args
+          content: "--leader-elect=true"
+
+  - it: "TO-003: Security context (non-root, read-only FS)"
+    template: templates/operator-deployment.yaml
+    asserts:
+      - equal:
+          path: spec.template.spec.securityContext.runAsNonRoot
+          value: true
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.readOnlyRootFilesystem
+          value: true
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.allowPrivilegeEscalation
+          value: false
+      - contains:
+          path: spec.template.spec.containers[0].securityContext.capabilities.drop
+          content: "ALL"
+
+  - it: "TO-003b: Deployment has health probes"
+    template: templates/operator-deployment.yaml
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].livenessProbe.httpGet.path
+          value: /healthz
+      - equal:
+          path: spec.template.spec.containers[0].readinessProbe.httpGet.path
+          value: /readyz
+
+  - it: "TO-003c: Deployment metrics and health ports"
+    template: templates/operator-deployment.yaml
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].ports
+          content:
+            name: metrics
+            containerPort: 8080
+            protocol: TCP
+      - contains:
+          path: spec.template.spec.containers[0].ports
+          content:
+            name: health
+            containerPort: 8081
+            protocol: TCP
+
+  # ===== RBAC =====
+  - it: "TO-004: SA, ClusterRole, ClusterRoleBinding created"
+    template: templates/operator-rbac.yaml
+    asserts:
+      - hasDocuments:
+          count: 3
+      - documentIndex: 0
+        isKind:
+          of: ServiceAccount
+      - documentIndex: 1
+        isKind:
+          of: ClusterRole
+      - documentIndex: 2
+        isKind:
+          of: ClusterRoleBinding
+
+  - it: "TO-004b: ServiceAccount name from values"
+    template: templates/operator-rbac.yaml
+    documentIndex: 0
+    asserts:
+      - equal:
+          path: metadata.name
+          value: telemetry-operator
+
+  - it: "TO-005: ClusterRole has CRD verbs"
+    template: templates/operator-rbac.yaml
+    documentIndex: 1
+    asserts:
+      - equal:
+          path: metadata.name
+          value: telemetry-operator-manager
+
+  - it: "TO-004c: RBAC not created when serviceAccount.create=false"
+    template: templates/operator-rbac.yaml
+    set:
+      serviceAccount.create: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  # ===== DEFAULT HEALTH POLICY =====
+  - it: "TO-006: Default TelemetryHealthPolicy CR created"
+    template: templates/default-health-policy.yaml
+    documentIndex: 0
+    asserts:
+      - isKind:
+          of: TelemetryHealthPolicy
+      - equal:
+          path: metadata.name
+          value: default
+
+  - it: "TO-007: Policy has 4 rules"
+    template: templates/default-health-policy.yaml
+    documentIndex: 0
+    asserts:
+      - lengthEqual:
+          path: spec.rules
+          count: 4
+
+  - it: "TO-007b: Rule names are correct"
+    template: templates/default-health-policy.yaml
+    documentIndex: 0
+    asserts:
+      - equal:
+          path: spec.rules[0].name
+          value: stuck-terminating-general
+      - equal:
+          path: spec.rules[1].name
+          value: stuck-terminating-kafka
+      - equal:
+          path: spec.rules[2].name
+          value: crashloop-alert
+      - equal:
+          path: spec.rules[3].name
+          value: pending-too-long
+
+  - it: "TO-008: Kafka rule has longer threshold (300s)"
+    template: templates/default-health-policy.yaml
+    documentIndex: 0
+    asserts:
+      - equal:
+          path: spec.rules[1].parameters.thresholdSeconds
+          value: 300
+
+  - it: "TO-008b: General terminating rule threshold (60s)"
+    template: templates/default-health-policy.yaml
+    documentIndex: 0
+    asserts:
+      - equal:
+          path: spec.rules[0].parameters.thresholdSeconds
+          value: 60
+
+  - it: "TO-006b: TelemetryHealthStatus CR created"
+    template: templates/default-health-policy.yaml
+    documentIndex: 1
+    asserts:
+      - isKind:
+          of: TelemetryHealthStatus
+      - equal:
+          path: metadata.name
+          value: default
+
+  - it: "TO-009: Policy not rendered when defaultPolicy.create=false"
+    template: templates/default-health-policy.yaml
+    set:
+      defaultPolicy.create: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  # ===== METRICS SERVICE =====
+  - it: "TO-011: Metrics Service created"
+    template: templates/metrics-service.yaml
+    asserts:
+      - isKind:
+          of: Service
+      - equal:
+          path: metadata.name
+          value: telemetry-operator-metrics
+      - equal:
+          path: spec.ports[0].port
+          value: 8080
+
+  # ===== NAMESPACE =====
+  - it: "TO-012: Resources use correct namespace"
+    template: templates/operator-deployment.yaml
+    set:
+      global.namespace: custom-op-ns
+    asserts:
+      - equal:
+          path: metadata.namespace
+          value: custom-op-ns

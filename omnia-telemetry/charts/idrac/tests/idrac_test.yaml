@@ -1,0 +1,173 @@
+suite: iDRAC Sub-Chart Tests
+templates:
+  - templates/statefulset.yaml
+  - templates/service.yaml
+  - templates/secret.yaml
+tests:
+  # ===== STATEFULSET =====
+  - it: "ID-001: StatefulSet created with correct name"
+    template: templates/statefulset.yaml
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - equal:
+          path: metadata.name
+          value: idrac-telemetry
+
+  - it: "ID-002: MySQL container present with correct image"
+    template: templates/statefulset.yaml
+    asserts:
+      - contains:
+          path: spec.template.spec.containers
+          content:
+            name: mysqldb
+          any: true
+
+  - it: "ID-003: ActiveMQ container present"
+    template: templates/statefulset.yaml
+    asserts:
+      - contains:
+          path: spec.template.spec.containers
+          content:
+            name: activemq
+          any: true
+
+  - it: "ID-004: Receiver container present"
+    template: templates/statefulset.yaml
+    asserts:
+      - contains:
+          path: spec.template.spec.containers
+          content:
+            name: idrac-telemetry-receiver
+          any: true
+
+  - it: "ID-005: kafka-pump present when kafka target enabled"
+    template: templates/statefulset.yaml
+    asserts:
+      - contains:
+          path: spec.template.spec.containers
+          content:
+            name: kafka-pump
+          any: true
+
+  - it: "ID-006: kafka-pump absent when kafka target disabled"
+    template: templates/statefulset.yaml
+    set:
+      collectionTargets.kafka: false
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers
+          content:
+            name: kafka-pump
+          any: true
+
+  - it: "ID-007: victoria-pump present when VM target enabled"
+    template: templates/statefulset.yaml
+    asserts:
+      - contains:
+          path: spec.template.spec.containers
+          content:
+            name: victoria-pump
+          any: true
+
+  - it: "ID-008: victoria-pump absent when VM target disabled"
+    template: templates/statefulset.yaml
+    set:
+      collectionTargets.victoriaMetrics: false
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers
+          content:
+            name: victoria-pump
+          any: true
+
+  - it: "ID-009: Kafka cert volumes when kafka enabled"
+    template: templates/statefulset.yaml
+    asserts:
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: kafka-cluster-ca-cert
+          any: true
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: kafkapump-user-certs
+          any: true
+
+  - it: "ID-009b: No Kafka cert volumes when kafka disabled"
+    template: templates/statefulset.yaml
+    set:
+      collectionTargets.kafka: false
+    asserts:
+      - isNullOrEmpty:
+          path: spec.template.spec.volumes
+
+  - it: "ID-010: Init container for MySQL lock cleanup"
+    template: templates/statefulset.yaml
+    asserts:
+      - equal:
+          path: spec.template.spec.initContainers[0].name
+          value: cleanup-mysql-locks
+
+  - it: "ID-015: VolumeClaimTemplate with correct storage"
+    template: templates/statefulset.yaml
+    asserts:
+      - equal:
+          path: spec.volumeClaimTemplates[0].metadata.name
+          value: mysqldb-pvc
+      - equal:
+          path: spec.volumeClaimTemplates[0].spec.resources.requests.storage
+          value: "1Gi"
+
+  - it: "ID-015b: Custom storage size"
+    template: templates/statefulset.yaml
+    set:
+      mysql.storage: "10Gi"
+    asserts:
+      - equal:
+          path: spec.volumeClaimTemplates[0].spec.resources.requests.storage
+          value: "10Gi"
+
+  # ===== SECRET =====
+  - it: "ID-012: MySQL credentials Secret created"
+    template: templates/secret.yaml
+    asserts:
+      - isKind:
+          of: Secret
+      - equal:
+          path: metadata.name
+          value: idrac-mysql-credentials
+      - exists:
+          path: stringData.mysqldb_user
+
+  - it: "ID-013: Secret NOT created when existingSecret set"
+    template: templates/secret.yaml
+    set:
+      secrets.existingSecret: my-existing-secret
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  # ===== SERVICE =====
+  - it: "ID-014: Headless Service created"
+    template: templates/service.yaml
+    asserts:
+      - isKind:
+          of: Service
+      - equal:
+          path: spec.clusterIP
+          value: None
+      - equal:
+          path: metadata.name
+          value: idrac-telemetry
+
+  # ===== NAMESPACE =====
+  - it: "ID-016: Resources use correct namespace"
+    template: templates/statefulset.yaml
+    set:
+      global.namespace: custom-ns
+    asserts:
+      - equal:
+          path: metadata.namespace
+          value: custom-ns
